@@ -3,23 +3,26 @@ package com.rgbstudios.todomobile
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.android.material.navigation.NavigationView
 import com.google.android.material.textfield.TextInputEditText
 import com.rgbstudios.todomobile.adapter.ListAdapter
 import com.rgbstudios.todomobile.databinding.FragmentHomeBinding
 import com.rgbstudios.todomobile.model.TaskViewModel
 
 
-class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListener {
+class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListener, NavigationView.OnNavigationItemSelectedListener {
 
     private val sharedViewModel: TaskViewModel by activityViewModels()
 
@@ -27,6 +30,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
     private lateinit var bottomSheetFragment: BottomSheetFragment
     private lateinit var adapter: ListAdapter
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
+    private lateinit var drawerLayout:DrawerLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -83,10 +87,8 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         }
             binding.bottomNavigationView.selectedItemId = 0
 
+        drawerLayout = binding.drawerLayout
         binding.toggleNav.setOnClickListener {
-            // Get a reference to the activity and its DrawerLayout
-            val activity = requireActivity()
-            val drawerLayout = activity.findViewById<DrawerLayout>(R.id.drawerLayout)
 
             // Toggle the navigation drawer open or close
             if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -95,6 +97,8 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
                 drawerLayout.openDrawer(GravityCompat.START)
             }
         }
+
+        binding.navigationView.setNavigationItemSelectedListener(this)
 
         // Observe the isUserSignedIn LiveData from the sharedViewModel
         sharedViewModel.isUserSignedIn.observe(viewLifecycleOwner) { isUserSignedIn ->
@@ -198,10 +202,21 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         //TODO
     }
 
+    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
+        override fun handleOnBackPressed() {
+            onBackPressedMethod()
+        }
+    }
+
+    private fun onBackPressedMethod() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)){
+            drawerLayout.isDrawerOpen(GravityCompat.START)
+        }else{
+            requireActivity().finish()
+        }
+    }
+
     private fun toggleNavigationDrawer(){
-        // Get a reference to the activity and its DrawerLayout
-        val activity = requireActivity()
-        val drawerLayout = activity.findViewById<DrawerLayout>(R.id.drawerLayout)
 
         // Toggle the navigation drawer open or close
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -209,5 +224,9 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         } else {
             drawerLayout.openDrawer(GravityCompat.START)
         }
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        TODO("Not yet implemented")
     }
 }
