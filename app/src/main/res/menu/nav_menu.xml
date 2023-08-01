@@ -6,22 +6,25 @@
     <group android:id="@+id/it_1"
         android:checkableBehavior="single">
 
-        <item android:id="@+id/nav_home"
-            android:title="Home"
-            android:icon="@drawable/home__1_"/>
+        <item android:id="@+id/appSettings"
+            android:title="App Settings"
+            android:icon="@drawable/settings"/>
         <item android:id="@+id/profile"
-            android:title="Profile"
-            android:icon="@drawable/home__1_"/>
-        <item android:id="@+id/settings"
-            android:title="Settings"
-            android:icon="@drawable/home__1_"/>
+            android:title="Account Settings"
+            android:icon="@drawable/avatar"/>
+        <item android:id="@+id/aboutUs"
+            android:title="About Us"
+            android:icon="@drawable/circles_four"/>
+        <item android:id="@+id/faq"
+            android:title="FAQ"
+            android:icon="@drawable/info_circle"/>
     </group>
 
-    <item android:id="@+id/share"
-        android:title="Share"
-        android:icon="@drawable/home__1_"/>
+    <item android:id="@+id/supportUs"
+        android:title="Support Us"
+        android:icon="@drawable/thumbs"/>
     <item android:id="@+id/LogOut"
         android:title="Logout"
-        android:icon="@drawable/home__1_"/>
+        android:icon="@drawable/logout"/>
 
 </menu>

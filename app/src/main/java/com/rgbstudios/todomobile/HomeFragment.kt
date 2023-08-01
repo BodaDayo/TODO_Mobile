@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.appcompat.widget.SearchView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -41,12 +42,10 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         init()
         getDataFromFirebase()
         registerEvents()
-
     }
 
     private fun init() {
-
-
+        resetCurrentList()
 
         binding.parentRecyclerView.setHasFixedSize(true)
         binding.parentRecyclerView.layoutManager = LinearLayoutManager(context)
@@ -59,19 +58,49 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
             override fun onQueryTextSubmit(p0: String?): Boolean {
                 return false
             }
-
             override fun onQueryTextChange(p0: String?): Boolean {
                 sharedViewModel.filterTasks(p0)
                 return true
             }
-
         })
+
+        binding.bottomNavigationView.setOnItemSelectedListener {
+            when (it.itemId) {
+                R.id.starredList -> {
+                    getStarredList()
+                }
+                R.id.sort -> {
+                    sortCurrentList()
+                }
+                R.id.focus -> {
+                    //TODO Navigate to focus fragment
+                }
+                R.id.profile -> {
+                    toggleNavigationDrawer()
+                }
+            }
+            true
+        }
+            binding.bottomNavigationView.selectedItemId = 0
+
+        binding.toggleNav.setOnClickListener {
+            // Get a reference to the activity and its DrawerLayout
+            val activity = requireActivity()
+            val drawerLayout = activity.findViewById<DrawerLayout>(R.id.drawerLayout)
+
+            // Toggle the navigation drawer open or close
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START)
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
+        }
 
         // Observe the isUserSignedIn LiveData from the sharedViewModel
         sharedViewModel.isUserSignedIn.observe(viewLifecycleOwner) { isUserSignedIn ->
             if (!isUserSignedIn) {
                 // User is signed out, reset the list or take any necessary actions
-                resetList()
+                resetCurrentList()
             }
         }
 
@@ -156,8 +185,29 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         swipeRefreshLayout.isRefreshing = false
     }
 
-    private fun resetList() {
-        adapter.updateTaskLists(emptyList()) // Clear the RecyclerView
+    private fun resetCurrentList() {
+        sharedViewModel.resetList() // Clear the RecyclerView
         onEmptyLayout(true) // Show the empty layout
+    }
+
+    private fun getStarredList(){
+        //TODO
+    }
+
+    private fun sortCurrentList(){
+        //TODO
+    }
+
+    private fun toggleNavigationDrawer(){
+        // Get a reference to the activity and its DrawerLayout
+        val activity = requireActivity()
+        val drawerLayout = activity.findViewById<DrawerLayout>(R.id.drawerLayout)
+
+        // Toggle the navigation drawer open or close
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
     }
 }

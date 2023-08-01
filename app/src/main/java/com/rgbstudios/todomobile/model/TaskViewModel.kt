@@ -210,7 +210,7 @@ class TaskViewModel : ViewModel() {
     }
 
 
-    private fun resetList() {
+    fun resetList() {
         _listFromFirebase.value = emptyList()
         _allTasksList.value = emptyList()
     }

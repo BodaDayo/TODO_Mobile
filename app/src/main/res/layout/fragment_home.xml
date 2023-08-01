@@ -7,13 +7,43 @@
     android:layout_height="match_parent"
     tools:context=".HomeFragment">
 
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center"
+        android:layout_marginHorizontal="8dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="24sp"
+            android:layout_height="24sp"
+            android:src="@drawable/menu"
+            android:layout_marginHorizontal="16sp"/>
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textSize="18sp"
+            android:gravity="center"
+            android:text="Index"/>
+
+        <ImageView
+            android:id="@+id/toggleNav"
+            android:layout_width="36sp"
+            android:layout_height="36sp"
+            android:layout_margin="24sp"
+            android:src="@drawable/pfp" />
+    </LinearLayout>
+
     <androidx.cardview.widget.CardView
         android:id="@+id/searchViewLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
+        android:layout_marginHorizontal="16dp"
         app:cardCornerRadius="8dp"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/topBar">
 
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"
@@ -31,7 +61,7 @@
         android:id="@+id/swipeRefreshLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toTopOf="@id/bottomAppBar"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/searchViewLayout">
@@ -40,10 +70,7 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/parentRecyclerView"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/searchViewLayout" />
+            android:layout_height="wrap_content" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
     <LinearLayout
@@ -53,7 +80,7 @@
         android:layout_margin="16sp"
         android:orientation="vertical"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/bottomAppBar"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -86,31 +113,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="24sp"
+        android:contentDescription="add new task button"
         android:src="@drawable/add"
         app:layout_anchorGravity="top"
-        app:layout_constraintBottom_toTopOf="@id/bottomAppBar"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <com.google.android.material.bottomappbar.BottomAppBar
-        android:id="@+id/bottomAppBar"
-        android:layout_width="0dp"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        app:fabCradleMargin="10dp"
-        app:fabCradleRoundedCornerRadius="10dp"
-        app:fabCradleVerticalOffset="10dp"
+        android:layout_gravity="center"
+        app:labelVisibilityMode="unlabeled"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:ignore="BottomAppBar">
-
-        <com.google.android.material.bottomnavigation.BottomNavigationView
-            android:id="@+id/bottomNavigationView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:background="@drawable/transparent_background"
-            app:menu="@menu/bottom_nav_menu" />
-    </com.google.android.material.bottomappbar.BottomAppBar>
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
