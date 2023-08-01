@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">TODO Mobile</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="splash_text">ToDo Mobile</string>
+    <string name="skip">SKIP</string>
+    <string name="mark_as_completed">Mark as completed</string>
+    <string name="star_task">Star task</string>
+
+    <string name="developer_signature">© 2023 Oladayo.rgb</string>
+    <string name="save">Save</string>
+    <string name="set_time_and_date">set time and date</string>
+    <string name="add_task_description">add task description</string>
+    <string name="description">Description</string>
+    <string name="title">Title</string>
+    <string name="add_task">Add Task</string>
+    <string name="delete">Delete</string>
+    <string name="navigation_drawer_open">open</string>
+    <string name="navigation_drawer_close">close</string>
+    <string name="password_hint">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</string>
+
+</resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/starredList"
+        android:icon="@drawable/star"
+        android:title="" />
+
+    <item
+        android:id="@+id/sort"
+        android:icon="@drawable/sort"
+        android:title="" />
+
+    <item
+        android:id="@+id/focus"
+        android:icon="@drawable/focus"
+        android:title="" />
+
+    <item
+        android:id="@+id/profile"
+        android:icon="@drawable/avatar"
+        android:title="" />
+
+</menu>
