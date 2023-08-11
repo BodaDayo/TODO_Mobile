@@ -12,12 +12,16 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.addCallback
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentEditTaskBinding
 import com.rgbstudios.todomobile.model.TaskViewModel
 
@@ -28,6 +32,7 @@ class EditTaskFragment : Fragment() {
     private lateinit var binding: FragmentEditTaskBinding
     private lateinit var fragmentContext: Context
     private lateinit var menuProvider: MenuProvider
+    private var changesMade = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -61,6 +66,18 @@ class EditTaskFragment : Fragment() {
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     // Enable or disable sendButton based on whether editTitleEt is empty or not
                     binding.sendButton.isEnabled = !s.isNullOrEmpty()
+                    changesMade = true
+                }
+
+                override fun afterTextChanged(s: Editable?) {}
+            })
+
+            // Set up TextWatcher for editDescriptionEt
+            binding.editDescriptionEt.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    changesMade = true
                 }
 
                 override fun afterTextChanged(s: Editable?) {}
@@ -110,6 +127,16 @@ class EditTaskFragment : Fragment() {
                 activity?.supportFragmentManager?.popBackStack()
             }
 
+            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+                if (changesMade) {
+                    showDiscardDialog()
+                } else {
+                    // If no changes, simply pop the back stack
+                    parentFragmentManager.popBackStack()
+                }
+            }
+
+
             setupMenu()
         } else {
             Log.e("EditTaskFragment", "selectedTaskData is null")
@@ -117,6 +144,33 @@ class EditTaskFragment : Fragment() {
         }
 
     }
+
+    private fun showDiscardDialog() {
+        val dialogBinding = DialogDiscardTaskBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.btnDiscardConfirm.setOnClickListener {
+
+            // Reset changesMade flag
+            changesMade = false
+
+            // Dismiss the dialog
+            dialog.dismiss()
+
+            // pop the back stack
+            parentFragmentManager.popBackStack()
+        }
+
+        dialogBinding.btnDiscardCancel.setOnClickListener {
+            // Dismiss the dialog
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
 
     private fun setupMenu() {
         (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
@@ -148,8 +202,6 @@ class EditTaskFragment : Fragment() {
         // Pop back to the HomeFragment
         parentFragmentManager.popBackStack("HomeFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
     }
-
-
 
     private fun setTaskData(id: String, title: String, description: String, completed: Boolean) {
 

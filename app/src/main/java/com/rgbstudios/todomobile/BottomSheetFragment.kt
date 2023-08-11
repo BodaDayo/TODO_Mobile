@@ -4,14 +4,19 @@ package com.rgbstudios.todomobile
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.internal.ViewUtils.hideKeyboard
 import com.google.android.material.textfield.TextInputEditText
+import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentBottomSheetBinding
 
 class BottomSheetFragment : BottomSheetDialogFragment() {
@@ -35,7 +40,24 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Intercept back button press and show discard dialog if title field is not empty
+        dialog?.setOnKeyListener { _, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                if (!binding.taskTitleEt.text.isNullOrEmpty()) {
+                    showDiscardDialog()
+                    return@setOnKeyListener true
+                }
+            }
+            return@setOnKeyListener false
+        }
+
         registerEvents()
+
+        dialog?.setOnCancelListener {
+            if (!binding.taskTitleEt.text.isNullOrEmpty()) {
+                showDiscardDialog()
+            }
+        }
     }
 
     private fun registerEvents() {
@@ -81,6 +103,30 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         }
     }
+
+    private fun showDiscardDialog() {
+        val dialogBinding = DialogDiscardTaskBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.btnDiscardConfirm.setOnClickListener {
+            // Clear the title and description EditText fields
+            binding.taskTitleEt.text?.clear()
+            binding.taskDescriptionEt.text?.clear()
+
+            // Dismiss the dialog
+            dialog.dismiss()
+        }
+
+        dialogBinding.btnDiscardCancel.setOnClickListener {
+            // Dismiss the dialog
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
 
     interface DialogAddTaskBtnClickListener {
         fun onSaveTask(

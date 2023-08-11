@@ -24,6 +24,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.textfield.TextInputEditText
 import com.rgbstudios.todomobile.adapter.ListAdapter
+import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
+import com.rgbstudios.todomobile.databinding.DialogLogoutConfirmationBinding
 import com.rgbstudios.todomobile.databinding.FragmentHomeBinding
 import com.rgbstudios.todomobile.model.TaskViewModel
 
@@ -258,6 +260,10 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
             R.id.logInOut -> {
                 if (item.title == "Log Out" ) {
+                    // close drawer
+                    drawerLayout.closeDrawer(GravityCompat.START)
+
+                    // Show confirm dialog
                     showLogoutConfirmationDialog()
                 } else {
                     findNavController().navigate(R.id.action_homeFragment_to_signInFragment)
@@ -268,29 +274,22 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
     }
 
     private fun showLogoutConfirmationDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.dialog_logout_confirmation, null)
-
+        val dialogBinding = DialogLogoutConfirmationBinding.inflate(layoutInflater)
         val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setView(dialogView)
+            .setView(dialogBinding.root)
             .create()
 
-        val btnLogoutConfirm = dialogView.findViewById<Button>(R.id.btnLogoutConfirm)
-        val btnLogoutCancel = dialogView.findViewById<Button>(R.id.btnLogoutCancel)
-
-        btnLogoutConfirm.setOnClickListener {
+        dialogBinding.btnLogoutConfirm.setOnClickListener {
             // Call the ViewModel's logout method to sign out the user
             sharedViewModel.logout()
 
             // Dismiss the dialog
             dialog.dismiss()
 
-            // close drawer
-            drawerLayout.closeDrawer(GravityCompat.START)
-
             resetCurrentList()
         }
 
-        btnLogoutCancel.setOnClickListener {
+        dialogBinding.btnLogoutCancel.setOnClickListener {
             // Dismiss the dialog
             dialog.dismiss()
         }
