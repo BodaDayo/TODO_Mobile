@@ -106,7 +106,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         // Observe the isUserSignedIn LiveData from the sharedViewModel
         sharedViewModel.isUserSignedIn.observe(viewLifecycleOwner) { isUserSignedIn ->
             // Reference to the logOut menu item
-            val logOutMenuItem = binding.navigationView.menu.findItem(R.id.logOut)
+            val logOutMenuItem = binding.navigationView.menu.findItem(R.id.logInOut)
 
             if (isUserSignedIn) {
                 // Update menu item title and icon when user is signed in
@@ -256,8 +256,12 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
             }
 
-            R.id.logOut -> {
-                showLogoutConfirmationDialog()
+            R.id.logInOut -> {
+                if (item.title == "Log Out" ) {
+                    showLogoutConfirmationDialog()
+                } else {
+                    findNavController().navigate(R.id.action_homeFragment_to_signInFragment)
+                }
             }
         }
         return true

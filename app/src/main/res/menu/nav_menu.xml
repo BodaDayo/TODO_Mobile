@@ -23,8 +23,8 @@
     <item android:id="@+id/supportUs"
         android:title="Support Us"
         android:icon="@drawable/thumbs"/>
-    <item android:id="@+id/logOut"
-        android:title="Logout"
+    <item android:id="@+id/logInOut"
+        android:title="Log Out"
         android:icon="@drawable/logout"/>
 
 </menu>
