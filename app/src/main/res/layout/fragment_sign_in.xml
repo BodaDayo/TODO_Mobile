@@ -46,20 +46,20 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:queryBackground="@android:color/transparent"
                     app:boxStrokeWidth="0dp"
                     app:boxStrokeWidthFocused="0dp"
-                    app:hintEnabled="false">
+                    app:hintEnabled="false"
+                    app:queryBackground="@android:color/transparent">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/emailEt"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:queryBackground="@android:color/transparent"
                         android:hint="Enter your Email"
                         android:inputType="textEmailAddress"
                         android:paddingHorizontal="12dp"
-                        android:paddingTop="15dp" />
+                        android:paddingTop="15dp"
+                        app:queryBackground="@android:color/transparent" />
                 </com.google.android.material.textfield.TextInputLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -86,21 +86,21 @@
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:queryBackground="@android:color/transparent"
                     app:boxStrokeWidth="0dp"
                     app:boxStrokeWidthFocused="0dp"
                     app:hintEnabled="false"
-                    app:passwordToggleEnabled="true">
+                    app:passwordToggleEnabled="true"
+                    app:queryBackground="@android:color/transparent">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/passEt"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        app:queryBackground="@android:color/transparent"
-                        android:inputType="textPassword"
                         android:hint="@string/password_hint"
+                        android:inputType="textPassword"
                         android:paddingHorizontal="12dp"
-                        android:paddingTop="15dp" />
+                        android:paddingTop="15dp"
+                        app:queryBackground="@android:color/transparent" />
                 </com.google.android.material.textfield.TextInputLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -152,5 +152,5 @@
         app:layout_constraintBottom_toTopOf="@id/tvLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

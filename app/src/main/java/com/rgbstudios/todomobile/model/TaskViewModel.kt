@@ -214,7 +214,7 @@ class TaskViewModel : ViewModel() {
         _listFromFirebase.value = emptyList()
         _allTasksList.value = emptyList()
     }
-    private fun setupAuthStateListener() {
+    fun setupAuthStateListener() {
         val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
             if (user != null) {
@@ -237,5 +237,9 @@ class TaskViewModel : ViewModel() {
         auth.removeAuthStateListener(authStateListener)
     }
 
+    // Add this method to the TaskViewModel class
+    fun logout() {
+        auth.signOut()
+    }
 
 }

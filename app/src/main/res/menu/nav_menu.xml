@@ -23,7 +23,7 @@
     <item android:id="@+id/supportUs"
         android:title="Support Us"
         android:icon="@drawable/thumbs"/>
-    <item android:id="@+id/LogOut"
+    <item android:id="@+id/logOut"
         android:title="Logout"
         android:icon="@drawable/logout"/>
 

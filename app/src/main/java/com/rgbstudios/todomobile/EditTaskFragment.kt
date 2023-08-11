@@ -13,18 +13,12 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.rgbstudios.todomobile.databinding.FragmentEditTaskBinding
-import com.rgbstudios.todomobile.model.TaskData
-import com.rgbstudios.todomobile.model.TaskDataFromFirebase
 import com.rgbstudios.todomobile.model.TaskViewModel
 
 
@@ -89,6 +83,32 @@ class EditTaskFragment : Fragment() {
 
                 activity?.supportFragmentManager?.popBackStack()
             }
+            binding.deleteTaskTextView.setOnClickListener {
+                sharedViewModel.deleteTask(taskId) { isSuccessful ->
+                    if (isSuccessful) {
+                        // Handle success
+                        Toast.makeText(fragmentContext, "Task deleted successfully!", Toast.LENGTH_SHORT).show()
+
+                        // Remove the current fragment
+                        activity?.supportFragmentManager?.popBackStack()
+                    } else {
+                        // Handle failure
+                        Toast.makeText(fragmentContext, "Failed to delete task", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            binding.logoutText.setOnClickListener {
+                // Call the ViewModel's logout method to sign out the user
+                sharedViewModel.logout()
+
+                Toast.makeText(fragmentContext, "Logged out successfully!", Toast.LENGTH_SHORT).show()
+
+                // Clear the task list
+                sharedViewModel.resetList()
+
+                // Remove the current fragment
+                activity?.supportFragmentManager?.popBackStack()
+            }
 
             setupMenu()
         } else {
@@ -124,7 +144,7 @@ class EditTaskFragment : Fragment() {
     private fun removeFragment() {
         // Remove the current fragment from its parent's fragment manager
         parentFragmentManager.beginTransaction().remove(this).commit()
-        Log.d("popback", "wedgrmhfgjlvdZETXRTKG,VUTCHFXDZDGXNFCG")
+
         // Pop back to the HomeFragment
         parentFragmentManager.popBackStack("HomeFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
     }
