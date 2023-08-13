@@ -64,7 +64,7 @@
             android:backgroundTint="?colorSurface"
             android:textColor="?colorPrimary"
             app:strokeColor="?colorPrimary"
-            app:strokeWidth="2sp"
+            app:strokeWidth="1sp"
             android:layout_marginTop="16sp"
             android:textSize="16sp"
             app:cornerRadius="8dp" />

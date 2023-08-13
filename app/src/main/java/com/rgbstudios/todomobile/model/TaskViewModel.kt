@@ -1,8 +1,11 @@
 package com.rgbstudios.todomobile.model
 
+import android.view.View
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -11,6 +14,7 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.rgbstudios.todomobile.R
 
 class TaskViewModel : ViewModel() {
 
@@ -121,6 +125,51 @@ class TaskViewModel : ViewModel() {
         })
     }
 
+    fun emailPasswordSignIn(
+        email: String,
+        password: String,
+        callback: (Boolean, Exception?) -> Unit
+    ) {
+        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
+            if (it.isSuccessful) {
+                // Return success result
+                callback(true, null)
+            } else {
+                // Return failure result with the exception
+                callback(false, it.exception)
+            }
+        }
+    }
+
+    fun registerNewUser(
+        email: String,
+        password: String,
+        callback: (Boolean, Exception?) -> Unit
+    ) {
+        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
+            if (it.isSuccessful) {
+                // Return success result
+                callback(true, null)
+            } else {
+                // Return failure result with the exception
+                callback(false, it.exception)
+            }
+        }
+    }
+
+    fun resetLoginPassword(email: String, callback: (Boolean) -> Unit) {
+        auth.sendPasswordResetEmail(email)
+            .addOnCompleteListener {
+                if (it.isSuccessful) {
+                    // Return success result
+                    callback(true)
+                } else {
+                    // Return failure result with the exception
+                    callback(false)
+                }
+            }
+    }
+
     // Get tasks list from Firebase
     fun getTasksFromFirebase() {
         if (userId == null) {
@@ -209,11 +258,11 @@ class TaskViewModel : ViewModel() {
         _filteredTaskList.value = filteredList
     }
 
-
     fun resetList() {
         _listFromFirebase.value = emptyList()
         _allTasksList.value = emptyList()
     }
+
     fun setupAuthStateListener() {
         val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
@@ -237,7 +286,6 @@ class TaskViewModel : ViewModel() {
         auth.removeAuthStateListener(authStateListener)
     }
 
-    // Add this method to the TaskViewModel class
     fun logout() {
         auth.signOut()
     }

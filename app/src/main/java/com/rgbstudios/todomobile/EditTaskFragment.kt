@@ -1,6 +1,7 @@
 package com.rgbstudios.todomobile
 
 import android.content.Context
+import android.graphics.Paint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -15,6 +16,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.FragmentManager
@@ -56,16 +58,39 @@ class EditTaskFragment : Fragment() {
             var taskCompleted = selectedTaskData.taskCompleted
 
             // Update the UI with the selected task data
-            binding.editTitleEt.text = Editable.Factory.getInstance().newEditable(selectedTaskData.title)
-            binding.editDescriptionEt.text = Editable.Factory.getInstance().newEditable(selectedTaskData.description)
+            binding.editTitleEt.text =
+                Editable.Factory.getInstance().newEditable(selectedTaskData.title)
+            binding.editDescriptionEt.text =
+                Editable.Factory.getInstance().newEditable(selectedTaskData.description)
+
+            // Check if the task is completed, change icon if true
+            if (selectedTaskData.taskCompleted) {
+                binding.markCompletedIcon.setImageResource(R.drawable.checkboxd)
+                binding.markCompletedIcon.setColorFilter(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        com.google.android.material.R.color.design_default_color_primary
+                    )
+                )
+                binding.markCompletedTextView.text = getString(R.string.mark_as_uncompleted)
+            } else {
+                binding.markCompletedIcon.setImageResource(R.drawable.check)
+                binding.markCompletedTextView.text = getString(R.string.mark_as_completed)
+            }
 
             // Set up TextWatcher for editTitleEt
             binding.editTitleEt.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     // Enable or disable sendButton based on whether editTitleEt is empty or not
-                    binding.sendButton.isEnabled = !s.isNullOrEmpty()
+                    binding.saveButton.isEnabled = !s.isNullOrEmpty()
                     changesMade = true
                 }
 
@@ -74,7 +99,13 @@ class EditTaskFragment : Fragment() {
 
             // Set up TextWatcher for editDescriptionEt
             binding.editDescriptionEt.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     changesMade = true
@@ -83,7 +114,7 @@ class EditTaskFragment : Fragment() {
                 override fun afterTextChanged(s: Editable?) {}
             })
 
-            binding.sendButton.setOnClickListener {
+            binding.saveButton.setOnClickListener {
                 val newTitle = binding.editTitleEt.text.toString()
                 val newDescription = binding.editDescriptionEt.text.toString()
 
@@ -92,39 +123,30 @@ class EditTaskFragment : Fragment() {
                 activity?.supportFragmentManager?.popBackStack()
             }
             binding.markCompletedTextView.setOnClickListener {
-                taskCompleted = true
+                val newCompletedStatus = !taskCompleted
                 val newTitle = binding.editTitleEt.text.toString()
                 val newDescription = binding.editDescriptionEt.text.toString()
 
-                setTaskData(taskId, newTitle, newDescription, taskCompleted)
+                setTaskData(taskId, newTitle, newDescription, newCompletedStatus)
 
                 activity?.supportFragmentManager?.popBackStack()
             }
             binding.deleteTaskTextView.setOnClickListener {
                 sharedViewModel.deleteTask(taskId) { isSuccessful ->
                     if (isSuccessful) {
-                        // Handle success
-                        Toast.makeText(fragmentContext, "Task deleted successfully!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            fragmentContext,
+                            "Task deleted successfully!",
+                            Toast.LENGTH_SHORT
+                        ).show()
 
                         // Remove the current fragment
                         activity?.supportFragmentManager?.popBackStack()
                     } else {
-                        // Handle failure
-                        Toast.makeText(fragmentContext, "Failed to delete task", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(fragmentContext, "Failed to delete task", Toast.LENGTH_SHORT)
+                            .show()
                     }
                 }
-            }
-            binding.logoutText.setOnClickListener {
-                // Call the ViewModel's logout method to sign out the user
-                sharedViewModel.logout()
-
-                Toast.makeText(fragmentContext, "Logged out successfully!", Toast.LENGTH_SHORT).show()
-
-                // Clear the task list
-                sharedViewModel.resetList()
-
-                // Remove the current fragment
-                activity?.supportFragmentManager?.popBackStack()
             }
 
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
@@ -136,11 +158,9 @@ class EditTaskFragment : Fragment() {
                 }
             }
 
-
-            setupMenu()
         } else {
             Log.e("EditTaskFragment", "selectedTaskData is null")
-            binding.sendButton.isEnabled = false
+            binding.saveButton.isEnabled = false
         }
 
     }
@@ -171,45 +191,14 @@ class EditTaskFragment : Fragment() {
         dialog.show()
     }
 
-
-    private fun setupMenu() {
-        (requireActivity() as MenuHost).addMenuProvider(object : MenuProvider {
-            override fun onPrepareMenu(menu: Menu) {
-                // Handle for example visibility of menu items
-            }
-
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.edit_task_menu, menu)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    R.id.menu_delete -> {
-                        removeFragment()
-                        true
-                    }
-                    // Add other menu item cases if needed
-                    else -> false
-                }
-            }
-        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
-    }
-
-    private fun removeFragment() {
-        // Remove the current fragment from its parent's fragment manager
-        parentFragmentManager.beginTransaction().remove(this).commit()
-
-        // Pop back to the HomeFragment
-        parentFragmentManager.popBackStack("HomeFragment", FragmentManager.POP_BACK_STACK_INCLUSIVE)
-    }
-
     private fun setTaskData(id: String, title: String, description: String, completed: Boolean) {
 
         // Call the ViewModel's method to update the task
         sharedViewModel.updateTask(id, title, description, completed) { isSuccessful ->
             if (isSuccessful) {
                 // Handle success
-                Toast.makeText(fragmentContext, "Task updated successfully!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(fragmentContext, "Task updated successfully!", Toast.LENGTH_SHORT)
+                    .show()
             } else {
                 // Handle failure
                 Toast.makeText(fragmentContext, "Failed to update task", Toast.LENGTH_SHORT).show()

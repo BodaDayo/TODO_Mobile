@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/tvLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -106,6 +106,15 @@
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/forgotPasswordTV"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Forgot Password?"
+            android:layout_marginTop="8dp"
+            android:layout_gravity="end"
+            android:layout_marginHorizontal="16sp"/>
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/loginButton"
             android:layout_width="match_parent"
@@ -116,6 +125,54 @@
             android:text="Login"
             android:textSize="16sp"
             app:cornerRadius="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginHorizontal="16dp">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@android:color/darker_gray"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="or"
+                android:textColor="@android:color/darker_gray"
+                android:layout_marginHorizontal="8dp"/>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@android:color/darker_gray"/>
+
+
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/googleAuth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16sp"
+            android:layout_marginVertical="24sp"
+            android:padding="16dp"
+            android:text="Login with Google"
+            android:backgroundTint="?colorSurface"
+            android:textColor="?colorOnSurface"
+            app:strokeColor="?colorOnSurface"
+            app:strokeWidth="1sp"
+            android:layout_marginTop="16sp"
+            android:textSize="16sp"
+            app:cornerRadius="8dp"
+            app:icon="@drawable/google"
+            app:iconTintMode="multiply"/>
+
 
     </LinearLayout>
 

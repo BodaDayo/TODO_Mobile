@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:contentDescription="@string/mark_as_completed"
-        android:src="@drawable/baseline_radio_button_unchecked_24" />
+        android:src="@drawable/check" />
 
     <LinearLayout
         android:layout_width="0dp"

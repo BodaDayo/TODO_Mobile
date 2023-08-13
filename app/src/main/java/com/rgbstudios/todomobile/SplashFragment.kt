@@ -2,6 +2,9 @@ package com.rgbstudios.todomobile
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.net.NetworkInfo
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -9,6 +12,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 
@@ -39,6 +43,9 @@ class SplashFragment : Fragment() {
             // Check if it's the first launch
             val isFirstLaunch = sharedPreferences.getBoolean("is_first_launch", true)
             if (isFirstLaunch) {
+                // check connection status
+                checkNetworkConnectivity()
+
                 // If it's the first launch, navigate to OnboardingFragmentOne
                 findNavController().navigate(R.id.action_splashFragment_to_onboardingFragment)
 
@@ -50,11 +57,33 @@ class SplashFragment : Fragment() {
             } else {
                 // If it's not the first launch, check if the user is logged in
                 if (auth.currentUser != null) {
+                    // check connection status
+                    checkNetworkConnectivity()
+
                     findNavController().navigate(R.id.action_splashFragment_to_homeFragment)
                 } else {
+                    // check connection status
+                    checkNetworkConnectivity()
+
                     findNavController().navigate(R.id.action_splashFragment_to_onboardingFinalFragment)
                 }
             }
         }, 1500)
+    }
+
+    fun checkNetworkConnectivity() {
+        // Get the ConnectivityManager instance
+        val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+
+        // Get the network capabilities
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+
+        // Check if the network capabilities have internet access
+        if (networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true) {
+            // There is internet connection
+        } else {
+            // There is no internet connection
+            Toast.makeText(requireContext(), "No connection.\nSome features might be unavailable.", Toast.LENGTH_LONG).show()
+        }
     }
 }

@@ -7,87 +7,97 @@
     android:layout_height="match_parent"
     tools:context=".EditTaskFragment">
 
-    <!-- The Toolbar for the top bar -->
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorSurface"
-        android:elevation="4dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:menu="@menu/edit_task_menu"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
 
     <EditText
         android:id="@+id/editTitleEt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/title"
         android:layout_margin="16dp"
+        android:background="@android:color/transparent"
+        android:hint="@string/title"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:background="@android:color/transparent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/editDescriptionEt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:gravity="start"
+        android:background="@android:color/transparent"
         android:hint="@string/description"
         android:maxLines="4"
-        android:layout_margin="16dp"
-        android:background="@android:color/transparent"
+        android:minLines="4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/editTitleEt" />
 
-
-    <TextView
-        android:id="@+id/markCompletedTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Mark Completed"
-        android:textStyle="bold"
-        android:layout_margin="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editDescriptionEt" />
-
-    <TextView
-        android:id="@+id/deleteTaskTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Delete"
-        android:textStyle="bold"
-        android:textColor="@color/design_default_color_error"
-        android:layout_margin="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/markCompletedTextView" />
-
-    <TextView
-        android:id="@+id/logoutText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Logout"
-        android:textStyle="bold"
-        android:layout_margin="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/deleteTaskTextView" />
-
-    <Button
-        android:id="@+id/sendButton"
+    <LinearLayout
+        android:id="@+id/markCompletedLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="4dp"
+        app:layout_constraintTop_toBottomOf="@id/editDescriptionEt">
+
+        <ImageView
+            android:id="@+id/markCompletedIcon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="@string/mark_as_completed"
+            android:src="@drawable/check" />
+
+        <TextView
+            android:id="@+id/markCompletedTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="@string/mark_as_completed"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="4dp"
+        app:layout_constraintTop_toBottomOf="@id/markCompletedLayout">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="24dp"
+            android:layout_marginEnd="8dp"
+            app:tint="@color/design_default_color_error"
+            android:contentDescription="@string/mark_as_completed"
+            android:src="@drawable/trash2" />
+
+        <TextView
+            android:id="@+id/deleteTaskTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:text="Delete"
+            android:textColor="@color/design_default_color_error"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/saveButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
         android:padding="16dp"
         android:text="@string/save"
+        android:textColor="?attr/colorPrimary"
         android:textSize="16sp"
-        app:cornerRadius="8dp"
-        android:layout_margin="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

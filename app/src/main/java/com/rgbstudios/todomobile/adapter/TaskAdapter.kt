@@ -37,11 +37,11 @@ class TaskAdapter(
             taskTitleTextView.text = task.title
             taskDescriptionTextView.text = task.description
 
-            // Check if the task is completed, and apply the strikethrough effect if true
+            // Check if the task is completed, and apply the strikethrough effect and change icon if true
             if (task.taskCompleted) {
                 taskTitleTextView.paintFlags =
                     taskTitleTextView.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                circleIconImageView.setImageResource(R.drawable.baseline_check_24)
+                circleIconImageView.setImageResource(R.drawable.checkboxd)
                 circleIconImageView.setColorFilter(
                     ContextCompat.getColor(
                         root.context,
@@ -51,7 +51,7 @@ class TaskAdapter(
             } else {
                 taskTitleTextView.paintFlags =
                     taskTitleTextView.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                circleIconImageView.setImageResource(R.drawable.baseline_radio_button_unchecked_24)
+                circleIconImageView.setImageResource(R.drawable.check)
             }
 
             if (taskDescriptionTextView.text.isEmpty()) {
