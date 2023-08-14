@@ -29,6 +29,7 @@
                 app:layout_constraintTop_toTopOf="parent">
 
                 <ImageView
+                    android:id="@+id/toggleNav"
                     android:layout_width="24sp"
                     android:layout_height="24sp"
                     android:layout_marginHorizontal="16sp"
@@ -43,11 +44,10 @@
                     android:textSize="18sp" />
 
                 <ImageView
-                    android:id="@+id/toggleNav"
                     android:layout_width="36sp"
                     android:layout_height="36sp"
                     android:layout_margin="24sp"
-                    android:src="@drawable/pfp" />
+                    android:src="@drawable/usericon" />
             </LinearLayout>
 
             <androidx.cardview.widget.CardView

@@ -1,21 +1,15 @@
 package com.rgbstudios.todomobile
 
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import androidx.appcompat.widget.SearchView
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
-import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,7 +18,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.textfield.TextInputEditText
 import com.rgbstudios.todomobile.adapter.ListAdapter
-import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.DialogLogoutConfirmationBinding
 import com.rgbstudios.todomobile.databinding.FragmentHomeBinding
 import com.rgbstudios.todomobile.model.TaskViewModel
@@ -58,12 +51,17 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
     }
 
     private fun init() {
-        resetCurrentList()
 
         binding.parentRecyclerView.setHasFixedSize(true)
         binding.parentRecyclerView.layoutManager = LinearLayoutManager(context)
 
         adapter = ListAdapter(sharedViewModel)
+
+        // Observe the allTasksList from the sharedViewModel and update the adapter
+        sharedViewModel.allTasksList.observe(viewLifecycleOwner) { allTasksList ->
+            adapter.updateTaskLists(allTasksList)
+            onEmptyLayout(allTasksList?.isEmpty() ?: true)
+        }
 
         binding.parentRecyclerView.adapter = adapter
 
@@ -93,7 +91,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
                 }
 
                 R.id.profile -> {
-                    toggleNavigationDrawer()
+                    findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
                 }
             }
             true
@@ -122,11 +120,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
             }
         }
 
-        // Observe the allTasksList from the sharedViewModel and update the adapter
-        sharedViewModel.allTasksList.observe(viewLifecycleOwner) { allTasksList ->
-            adapter.updateTaskLists(allTasksList)
-            onEmptyLayout(allTasksList?.isEmpty() ?: true)
-        }
+
 
         // Observe the filteredTaskList from the sharedViewModel and update the adapter for searchQuery
         sharedViewModel.filteredTaskList.observe(viewLifecycleOwner) { filteredTaskList ->
@@ -223,21 +217,6 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
     private fun sortCurrentList() {
         //TODO
     }
-
-    private val onBackPressedCallback = object : OnBackPressedCallback(true) {
-        override fun handleOnBackPressed() {
-            onBackPressedMethod()
-        }
-    }
-
-    private fun onBackPressedMethod() {
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.isDrawerOpen(GravityCompat.START)
-        } else {
-            requireActivity().finish()
-        }
-    }
-
     private fun toggleNavigationDrawer() {
         // Toggle the navigation drawer open or close
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {

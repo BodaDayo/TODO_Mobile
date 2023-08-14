@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
@@ -33,7 +34,7 @@ class TaskAdapter(
         holder.binding.taskDescriptionTextView.text = task.description
 
         holder.binding.apply {
-            taskDateTime.visibility = View.VISIBLE // work on picking up the time
+            taskDateTime.visibility = View.VISIBLE // TODO work on picking up the time
             taskTitleTextView.text = task.title
             taskDescriptionTextView.text = task.description
 
@@ -41,24 +42,33 @@ class TaskAdapter(
             if (task.taskCompleted) {
                 taskTitleTextView.paintFlags =
                     taskTitleTextView.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
-                circleIconImageView.setImageResource(R.drawable.checkboxd)
-                circleIconImageView.setColorFilter(
+                taskTitleTextView.setTextColor(
+                    ContextCompat.getColor(
+                        root.context,
+                        com.google.android.material.R.color.material_on_surface_disabled
+                    )
+                )
+                taskDateTime.visibility = View.GONE
+                taskDescriptionTextView.visibility = View.GONE
+                markCompletedImageView.setImageResource(R.drawable.checkboxd)
+                markCompletedImageView.setColorFilter(
                     ContextCompat.getColor(
                         root.context,
                         com.google.android.material.R.color.design_default_color_primary
                     )
                 )
+                starIconImageView.visibility = View.GONE
             } else {
                 taskTitleTextView.paintFlags =
                     taskTitleTextView.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
-                circleIconImageView.setImageResource(R.drawable.check)
+                markCompletedImageView.setImageResource(R.drawable.check)
             }
 
             if (taskDescriptionTextView.text.isEmpty()) {
                 taskDescriptionTextView.visibility = View.GONE
             }
 
-            root.setOnClickListener {
+            taskDetailsLayout.setOnClickListener {
                 // Set the selected task data in the ViewModel
                 viewModel.setSelectedTaskData(task)
 
@@ -66,11 +76,30 @@ class TaskAdapter(
                 root.findNavController()
                     .navigate(R.id.action_homeFragment_to_editTaskFragment)
             }
+
+            markCompletedImageView.setOnClickListener {
+                val newTaskCompleted = !task.taskCompleted
+
+                updateTaskData(task.taskId, task.title, task.description, newTaskCompleted)
+            }
         }
     }
 
     override fun getItemCount(): Int {
         return tasks.size
+    }
+    private fun updateTaskData(id: String, title: String, description: String, completed: Boolean) {
+
+        // Call the ViewModel's method to update the task
+        viewModel.updateTask(id, title, description, completed) { isSuccessful ->
+            if (isSuccessful) {
+                // Handle success
+
+            } else {
+                // Handle failure
+
+            }
+        }
     }
 
 

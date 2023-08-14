@@ -11,7 +11,7 @@
     android:padding="8dp">
 
     <ImageView
-        android:id="@+id/circleIconImageView"
+        android:id="@+id/markCompletedImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -19,6 +19,7 @@
         android:src="@drawable/check" />
 
     <LinearLayout
+        android:id="@+id/taskDetailsLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"

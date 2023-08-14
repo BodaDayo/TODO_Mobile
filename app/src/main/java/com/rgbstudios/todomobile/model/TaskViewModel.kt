@@ -125,51 +125,6 @@ class TaskViewModel : ViewModel() {
         })
     }
 
-    fun emailPasswordSignIn(
-        email: String,
-        password: String,
-        callback: (Boolean, Exception?) -> Unit
-    ) {
-        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener {
-            if (it.isSuccessful) {
-                // Return success result
-                callback(true, null)
-            } else {
-                // Return failure result with the exception
-                callback(false, it.exception)
-            }
-        }
-    }
-
-    fun registerNewUser(
-        email: String,
-        password: String,
-        callback: (Boolean, Exception?) -> Unit
-    ) {
-        auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener {
-            if (it.isSuccessful) {
-                // Return success result
-                callback(true, null)
-            } else {
-                // Return failure result with the exception
-                callback(false, it.exception)
-            }
-        }
-    }
-
-    fun resetLoginPassword(email: String, callback: (Boolean) -> Unit) {
-        auth.sendPasswordResetEmail(email)
-            .addOnCompleteListener {
-                if (it.isSuccessful) {
-                    // Return success result
-                    callback(true)
-                } else {
-                    // Return failure result with the exception
-                    callback(false)
-                }
-            }
-    }
-
     // Get tasks list from Firebase
     fun getTasksFromFirebase() {
         if (userId == null) {
@@ -219,11 +174,11 @@ class TaskViewModel : ViewModel() {
 
         for (task in listToSort) {
             when {
-                task.taskCompleted == true -> {
+                task.taskCompleted -> {
                     completedList.add(task)
                 }
 
-                task.taskCompleted == false -> {
+                !task.taskCompleted -> {
                     uncompletedList.add(task)
                 }
 

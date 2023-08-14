@@ -31,6 +31,15 @@
         android:layout_height="wrap_content"
         android:text="contact-john@todo.com"
         android:textSize="14sp"/>
+    <TextView
+        android:id="@+id/occupationTxt"
+        android:layout_width="wrap_content"
+        android:layout_gravity="center"
+        android:paddingBottom="4sp"
+        android:layout_height="wrap_content"
+        android:text="Student"
+        android:textSize="14sp"
+        android:visibility="gone"/>
 
     <LinearLayout
         android:layout_width="match_parent"

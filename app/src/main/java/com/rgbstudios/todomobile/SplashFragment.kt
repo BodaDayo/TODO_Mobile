@@ -71,7 +71,7 @@ class SplashFragment : Fragment() {
         }, 1500)
     }
 
-    fun checkNetworkConnectivity() {
+    private fun checkNetworkConnectivity() {
         // Get the ConnectivityManager instance
         val connectivityManager = requireContext().getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 

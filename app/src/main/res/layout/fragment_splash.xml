@@ -9,14 +9,14 @@
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/imageView"
-        android:layout_width="64sp"
-        android:layout_height="64sp"
+        android:layout_width="56sp"
+        android:layout_height="56sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintVertical_bias="0.4"
-        android:src="@drawable/splash"
+        android:src="@drawable/launcher"
         app:tint="?attr/colorPrimary"
         android:importantForAccessibility="no"/>
 

@@ -33,7 +33,6 @@ class EditTaskFragment : Fragment() {
     private val sharedViewModel: TaskViewModel by activityViewModels()
     private lateinit var binding: FragmentEditTaskBinding
     private lateinit var fragmentContext: Context
-    private lateinit var menuProvider: MenuProvider
     private var changesMade = false
 
     override fun onCreateView(

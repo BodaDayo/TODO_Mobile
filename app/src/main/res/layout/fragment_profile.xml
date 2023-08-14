@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".ProfileFragment">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/toggleNav"
+            android:layout_width="24sp"
+            android:layout_height="24sp"
+            android:src="@drawable/back" />
+
+        <Space
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <TextView
+            android:id="@+id/saveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="@string/save"
+            android:textColor="?attr/colorPrimary"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+
+
+    <!-- Profile Picture -->
+    <ImageView
+        android:id="@+id/profileImageView"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        android:layout_gravity="center_horizontal"
+        android:contentDescription="Profile Picture"
+        android:scaleType="centerCrop"
+        android:src="@drawable/usericon" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16sp"
+        android:padding="8sp"
+        android:orientation="horizontal">
+        <Button
+            android:layout_width="0sp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:paddingVertical="16sp"
+            android:layout_marginHorizontal="4sp"
+            android:text="10 Tasks left"
+            android:textSize="11sp"
+            app:cornerRadius="8dp"
+            android:backgroundTint="?colorSurface"
+            android:textColor="?colorOnSurface"
+            app:strokeColor="?colorOnSurface"
+            app:strokeWidth="1sp"/>
+        <Button
+            android:layout_width="0sp"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="4sp"
+            android:layout_height="wrap_content"
+            android:paddingVertical="16sp"
+            android:textSize="11sp"
+            android:text="5 Tasks done"
+            app:cornerRadius="8dp"
+            android:backgroundTint="?colorSurface"
+            app:strokeColor="?colorOnSurface"
+            android:textColor="?colorOnSurface"
+            app:strokeWidth="1sp"/>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/nameTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Name"
+        android:layout_marginTop="16dp"
+        android:paddingHorizontal="4sp"
+        android:layout_marginHorizontal="16sp"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/nameEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:hint="Name"
+        android:textSize="18sp"
+        android:inputType="textPersonName"
+        android:layout_marginHorizontal="16sp"
+        android:maxLines="1" />
+
+    <TextView
+        android:id="@+id/emailTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="4sp"
+        android:layout_marginHorizontal="16sp"
+        android:layout_marginTop="8dp"
+        android:text="Email" />
+
+    <TextView
+        android:id="@+id/emailText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="example@email.com"
+        android:layout_marginHorizontal="16sp"
+        android:textSize="18sp"
+        android:maxLines="1" />
+
+    <TextView
+        android:id="@+id/occupationTV"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16sp"
+        android:paddingHorizontal="4sp"
+        android:text="Occupation"
+        android:layout_marginTop="16dp" />
+
+    <EditText
+        android:id="@+id/occupationText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16sp"
+        android:layout_marginTop="8dp"
+        android:hint="Occupation"
+        android:textSize="18sp"
+        android:inputType="textPersonName"
+        android:maxLines="1" />
+
+</LinearLayout>

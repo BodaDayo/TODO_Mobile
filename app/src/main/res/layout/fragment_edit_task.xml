@@ -7,6 +7,13 @@
     android:layout_height="match_parent"
     tools:context=".EditTaskFragment">
 
+    <TextView
+        android:id="@+id/titleTV"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Task"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <EditText
         android:id="@+id/editTitleEt"
@@ -14,11 +21,17 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:background="@android:color/transparent"
-        android:hint="@string/title"
         android:textSize="18sp"
-        android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/titleTV" />
+
+    <TextView
+        android:id="@+id/descriptionTV"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Description"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toBottomOf="@id/editTitleEt"/>
 
     <EditText
         android:id="@+id/editDescriptionEt"
@@ -27,11 +40,11 @@
         android:layout_margin="16dp"
         android:gravity="start"
         android:background="@android:color/transparent"
-        android:hint="@string/description"
+        android:hint="Type description"
         android:maxLines="4"
-        android:minLines="4"
+        android:minLines="3"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editTitleEt" />
+        app:layout_constraintTop_toBottomOf="@id/descriptionTV" />
 
     <LinearLayout
         android:id="@+id/markCompletedLayout"
