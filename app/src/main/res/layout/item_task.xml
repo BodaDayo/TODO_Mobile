@@ -50,10 +50,10 @@
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/starIconImageView"
+        android:id="@+id/star"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:contentDescription="@string/star_task"
-        android:src="@drawable/baseline_star_outline_24" />
+        android:src="@drawable/star" />
 </LinearLayout>

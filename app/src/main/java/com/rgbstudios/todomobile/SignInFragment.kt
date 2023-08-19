@@ -1,7 +1,6 @@
 package com.rgbstudios.todomobile
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -52,7 +51,12 @@ class SignInFragment : Fragment() {
                 binding.progressBar.visibility = View.VISIBLE
                 auth.signInWithEmailAndPassword(email, pass).addOnCompleteListener {
                     if (it.isSuccessful) {
-                        sharedViewModel.setupAuthStateListener()
+                        sharedViewModel.checkUserAuthState()
+
+                        // set userEmail
+                        setCurrentUserEmail(email)
+
+                        // navigate to home fragment
                         findNavController().navigate(R.id.action_signInFragment_to_homeFragment)
                         Toast.makeText(context, "Signed In Successfully!", Toast.LENGTH_SHORT)
                             .show()
@@ -106,6 +110,10 @@ class SignInFragment : Fragment() {
             }
         }
         dialog.show()
+    }
+
+    private fun setCurrentUserEmail(email: String) {
+        sharedViewModel.saveUserEmailReferenceOnAuth(email)
     }
 
 }

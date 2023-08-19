@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.GravityCompat
@@ -14,12 +16,15 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.textfield.TextInputEditText
 import com.rgbstudios.todomobile.adapter.ListAdapter
+import com.rgbstudios.todomobile.data.Avatars
 import com.rgbstudios.todomobile.databinding.DialogLogoutConfirmationBinding
 import com.rgbstudios.todomobile.databinding.FragmentHomeBinding
+import com.rgbstudios.todomobile.databinding.NavHeaderBinding
 import com.rgbstudios.todomobile.model.TaskViewModel
 
 
@@ -33,6 +38,10 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
     private lateinit var adapter: ListAdapter
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var drawerLayout: DrawerLayout
+
+    // Get the drawable resource ID of a random avatar
+    private val avatars = Avatars()
+    private val avatarResource = avatars.getAvatar()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,29 +61,20 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
     private fun init() {
 
+        val navigationView = requireView().findViewById<NavigationView>(R.id.navigationView)
+        val headerView = navigationView.getHeaderView(0) // Get the header view from NavigationView
+
+        val avatarNavDrw = headerView.findViewById<ImageView>(R.id.avatarNavDrw)
+        val nameNavDrw = headerView.findViewById<TextView>(R.id.userNameTxt)
+        val emailNavDrw = headerView.findViewById<TextView>(R.id.emailTxt)
+        val occupationNavDrw = headerView.findViewById<TextView>(R.id.occupationTxt)
+
         binding.parentRecyclerView.setHasFixedSize(true)
         binding.parentRecyclerView.layoutManager = LinearLayoutManager(context)
 
         adapter = ListAdapter(sharedViewModel)
 
-        // Observe the allTasksList from the sharedViewModel and update the adapter
-        sharedViewModel.allTasksList.observe(viewLifecycleOwner) { allTasksList ->
-            adapter.updateTaskLists(allTasksList)
-            onEmptyLayout(allTasksList?.isEmpty() ?: true)
-        }
-
         binding.parentRecyclerView.adapter = adapter
-
-        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(p0: String?): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(p0: String?): Boolean {
-                sharedViewModel.filterTasks(p0)
-                return true
-            }
-        })
 
         binding.bottomNavigationView.setOnItemSelectedListener {
             when (it.itemId) {
@@ -87,7 +87,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
                 }
 
                 R.id.focus -> {
-                    //TODO Navigate to focus fragment
+                    // TODO Navigate to focus fragment
                 }
 
                 R.id.profile -> {
@@ -103,36 +103,75 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
         binding.navigationView.setNavigationItemSelectedListener(this)
 
-        // Observe the isUserSignedIn LiveData from the sharedViewModel
-        sharedViewModel.isUserSignedIn.observe(viewLifecycleOwner) { isUserSignedIn ->
-            // Reference to the logOut menu item
-            val logOutMenuItem = binding.navigationView.menu.findItem(R.id.logInOut)
-
-            if (isUserSignedIn) {
-                // Update menu item title and icon when user is signed in
-                logOutMenuItem.title = "Log Out"
-                logOutMenuItem.setIcon(R.drawable.logout)
-            } else {
-                // Update menu item title and icon when user is not signed in
-                logOutMenuItem.title = "Sign In"
-                logOutMenuItem.setIcon(R.drawable.login)
-                //TODO set display icon
-            }
-        }
-
-
-
-        // Observe the filteredTaskList from the sharedViewModel and update the adapter for searchQuery
-        sharedViewModel.filteredTaskList.observe(viewLifecycleOwner) { filteredTaskList ->
-            adapter.updateTaskLists(filteredTaskList)
-        }
-
         swipeRefreshLayout = binding.swipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener {
             // This code will be triggered when the user performs the pull-to-refresh action
             getDataFromFirebase()
         }
 
+        // Observe userAvatarUrl LiveData
+        sharedViewModel.userAvatarUrl.observe(viewLifecycleOwner) { avatarUrl ->
+            val avatarImageViews =
+                arrayOf(binding.avatarHome, avatarNavDrw)
+
+            val imageLoad = if (avatarUrl != null) {
+                Glide.with(requireContext()).load(avatarUrl)
+            } else {
+                Glide.with(requireContext()).load(avatarResource)
+            }
+
+            for (imageView in avatarImageViews) {
+                imageLoad.circleCrop().into(imageView)
+            }
+        }
+
+        // Observe userEmail LiveData
+        sharedViewModel.userEmail.observe(viewLifecycleOwner) {
+            emailNavDrw.text = it
+        }
+
+        // Observe userDetails LiveData
+        sharedViewModel.userDetailsFromFirebase.observe(viewLifecycleOwner) {
+            nameNavDrw.text = it.name
+            occupationNavDrw.text = it.occupation
+        }
+
+        // Observe isUserSignedIn LiveData
+        sharedViewModel.isUserSignedIn.observe(viewLifecycleOwner) { isUserSignedIn ->
+            // Update menu item title and icon based on user sign-in status
+            val logOutMenuItem = binding.navigationView.menu.findItem(R.id.logInOut)
+
+            if (isUserSignedIn) {
+                logOutMenuItem.title = "Log Out"
+                logOutMenuItem.setIcon(R.drawable.logout)
+            } else {
+                logOutMenuItem.title = "Sign In"
+                logOutMenuItem.setIcon(R.drawable.login)
+            }
+        }
+
+        // Observe allTasksList LiveData and update the adapter
+        sharedViewModel.allTasksList.observe(viewLifecycleOwner) { allTasksList ->
+            adapter.updateTaskLists(allTasksList)
+            onEmptyLayout(allTasksList?.isEmpty() ?: true)
+        }
+
+        // Observe filteredTaskList LiveData and update the adapter for searchQuery
+        sharedViewModel.filteredTaskList.observe(viewLifecycleOwner) { filteredTaskList ->
+            adapter.updateTaskLists(filteredTaskList)
+        }
+
+        // Set up SearchView's query text listener
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                sharedViewModel.filterTasks(newText, "search")
+                return true
+            }
+        })
     }
 
     private fun registerEvents() {
@@ -144,7 +183,11 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
                 bottomSheetFragment.show(parentFragmentManager, bottomSheetFragment.tag)
             } else {
                 drawerLayout.openDrawer(GravityCompat.START)
-                Toast.makeText(context, "Sign in to continue\nOffline mode coming soon!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "Sign in to continue\nOffline mode coming soon!",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
 
         }
@@ -154,11 +197,12 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         title: String,
         description: String,
         titleEt: TextInputEditText,
-        descriptionEt: TextInputEditText
+        descriptionEt: TextInputEditText,
+        starred: Boolean
     ) {
 
         // Call the ViewModel's method to save the task
-        sharedViewModel.saveTask(title, description) { isSuccessful ->
+        sharedViewModel.saveTask(title, description, starred) { isSuccessful ->
             if (isSuccessful) {
                 // Handle success
                 Toast.makeText(context, "Task saved successfully!", Toast.LENGTH_SHORT).show()
@@ -189,7 +233,6 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         stopRefreshing()
     }
 
-    // This function will be called when you want to stop the refreshing animation
     private fun stopRefreshing() {
         swipeRefreshLayout.isRefreshing = false
     }
@@ -205,18 +248,19 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
     }
 
     private fun resetCurrentList() {
-        sharedViewModel.setupAuthStateListener()
+        sharedViewModel.checkUserAuthState()
         sharedViewModel.resetList() // Clear the RecyclerView
         onEmptyLayout(true) // Show the empty layout
     }
 
     private fun getStarredList() {
-        //TODO
+        sharedViewModel.filterTasks("", "star")
     }
 
     private fun sortCurrentList() {
         //TODO
     }
+
     private fun toggleNavigationDrawer() {
         // Toggle the navigation drawer open or close
         if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -230,15 +274,15 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
         when (item.itemId) {
             R.id.appSettings -> {
-
+                // TODO Settings Fragment
             }
 
             R.id.profile -> {
-
+                findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
             }
 
             R.id.logInOut -> {
-                if (item.title == "Log Out" ) {
+                if (item.title == "Log Out") {
                     // close drawer
                     drawerLayout.closeDrawer(GravityCompat.START)
 
@@ -275,4 +319,5 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
         dialog.show()
     }
+
 }

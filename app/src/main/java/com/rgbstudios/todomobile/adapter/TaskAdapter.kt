@@ -1,18 +1,15 @@
 package com.rgbstudios.todomobile.adapter
 
 import android.graphics.Paint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.ItemTaskBinding
+import com.rgbstudios.todomobile.model.TaskData
 import com.rgbstudios.todomobile.model.TaskDataFromFirebase
 import com.rgbstudios.todomobile.model.TaskViewModel
 
@@ -32,6 +29,10 @@ class TaskAdapter(
         val task = tasks[position]
         holder.binding.taskTitleTextView.text = task.title
         holder.binding.taskDescriptionTextView.text = task.description
+
+        var newTaskCompleted = task.taskCompleted
+        var newStarred = task.starred
+
 
         holder.binding.apply {
             taskDateTime.visibility = View.VISIBLE // TODO work on picking up the time
@@ -57,12 +58,15 @@ class TaskAdapter(
                         com.google.android.material.R.color.design_default_color_primary
                     )
                 )
-                starIconImageView.visibility = View.GONE
+                star.visibility = View.GONE
             } else {
                 taskTitleTextView.paintFlags =
                     taskTitleTextView.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 markCompletedImageView.setImageResource(R.drawable.check)
             }
+            // Check if newStarred, and change icon if true
+            val starIcon = if (newStarred) R.drawable.star_filled else R.drawable.star
+            star.setImageResource(starIcon)
 
             if (taskDescriptionTextView.text.isEmpty()) {
                 taskDescriptionTextView.visibility = View.GONE
@@ -77,10 +81,30 @@ class TaskAdapter(
                     .navigate(R.id.action_homeFragment_to_editTaskFragment)
             }
 
-            markCompletedImageView.setOnClickListener {
-                val newTaskCompleted = !task.taskCompleted
+            star.setOnClickListener {
+                newStarred = !newStarred
 
-                updateTaskData(task.taskId, task.title, task.description, newTaskCompleted)
+                updateTaskData(
+                    task.taskId,
+                    task.title,
+                    task.description,
+                    newTaskCompleted,
+                    newStarred
+                )
+            }
+
+            markCompletedImageView.setOnClickListener {
+                newTaskCompleted = !newTaskCompleted
+
+                // TODO markCompleted animation or not
+
+                updateTaskData(
+                    task.taskId,
+                    task.title,
+                    task.description,
+                    newTaskCompleted,
+                    newStarred
+                )
             }
         }
     }
@@ -88,10 +112,17 @@ class TaskAdapter(
     override fun getItemCount(): Int {
         return tasks.size
     }
-    private fun updateTaskData(id: String, title: String, description: String, completed: Boolean) {
+
+    private fun updateTaskData(
+        id: String,
+        title: String,
+        description: String,
+        completed: Boolean,
+        starred: Boolean
+    ) {
 
         // Call the ViewModel's method to update the task
-        viewModel.updateTask(id, title, description, completed) { isSuccessful ->
+        viewModel.updateTask(id, title, description, completed, starred) { isSuccessful ->
             if (isSuccessful) {
                 // Handle success
 
@@ -100,7 +131,7 @@ class TaskAdapter(
 
             }
         }
-    }
 
+    }
 
 }

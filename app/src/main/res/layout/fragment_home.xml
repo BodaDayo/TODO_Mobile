@@ -44,6 +44,7 @@
                     android:textSize="18sp" />
 
                 <ImageView
+                    android:id="@+id/avatarHome"
                     android:layout_width="36sp"
                     android:layout_height="36sp"
                     android:layout_margin="24sp"

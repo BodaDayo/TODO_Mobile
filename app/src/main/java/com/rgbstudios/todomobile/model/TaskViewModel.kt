@@ -1,11 +1,11 @@
 package com.rgbstudios.todomobile.model
 
-import android.view.View
-import android.widget.Toast
+import android.graphics.Bitmap
+import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.navigation.fragment.findNavController
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -14,7 +14,8 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.rgbstudios.todomobile.R
+import com.google.firebase.storage.FirebaseStorage
+import java.io.ByteArrayOutputStream
 
 class TaskViewModel : ViewModel() {
 
@@ -23,13 +24,28 @@ class TaskViewModel : ViewModel() {
     private val userId: String? = currentUser?.uid
     private val databaseListRef: DatabaseReference =
         FirebaseDatabase.getInstance().reference.child("users").child(userId.orEmpty())
-
+            .child("tasks")
+    private val databaseUserDetailsRef: DatabaseReference =
+        FirebaseDatabase.getInstance().reference.child("users").child(userId.orEmpty())
+            .child("userDetails")
 
     // LiveData to hold the user's authentication state
     private val _isUserSignedIn = MutableLiveData<Boolean>()
     val isUserSignedIn: LiveData<Boolean> = _isUserSignedIn
 
-    // LiveData to hold list from firebase
+    // LiveData to hold the user avatar
+    private val _userAvatarUrl = MutableLiveData<String>()
+    val userAvatarUrl: LiveData<String> = _userAvatarUrl
+
+    // LiveData to hold the user email
+    private val _userEmail = MutableLiveData<String>()
+    val userEmail: LiveData<String> = _userEmail
+
+    // LiveData to hold user details from firebase
+    private val _userDetailsFromFirebase = MutableLiveData<UserDetails>()
+    val userDetailsFromFirebase: LiveData<UserDetails> = _userDetailsFromFirebase
+
+    // LiveData to hold task list from firebase
     private val _listFromFirebase = MutableLiveData<List<TaskDataFromFirebase>>()
     val listFromFirebase: LiveData<List<TaskDataFromFirebase>> = _listFromFirebase
 
@@ -48,9 +64,57 @@ class TaskViewModel : ViewModel() {
 
 
     init {
-        setupAuthStateListener()
+        checkUserAuthState()
+        fetchUserAvatarUrl()
+        getUserDetailsFromFirebase()
     }
 
+    fun uploadUserAvatar(bitmap: Bitmap, callback: (Boolean) -> Unit) {
+        if (userId != null) {
+            val storageReference =
+                FirebaseStorage.getInstance().reference.child("avatars").child(userId)
+
+            // Convert the Bitmap to a ByteArrayOutputStream
+            val outputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream)
+            val avatarData = outputStream.toByteArray()
+
+            // Upload the avatar image to Firebase Storage
+            val uploadTask = storageReference.putBytes(avatarData)
+            uploadTask.addOnSuccessListener {
+                callback(true)
+                // Image upload successful
+                fetchUserAvatarUrl()
+            }.addOnFailureListener {
+                callback(false)
+                Log.d("Avatar", it.message.toString())
+            }
+
+        }
+
+    }
+
+    private fun fetchUserAvatarUrl() {
+        if (userId != null) {
+            val storageReference = FirebaseStorage.getInstance().reference
+                .child("avatars")
+                .child(userId)
+
+            storageReference.downloadUrl.addOnSuccessListener { uri ->
+
+                // Set the avatar URL in the LiveData
+                _userAvatarUrl.value = uri.toString()
+            }.addOnFailureListener {
+
+                // Handle failure to fetch avatar URL if needed
+                Log.d("Avatar", it.message.toString())
+            }
+        }
+    }
+
+    fun saveUserEmailReferenceOnAuth(email: String) {
+        _userEmail.value = email
+    }
 
     // Function to set the selected task data to be edited in the LiveData
     fun setSelectedTaskData(taskData: TaskDataFromFirebase) {
@@ -58,7 +122,12 @@ class TaskViewModel : ViewModel() {
     }
 
     // Function to save a new task to the database
-    fun saveTask(title: String, description: String, callback: (Boolean) -> Unit) {
+    fun saveTask(
+        title: String,
+        description: String,
+        starred: Boolean,
+        callback: (Boolean) -> Unit
+    ) {
 
         if (userId == null) {
             // The user is not authenticated, cannot perform the operation.
@@ -66,7 +135,7 @@ class TaskViewModel : ViewModel() {
             return
         }
 
-        val taskData = TaskData(title, description, false)
+        val taskData = TaskData(title, description, false, starred)
         databaseListRef.push().setValue(taskData).addOnCompleteListener(OnCompleteListener { task ->
             if (task.isSuccessful) {
                 // Return success result
@@ -84,6 +153,7 @@ class TaskViewModel : ViewModel() {
         title: String,
         description: String,
         completed: Boolean,
+        starred: Boolean,
         callback: (Boolean) -> Unit
     ) {
         if (userId == null) {
@@ -93,7 +163,7 @@ class TaskViewModel : ViewModel() {
         }
 
         val databaseTaskRef = databaseListRef.child(id)
-        val newTaskData = TaskData(title, description, completed)
+        val newTaskData = TaskData(title, description, completed, starred)
         databaseTaskRef.setValue(newTaskData).addOnCompleteListener(OnCompleteListener { task ->
             if (task.isSuccessful) {
                 // Return success result
@@ -143,7 +213,9 @@ class TaskViewModel : ViewModel() {
                             item.child("description").getValue(String::class.java) ?: ""
                         val taskCompleted =
                             item.child("taskCompleted").getValue(Boolean::class.java) ?: false
-                        TaskDataFromFirebase(it, title, description, taskCompleted)
+                        val starred =
+                            item.child("starred").getValue(Boolean::class.java) ?: false
+                        TaskDataFromFirebase(it, title, description, taskCompleted, starred)
                     }
 
                     if (taskDataFromFirebase != null) {
@@ -172,6 +244,7 @@ class TaskViewModel : ViewModel() {
         val completedList = mutableListOf<TaskDataFromFirebase>()
         val starredList = mutableListOf<TaskDataFromFirebase>()
 
+
         for (task in listToSort) {
             when {
                 task.taskCompleted -> {
@@ -182,7 +255,7 @@ class TaskViewModel : ViewModel() {
                     uncompletedList.add(task)
                 }
 
-                task.taskId == "" -> {
+                task.starred -> {
                     starredList.add(task)
                 }
             }
@@ -195,30 +268,44 @@ class TaskViewModel : ViewModel() {
 
     }
 
-    fun filterTasks(query: String?) {
+    fun filterTasks(query: String?, condition: String) {
         val allTasksList = _allTasksList.value ?: emptyList()
-        val filteredList = ArrayList<TaskList>()
+        var filteredList = ArrayList<TaskList>()
 
-        if (query != null) {
-            for (taskList in allTasksList) {
-                val filteredTasks = taskList.list.filter { task ->
-                    task.title.contains(query, ignoreCase = true)
+        when (condition) {
+            "search" -> {
+                if (query != null) {
+                    for (taskList in allTasksList) {
+                        val filteredTasks = taskList.list.filter { task ->
+                            task.title.contains(query, ignoreCase = true)
+                        }
+                        if (filteredTasks.isNotEmpty()) {
+                            val filteredTaskList = TaskList(taskList.name, filteredTasks)
+                            filteredList.add(filteredTaskList)
+                        }
+                    }
                 }
-                if (filteredTasks.isNotEmpty()) {
-                    val filteredTaskList = TaskList(taskList.name, filteredTasks)
-                    filteredList.add(filteredTaskList)
-                }
+                _filteredTaskList.value = filteredList
+            }
+
+            "star" -> {
+                val filteredTaskList =
+                    allTasksList.filter { it.name == "starred" && it.list.isNotEmpty() }
+                _filteredTaskList.value = filteredTaskList
             }
         }
-        _filteredTaskList.value = filteredList
     }
 
     fun resetList() {
         _listFromFirebase.value = emptyList()
         _allTasksList.value = emptyList()
+        _filteredTaskList.value = emptyList()
+        _userDetailsFromFirebase.value = UserDetails("", "")
     }
 
-    fun setupAuthStateListener() {
+    fun checkUserAuthState() {
+        _isUserSignedIn.value = false
+
         val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             val user = firebaseAuth.currentUser
             if (user != null) {
@@ -244,5 +331,57 @@ class TaskViewModel : ViewModel() {
     fun logout() {
         auth.signOut()
     }
+
+    fun updateUserDetails(
+        name: String,
+        occupation: String,
+        callback: (Boolean) -> Unit
+    ) {
+        if (userId == null) {
+            // The user is not authenticated, cannot perform the operation.
+            callback(false)
+            return
+        }
+
+        val userDetails = UserDetails(name, occupation)
+        databaseUserDetailsRef.setValue(userDetails)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Return success result
+                    callback(true)
+                } else {
+                    // Return failure result
+                    callback(false)
+                }
+            }
+    }
+
+
+    private fun getUserDetailsFromFirebase() {
+        if (userId == null) {
+            // The user is not authenticated, cannot perform the operation.
+            return
+        }
+
+        databaseUserDetailsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+
+                val name = snapshot.child("name").getValue(String::class.java) ?: ""
+                val occupation =
+                    snapshot.child("occupation").getValue(String::class.java) ?: ""
+                val userDataFromFirebase = UserDetails(name, occupation)
+                _userDetailsFromFirebase.value = userDataFromFirebase
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.d("getUserDetails", error.message)
+            }
+        })
+
+        if (_isUserSignedIn.value == true) {
+            _userEmail.value = currentUser?.email
+        }
+    }
+
 
 }

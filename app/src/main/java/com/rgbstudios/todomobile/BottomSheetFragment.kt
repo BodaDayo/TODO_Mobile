@@ -8,13 +8,10 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.internal.ViewUtils.hideKeyboard
 import com.google.android.material.textfield.TextInputEditText
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentBottomSheetBinding
@@ -53,14 +50,19 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         registerEvents()
 
-        dialog?.setOnCancelListener {
-            if (!binding.taskTitleEt.text.isNullOrEmpty()) {
-                showDiscardDialog()
-            }
-        }
     }
 
     private fun registerEvents() {
+
+        var starredStatus = false
+
+        binding.star.setOnClickListener {
+            starredStatus = !starredStatus // Toggle the starred status
+
+            // Change the star icon based on the starredStatus
+            val starIcon = if (starredStatus) R.drawable.star_filled else R.drawable.star
+            binding.star.setImageResource(starIcon)
+        }
 
         binding.addDescriptionBtn.setOnClickListener {
             binding.taskDescriptionEt.visibility = View.VISIBLE
@@ -75,7 +77,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
                 // To change the color to gray when disabled
                 val colorRes =
-                    if (s.isNullOrEmpty()) androidx.appcompat.R.color.material_grey_600 else com.google.android.material.R.color.design_default_color_primary
+                    if (s.isNullOrEmpty()) androidx.appcompat.R.color.material_grey_600 else R.color.myPrimary
                 binding.saveTask.setTextColor(ContextCompat.getColor(requireContext(), colorRes))
             }
 
@@ -98,7 +100,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 titleEditText,
                 descriptionEditText,
                 binding.taskTitleEt,
-                binding.taskDescriptionEt
+                binding.taskDescriptionEt,
+                starredStatus
             )
 
         }
@@ -133,7 +136,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             title: String,
             description: String,
             titleEt: TextInputEditText,
-            descriptionEt: TextInputEditText
+            descriptionEt: TextInputEditText,
+            starred: Boolean
         )
     }
 }

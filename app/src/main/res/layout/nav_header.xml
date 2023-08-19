@@ -10,16 +10,16 @@
     android:paddingTop="32sp">
 
     <ImageView
-        android:id="@+id/profileImg"
+        android:id="@+id/avatarNavDrw"
         android:layout_width="72sp"
         android:layout_height="72sp"
         android:layout_gravity="center"
-        android:src="@drawable/pfp"/>
+        android:src="@drawable/usericon"/>
     <TextView
         android:id="@+id/userNameTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="John Adekunle"
+        android:text="John Doe"
         android:layout_gravity="center"
         android:textSize="20sp"
         android:textStyle="bold"/>
@@ -38,8 +38,7 @@
         android:paddingBottom="4sp"
         android:layout_height="wrap_content"
         android:text="Student"
-        android:textSize="14sp"
-        android:visibility="gone"/>
+        android:textSize="14sp"/>
 
     <LinearLayout
         android:layout_width="match_parent"

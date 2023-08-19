@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.ItemTaskBinding
 import com.rgbstudios.todomobile.databinding.ItemTaskParentBinding
-import com.rgbstudios.todomobile.model.TaskDataFromFirebase
+import com.rgbstudios.todomobile.model.TaskData
 import com.rgbstudios.todomobile.model.TaskList
 import com.rgbstudios.todomobile.model.TaskViewModel
 

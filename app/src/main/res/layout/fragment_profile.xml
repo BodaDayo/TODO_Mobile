@@ -5,141 +5,256 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
     tools:context=".ProfileFragment">
 
+    <!-- Image Cropper Container -->
     <LinearLayout
-        android:id="@+id/topBar"
+        android:id="@+id/imageCropLayout"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:orientation="horizontal">
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:orientation="vertical"
+        android:visibility="gone">
+        <!-- Image Cropper fill the remaining available height -->
+        <com.canhub.cropper.CropImageView
+            android:id="@+id/cropImageView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:id="@+id/cropControlsLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center|center_vertical"
+            android:orientation="horizontal"
+            android:padding="16sp">
+
+            <TextView
+                android:id="@+id/cancelCrop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="16sp"
+                android:text="Cancel"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:id="@+id/rotateCrop"
+                android:layout_width="24sp"
+                android:layout_height="24sp"
+                android:src="@drawable/rotate"
+                app:tint="@color/white" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/doneCrop"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="16sp"
+                android:text="Done"
+                android:textColor="@color/white"
+                android:textSize="16sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Image Expand Container -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/imageExpandLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <ImageView
-            android:id="@+id/toggleNav"
+            android:id="@+id/expandedImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Profile Picture"
+            android:src="@drawable/asset_1"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/editAvatar"
             android:layout_width="24sp"
             android:layout_height="24sp"
-            android:src="@drawable/back" />
+            android:layout_margin="16sp"
+            android:src="@drawable/edit"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/white" />
 
-        <Space
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"/>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Main Content Container -->
+    <LinearLayout
+        android:id="@+id/mainLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:id="@+id/topBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/popBack"
+                android:layout_width="24sp"
+                android:layout_height="24sp"
+                android:src="@drawable/back"
+                app:tint="?attr/colorOnSurface" />
+
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/saveButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="@string/save"
+                android:textColor="?attr/colorPrimary"
+                android:textSize="16sp" />
+        </LinearLayout>
+        <!-- Profile Picture -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/avatarLayout"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
+            android:layout_gravity="center">
+
+            <ImageView
+                android:id="@+id/profileImageView"
+                android:layout_width="128dp"
+                android:layout_height="128dp"
+                android:contentDescription="Profile Picture"
+                android:scaleType="centerCrop"
+                android:src="@drawable/usericon"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                android:id="@+id/overlayView"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:background="@drawable/circular_overlay_background"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintDimensionRatio="1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="@color/white"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <ImageView
+                android:id="@+id/changeAvatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/circular_primary_background"
+                android:padding="8sp"
+                android:src="@drawable/camera"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:tint="?attr/colorOnPrimary" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
-            android:id="@+id/saveButton"
-            android:layout_width="wrap_content"
+            android:id="@+id/emailText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:text="@string/save"
-            android:textColor="?attr/colorPrimary"
-            android:textSize="16sp" />
+            android:layout_marginHorizontal="16sp"
+            android:layout_marginTop="16dp"
+            android:gravity="center"
+            android:text="contact-john@todo.com"/>
+
+
+        <LinearLayout
+            android:id="@+id/nameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/nameTV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16sp"
+                android:layout_marginTop="16dp"
+                android:text="Name"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <EditText
+                android:id="@+id/nameEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16sp"
+                android:layout_marginTop="8dp"
+                android:hint="Name"
+                android:inputType="textPersonName"
+                android:maxLines="1"
+                android:textSize="18sp"
+                android:background="@android:color/transparent"
+                app:boxBackgroundMode="none"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/occupationLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/occupationTV"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16sp"
+                android:layout_marginTop="16dp"
+                android:text="Occupation" />
+
+            <EditText
+                android:id="@+id/occupationText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16sp"
+                android:layout_marginTop="8dp"
+                android:hint="Occupation"
+                android:inputType="textPersonName"
+                android:maxLines="1"
+                android:textSize="18sp"
+                android:background="@android:color/transparent"
+                app:boxBackgroundMode="none"/>
+        </LinearLayout>
+
     </LinearLayout>
-
-
-
-    <!-- Profile Picture -->
-    <ImageView
-        android:id="@+id/profileImageView"
-        android:layout_width="128dp"
-        android:layout_height="128dp"
-        android:layout_gravity="center_horizontal"
-        android:contentDescription="Profile Picture"
-        android:scaleType="centerCrop"
-        android:src="@drawable/usericon" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16sp"
-        android:padding="8sp"
-        android:orientation="horizontal">
-        <Button
-            android:layout_width="0sp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:paddingVertical="16sp"
-            android:layout_marginHorizontal="4sp"
-            android:text="10 Tasks left"
-            android:textSize="11sp"
-            app:cornerRadius="8dp"
-            android:backgroundTint="?colorSurface"
-            android:textColor="?colorOnSurface"
-            app:strokeColor="?colorOnSurface"
-            app:strokeWidth="1sp"/>
-        <Button
-            android:layout_width="0sp"
-            android:layout_weight="1"
-            android:layout_marginHorizontal="4sp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="16sp"
-            android:textSize="11sp"
-            android:text="5 Tasks done"
-            app:cornerRadius="8dp"
-            android:backgroundTint="?colorSurface"
-            app:strokeColor="?colorOnSurface"
-            android:textColor="?colorOnSurface"
-            app:strokeWidth="1sp"/>
-
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/nameTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Name"
-        android:layout_marginTop="16dp"
-        android:paddingHorizontal="4sp"
-        android:layout_marginHorizontal="16sp"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/nameEditText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:hint="Name"
-        android:textSize="18sp"
-        android:inputType="textPersonName"
-        android:layout_marginHorizontal="16sp"
-        android:maxLines="1" />
-
-    <TextView
-        android:id="@+id/emailTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="4sp"
-        android:layout_marginHorizontal="16sp"
-        android:layout_marginTop="8dp"
-        android:text="Email" />
-
-    <TextView
-        android:id="@+id/emailText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="example@email.com"
-        android:layout_marginHorizontal="16sp"
-        android:textSize="18sp"
-        android:maxLines="1" />
-
-    <TextView
-        android:id="@+id/occupationTV"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16sp"
-        android:paddingHorizontal="4sp"
-        android:text="Occupation"
-        android:layout_marginTop="16dp" />
-
-    <EditText
-        android:id="@+id/occupationText"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16sp"
-        android:layout_marginTop="8dp"
-        android:hint="Occupation"
-        android:textSize="18sp"
-        android:inputType="textPersonName"
-        android:maxLines="1" />
 
 </LinearLayout>

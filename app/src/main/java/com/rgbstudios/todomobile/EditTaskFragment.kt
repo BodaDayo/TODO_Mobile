@@ -1,27 +1,18 @@
 package com.rgbstudios.todomobile
 
 import android.content.Context
-import android.graphics.Paint
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.core.content.ContextCompat
-import androidx.core.view.MenuHost
-import androidx.core.view.MenuProvider
-import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Lifecycle
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentEditTaskBinding
@@ -55,12 +46,14 @@ class EditTaskFragment : Fragment() {
             // Get data from selected data
             val taskId = selectedTaskData.taskId
             var taskCompleted = selectedTaskData.taskCompleted
+            var newStarred = selectedTaskData.starred
 
             // Update the UI with the selected task data
             binding.editTitleEt.text =
                 Editable.Factory.getInstance().newEditable(selectedTaskData.title)
             binding.editDescriptionEt.text =
                 Editable.Factory.getInstance().newEditable(selectedTaskData.description)
+            updateStarIcon(newStarred)
 
             // Check if the task is completed, change icon if true
             if (selectedTaskData.taskCompleted) {
@@ -75,6 +68,15 @@ class EditTaskFragment : Fragment() {
             } else {
                 binding.markCompletedIcon.setImageResource(R.drawable.check)
                 binding.markCompletedTextView.text = getString(R.string.mark_as_completed)
+            }
+
+            // set onClick listener for star button
+            binding.star.setOnClickListener {
+                newStarred = !newStarred // Toggle the starred status
+
+                // Change the star icon based on the starredStatus
+                updateStarIcon(newStarred)
+                changesMade = true
             }
 
             // Set up TextWatcher for editTitleEt
@@ -117,7 +119,7 @@ class EditTaskFragment : Fragment() {
                 val newTitle = binding.editTitleEt.text.toString()
                 val newDescription = binding.editDescriptionEt.text.toString()
 
-                setTaskData(taskId, newTitle, newDescription, taskCompleted)
+                setTaskData(taskId, newTitle, newDescription, taskCompleted, newStarred)
 
                 activity?.supportFragmentManager?.popBackStack()
             }
@@ -126,7 +128,7 @@ class EditTaskFragment : Fragment() {
                 val newTitle = binding.editTitleEt.text.toString()
                 val newDescription = binding.editDescriptionEt.text.toString()
 
-                setTaskData(taskId, newTitle, newDescription, newCompletedStatus)
+                setTaskData(taskId, newTitle, newDescription, newCompletedStatus, newStarred)
 
                 activity?.supportFragmentManager?.popBackStack()
             }
@@ -190,10 +192,10 @@ class EditTaskFragment : Fragment() {
         dialog.show()
     }
 
-    private fun setTaskData(id: String, title: String, description: String, completed: Boolean) {
+    private fun setTaskData(id: String, title: String, description: String, completed: Boolean, starred: Boolean) {
 
         // Call the ViewModel's method to update the task
-        sharedViewModel.updateTask(id, title, description, completed) { isSuccessful ->
+        sharedViewModel.updateTask(id, title, description, completed, starred) { isSuccessful ->
             if (isSuccessful) {
                 // Handle success
                 Toast.makeText(fragmentContext, "Task updated successfully!", Toast.LENGTH_SHORT)
@@ -203,6 +205,11 @@ class EditTaskFragment : Fragment() {
                 Toast.makeText(fragmentContext, "Failed to update task", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun updateStarIcon(newStarred: Boolean) {
+        val starIcon = if (newStarred) R.drawable.star_filled else R.drawable.star
+        binding.star.setImageResource(starIcon)
     }
 
 }
