@@ -1,22 +1,23 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.rgbstudios.todomobile.databinding.FragmentOnboardingOneBinding
+import androidx.navigation.fragment.findNavController
+import com.rgbstudios.todomobile.databinding.FragmentOnboardingThreeBinding
 
-class OnboardingOneFragment : Fragment() {
+class OnboardingThreeFragment : Fragment() {
 
-    private lateinit var binding: FragmentOnboardingOneBinding
+    private lateinit var binding: FragmentOnboardingThreeBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        binding = FragmentOnboardingOneBinding.inflate(inflater, container, false)
+        binding = FragmentOnboardingThreeBinding.inflate(inflater, container, false)
         return binding.root
     }
 

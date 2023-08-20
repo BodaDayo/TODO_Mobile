@@ -1,4 +1,4 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
-import com.rgbstudios.todomobile.databinding.FragmentOnboardingBinding
+import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.FragmentOnboardingFinalBinding
 
 

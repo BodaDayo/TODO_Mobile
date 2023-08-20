@@ -1,7 +1,6 @@
-package com.rgbstudios.todomobile.model
+package com.rgbstudios.todomobile.viewmodel
 
 import android.graphics.Bitmap
-import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -15,6 +14,10 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
+import com.rgbstudios.todomobile.model.TaskData
+import com.rgbstudios.todomobile.model.TaskDataFromFirebase
+import com.rgbstudios.todomobile.model.TaskList
+import com.rgbstudios.todomobile.model.UserDetails
 import java.io.ByteArrayOutputStream
 
 class TaskViewModel : ViewModel() {

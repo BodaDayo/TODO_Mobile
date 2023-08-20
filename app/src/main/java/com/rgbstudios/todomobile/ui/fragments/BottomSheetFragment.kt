@@ -1,4 +1,4 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
 
 import android.os.Bundle
@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentBottomSheetBinding
 

@@ -1,10 +1,9 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.net.NetworkInfo
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,6 +14,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.rgbstudios.todomobile.R
 
 
 class SplashFragment : Fragment() {

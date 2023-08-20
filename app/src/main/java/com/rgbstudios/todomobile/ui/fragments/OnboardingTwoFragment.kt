@@ -1,4 +1,4 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

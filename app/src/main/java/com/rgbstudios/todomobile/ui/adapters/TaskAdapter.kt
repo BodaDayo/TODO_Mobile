@@ -1,4 +1,4 @@
-package com.rgbstudios.todomobile.adapter
+package com.rgbstudios.todomobile.ui.adapters
 
 import android.graphics.Paint
 import android.view.LayoutInflater
@@ -9,9 +9,8 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.ItemTaskBinding
-import com.rgbstudios.todomobile.model.TaskData
 import com.rgbstudios.todomobile.model.TaskDataFromFirebase
-import com.rgbstudios.todomobile.model.TaskViewModel
+import com.rgbstudios.todomobile.viewmodel.TaskViewModel
 
 class TaskAdapter(
     private val tasks: List<TaskDataFromFirebase>,

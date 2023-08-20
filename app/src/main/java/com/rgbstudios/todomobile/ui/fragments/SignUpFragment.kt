@@ -1,6 +1,5 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
-import android.app.ProgressDialog.show
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -14,9 +13,10 @@ import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.storage.FirebaseStorage
-import com.rgbstudios.todomobile.data.Avatars
+import com.rgbstudios.todomobile.R
+import com.rgbstudios.todomobile.ui.AvatarManager
 import com.rgbstudios.todomobile.databinding.FragmentSignUpBinding
-import com.rgbstudios.todomobile.model.TaskViewModel
+import com.rgbstudios.todomobile.viewmodel.TaskViewModel
 import java.io.ByteArrayOutputStream
 
 
@@ -105,7 +105,7 @@ class SignUpFragment : Fragment() {
             val storageReference = FirebaseStorage.getInstance().reference.child("avatars").child(userId)
 
             // Get the drawable resource ID of a random avatar
-            val avatars = Avatars()
+            val avatars = AvatarManager()
             val avatarResource = avatars.getAvatar()
 
             // Convert the drawable resource to a bitmap

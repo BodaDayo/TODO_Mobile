@@ -1,4 +1,4 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -7,7 +7,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
-import com.rgbstudios.todomobile.adapter.OnboardingPagerAdapter
+import com.rgbstudios.todomobile.R
+import com.rgbstudios.todomobile.ui.adapters.OnboardingPagerAdapter
 import com.rgbstudios.todomobile.databinding.FragmentOnboardingBinding
 
 class OnboardingFragment : Fragment() {

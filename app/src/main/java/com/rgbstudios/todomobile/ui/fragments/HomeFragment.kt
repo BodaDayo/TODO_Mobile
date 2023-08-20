@@ -1,4 +1,4 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -20,12 +20,12 @@ import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.textfield.TextInputEditText
-import com.rgbstudios.todomobile.adapter.ListAdapter
-import com.rgbstudios.todomobile.data.Avatars
+import com.rgbstudios.todomobile.R
+import com.rgbstudios.todomobile.ui.adapters.ListAdapter
+import com.rgbstudios.todomobile.ui.AvatarManager
 import com.rgbstudios.todomobile.databinding.DialogLogoutConfirmationBinding
 import com.rgbstudios.todomobile.databinding.FragmentHomeBinding
-import com.rgbstudios.todomobile.databinding.NavHeaderBinding
-import com.rgbstudios.todomobile.model.TaskViewModel
+import com.rgbstudios.todomobile.viewmodel.TaskViewModel
 
 
 class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListener,
@@ -40,7 +40,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
     private lateinit var drawerLayout: DrawerLayout
 
     // Get the drawable resource ID of a random avatar
-    private val avatars = Avatars()
+    private val avatars = AvatarManager()
     private val avatarResource = avatars.getAvatar()
 
     override fun onCreateView(

@@ -1,4 +1,4 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -10,9 +10,10 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.firebase.auth.FirebaseAuth
+import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.DialogForgotPasswordBinding
 import com.rgbstudios.todomobile.databinding.FragmentSignInBinding
-import com.rgbstudios.todomobile.model.TaskViewModel
+import com.rgbstudios.todomobile.viewmodel.TaskViewModel
 
 class SignInFragment : Fragment() {
 

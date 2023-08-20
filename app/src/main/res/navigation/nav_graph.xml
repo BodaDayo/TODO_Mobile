@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/splashFragment"
-        android:name="com.rgbstudios.todomobile.SplashFragment"
+        android:name="com.rgbstudios.todomobile.ui.fragments.SplashFragment"
         android:label="fragment_splash"
         tools:layout="@layout/fragment_splash" >
         <action
@@ -28,7 +28,7 @@
     </fragment>
     <fragment
         android:id="@+id/signInFragment"
-        android:name="com.rgbstudios.todomobile.SignInFragment"
+        android:name="com.rgbstudios.todomobile.ui.fragments.SignInFragment"
         android:label="fragment_sign_in"
         tools:layout="@layout/fragment_sign_in" >
         <action
@@ -44,7 +44,7 @@
     </fragment>
     <fragment
         android:id="@+id/signUpFragment"
-        android:name="com.rgbstudios.todomobile.SignUpFragment"
+        android:name="com.rgbstudios.todomobile.ui.fragments.SignUpFragment"
         android:label="fragment_sign_up"
         tools:layout="@layout/fragment_sign_up" >
         <action
@@ -60,7 +60,7 @@
     </fragment>
     <fragment
         android:id="@+id/homeFragment"
-        android:name="com.rgbstudios.todomobile.HomeFragment"
+        android:name="com.rgbstudios.todomobile.ui.fragments.HomeFragment"
         android:label="fragment_home"
         tools:layout="@layout/fragment_home" >
         <action
@@ -77,12 +77,12 @@
     </fragment>
     <fragment
         android:id="@+id/editTaskFragment"
-        android:name="com.rgbstudios.todomobile.EditTaskFragment"
+        android:name="com.rgbstudios.todomobile.ui.fragments.EditTaskFragment"
         android:label="fragment_edit_task"
         tools:layout="@layout/fragment_edit_task" />
     <fragment
         android:id="@+id/onboardingFinalFragment"
-        android:name="com.rgbstudios.todomobile.OnboardingFinalFragment"
+        android:name="com.rgbstudios.todomobile.ui.fragments.OnboardingFinalFragment"
         android:label="fragment_onboarding_final"
         tools:layout="@layout/fragment_onboarding_final" >
         <action
@@ -98,7 +98,7 @@
     </fragment>
     <fragment
         android:id="@+id/onboardingFragment"
-        android:name="com.rgbstudios.todomobile.OnboardingFragment"
+        android:name="com.rgbstudios.todomobile.ui.fragments.OnboardingFragment"
         android:label="fragment_onboarding"
         tools:layout="@layout/fragment_onboarding" >
         <action
@@ -109,7 +109,7 @@
     </fragment>
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.rgbstudios.todomobile.ProfileFragment"
+        android:name="com.rgbstudios.todomobile.ui.fragments.ProfileFragment"
         android:label="fragment_profile"
         tools:layout="@layout/fragment_profile" />
 </navigation>

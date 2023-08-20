@@ -1,19 +1,14 @@
-package com.rgbstudios.todomobile.adapter
+package com.rgbstudios.todomobile.ui.adapters
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
-import com.rgbstudios.todomobile.databinding.ItemTaskBinding
 import com.rgbstudios.todomobile.databinding.ItemTaskParentBinding
-import com.rgbstudios.todomobile.model.TaskData
 import com.rgbstudios.todomobile.model.TaskList
-import com.rgbstudios.todomobile.model.TaskViewModel
+import com.rgbstudios.todomobile.viewmodel.TaskViewModel
 
 class ListAdapter(private val viewModel: TaskViewModel) :
     RecyclerView.Adapter<ListAdapter.ListViewHolder>() {

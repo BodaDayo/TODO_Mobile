@@ -1,4 +1,4 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
 import android.content.Context
 import android.os.Bundle
@@ -14,9 +14,10 @@ import androidx.activity.addCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentEditTaskBinding
-import com.rgbstudios.todomobile.model.TaskViewModel
+import com.rgbstudios.todomobile.viewmodel.TaskViewModel
 
 
 class EditTaskFragment : Fragment() {

@@ -1,4 +1,4 @@
-package com.rgbstudios.todomobile
+package com.rgbstudios.todomobile.ui.fragments
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -14,19 +14,16 @@ import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.rgbstudios.todomobile.data.Avatars
+import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentProfileBinding
-import com.rgbstudios.todomobile.model.TaskViewModel
-import com.rgbstudios.todomobile.model.UserDetails
-import com.rgbstudios.todomobile.model.UserDetailsFromFirebase
+import com.rgbstudios.todomobile.viewmodel.TaskViewModel
 import java.io.ByteArrayOutputStream
 
 

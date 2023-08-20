@@ -1,11 +1,11 @@
-package com.rgbstudios.todomobile.adapter
+package com.rgbstudios.todomobile.ui.adapters
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.rgbstudios.todomobile.OnboardingOneFragment
-import com.rgbstudios.todomobile.OnboardingThreeFragment
-import com.rgbstudios.todomobile.OnboardingTwoFragment
+import com.rgbstudios.todomobile.ui.fragments.OnboardingOneFragment
+import com.rgbstudios.todomobile.ui.fragments.OnboardingThreeFragment
+import com.rgbstudios.todomobile.ui.fragments.OnboardingTwoFragment
 
 class OnboardingPagerAdapter(fragmentActivity: FragmentActivity) :
     FragmentStateAdapter(fragmentActivity) {
