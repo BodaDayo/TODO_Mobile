@@ -128,6 +128,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         // Observe userEmail LiveData
         sharedViewModel.userEmail.observe(viewLifecycleOwner) {
             emailNavDrw.text = it
+            emailNavDrw.visibility = View.VISIBLE
         }
 
         // Observe userDetails LiveData

@@ -370,7 +370,12 @@ class TaskViewModel : ViewModel() {
                 val occupation =
                     snapshot.child("occupation").getValue(String::class.java) ?: ""
                 val userDataFromFirebase = UserDetails(name, occupation)
+
+                // Update the user details
                 _userDetailsFromFirebase.value = userDataFromFirebase
+
+                // Update the user email
+                _userEmail.value = currentUser?.email
             }
 
             override fun onCancelled(error: DatabaseError) {

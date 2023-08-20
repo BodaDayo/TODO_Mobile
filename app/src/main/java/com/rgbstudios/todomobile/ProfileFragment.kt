@@ -141,6 +141,7 @@ class ProfileFragment : Fragment() {
         // Observe userEmail LiveData
         sharedViewModel.userEmail.observe(viewLifecycleOwner) {
             binding.emailText.text = it
+            binding.emailText.visibility = View.VISIBLE
         }
 
         // Observe userDetails LiveData
@@ -235,7 +236,7 @@ class ProfileFragment : Fragment() {
                                     Toast.LENGTH_SHORT
                                 ).show()
                             } else {
-                                Toast.makeText(context, "Image upload failed!", Toast.LENGTH_SHORT)
+                                Toast.makeText(context, "Image upload failed!\n check your network connection", Toast.LENGTH_SHORT)
                                     .show()
 
                                 // Stop the loading animation

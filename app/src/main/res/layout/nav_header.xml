@@ -30,7 +30,8 @@
         android:paddingBottom="4sp"
         android:layout_height="wrap_content"
         android:text="contact-john@todo.com"
-        android:textSize="14sp"/>
+        android:textSize="14sp"
+        android:visibility="gone"/>
     <TextView
         android:id="@+id/occupationTxt"
         android:layout_width="wrap_content"

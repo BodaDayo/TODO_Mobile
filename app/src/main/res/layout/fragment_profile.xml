@@ -195,7 +195,8 @@
             android:layout_marginHorizontal="16sp"
             android:layout_marginTop="16dp"
             android:gravity="center"
-            android:text="contact-john@todo.com"/>
+            android:text="contact-john@todo.com"
+            android:visibility="gone"/>
 
 
         <LinearLayout

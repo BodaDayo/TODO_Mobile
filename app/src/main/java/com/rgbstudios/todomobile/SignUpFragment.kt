@@ -1,5 +1,6 @@
 package com.rgbstudios.todomobile
 
+import android.app.ProgressDialog.show
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -130,8 +131,7 @@ class SignUpFragment : Fragment() {
             }.addOnFailureListener {
                 // Handle image upload failure
 
-                Toast.makeText(context, "Unable to Set Avatar!", Toast.LENGTH_SHORT)
-                    .show()
+                // Toast.makeText(context, "Unable to Set Avatar!", Toast.LENGTH_SHORT).show()
             }
         }
     }
