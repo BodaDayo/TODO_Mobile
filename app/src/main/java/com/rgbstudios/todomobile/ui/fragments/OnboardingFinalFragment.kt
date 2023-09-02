@@ -25,10 +25,10 @@ class OnboardingFinalFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.loginButton.setOnClickListener {
-            findNavController()?.navigate(R.id.action_onboardingFinalFragment_to_signInFragment)
+            findNavController().navigate(R.id.action_onboardingFinalFragment_to_signInFragment)
         }
         binding.registerButton.setOnClickListener {
-            findNavController()?.navigate(R.id.action_onboardingFinalFragment_to_signUpFragment)
+            findNavController().navigate(R.id.action_onboardingFinalFragment_to_signUpFragment)
         }
 
     }

@@ -2,27 +2,22 @@ package com.rgbstudios.todomobile.ui.fragments
 
 import android.content.Context
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.addCallback
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentEditTaskBinding
-import com.rgbstudios.todomobile.viewmodel.TaskViewModel
+import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 
 
 class EditTaskFragment : Fragment() {
 
-    private val sharedViewModel: TaskViewModel by activityViewModels()
+    private val sharedViewModel: TodoViewModel by activityViewModels()
     private lateinit var binding: FragmentEditTaskBinding
     private lateinit var fragmentContext: Context
     private var changesMade = false
@@ -39,6 +34,7 @@ class EditTaskFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        /*
 
         // Retrieve the selected task data from the ViewModel directly
         val selectedTaskData = sharedViewModel.selectedTaskData.value
@@ -164,6 +160,8 @@ class EditTaskFragment : Fragment() {
             Log.e("EditTaskFragment", "selectedTaskData is null")
             binding.saveButton.isEnabled = false
         }
+
+         */
 
     }
 

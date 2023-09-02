@@ -5,16 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.ItemTaskBinding
-import com.rgbstudios.todomobile.model.TaskDataFromFirebase
-import com.rgbstudios.todomobile.viewmodel.TaskViewModel
+import com.rgbstudios.todomobile.data.entity.TaskEntity
+import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 
 class TaskAdapter(
-    private val tasks: List<TaskDataFromFirebase>,
-    private val viewModel: TaskViewModel
+    private val tasks: List<TaskEntity>,
+    private val viewModel: TodoViewModel
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
 
     inner class TaskViewHolder(val binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root)
@@ -71,6 +70,7 @@ class TaskAdapter(
                 taskDescriptionTextView.visibility = View.GONE
             }
 
+            /*
             taskDetailsLayout.setOnClickListener {
                 // Set the selected task data in the ViewModel
                 viewModel.setSelectedTaskData(task)
@@ -105,6 +105,8 @@ class TaskAdapter(
                     newStarred
                 )
             }
+
+             */
         }
     }
 

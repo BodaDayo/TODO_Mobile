@@ -1,34 +1,21 @@
 package com.rgbstudios.todomobile.ui.fragments
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
-import androidx.activity.addCallback
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentProfileBinding
-import com.rgbstudios.todomobile.viewmodel.TaskViewModel
-import java.io.ByteArrayOutputStream
+import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 
 
 class ProfileFragment : Fragment() {
-    private val sharedViewModel: TaskViewModel by activityViewModels()
+    private val sharedViewModel: TodoViewModel by activityViewModels()
     private lateinit var binding: FragmentProfileBinding
     private lateinit var newAvatar: Bitmap
     private var changesMade = false
@@ -45,6 +32,7 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        /*
 
 
         binding.profileImageView.setOnClickListener {
@@ -196,9 +184,11 @@ class ProfileFragment : Fragment() {
                 popBackStackManager()
             }
         }
+        */
 
     }
 
+    /*
     private val pickMedia =
         registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
             if (uri != null) {
@@ -272,6 +262,7 @@ class ProfileFragment : Fragment() {
             activity?.supportFragmentManager?.popBackStack()
         }
     }
+     */
 
     private fun showDiscardDialog() {
         val dialogBinding = DialogDiscardTaskBinding.inflate(layoutInflater)

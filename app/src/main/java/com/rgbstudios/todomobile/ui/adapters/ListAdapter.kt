@@ -8,9 +8,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.ItemTaskParentBinding
 import com.rgbstudios.todomobile.model.TaskList
-import com.rgbstudios.todomobile.viewmodel.TaskViewModel
+import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 
-class ListAdapter(private val viewModel: TaskViewModel) :
+class ListAdapter(private val viewModel: TodoViewModel) :
     RecyclerView.Adapter<ListAdapter.ListViewHolder>() {
 
     private var lists: List<TaskList> = emptyList()
@@ -19,7 +19,6 @@ class ListAdapter(private val viewModel: TaskViewModel) :
         lists = newAllTasksList
         notifyDataSetChanged()
     }
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
         val binding =
             ItemTaskParentBinding.inflate(LayoutInflater.from(parent.context), parent, false)

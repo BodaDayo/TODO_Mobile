@@ -1,3 +1,5 @@
 package com.rgbstudios.todomobile.model
 
-data class TaskList (val name: String, val list: List<TaskDataFromFirebase>)
+import com.rgbstudios.todomobile.data.entity.TaskEntity
+
+data class TaskList (val name: String, val list: List<TaskEntity>)

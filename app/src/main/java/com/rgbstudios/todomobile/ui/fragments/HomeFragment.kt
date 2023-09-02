@@ -8,11 +8,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.widget.SearchView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -21,27 +21,27 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
 import com.google.android.material.textfield.TextInputEditText
 import com.rgbstudios.todomobile.R
+import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.ui.adapters.ListAdapter
-import com.rgbstudios.todomobile.ui.AvatarManager
 import com.rgbstudios.todomobile.databinding.DialogLogoutConfirmationBinding
 import com.rgbstudios.todomobile.databinding.FragmentHomeBinding
-import com.rgbstudios.todomobile.viewmodel.TaskViewModel
+import com.rgbstudios.todomobile.viewmodel.TodoViewModel
+import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
+import java.io.File
 
 
 class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListener,
     NavigationView.OnNavigationItemSelectedListener {
 
-    private val sharedViewModel: TaskViewModel by activityViewModels()
+    private val sharedViewModel: TodoViewModel by activityViewModels {
+        TodoViewModelFactory(activity?.application as TodoMobileApplication)
+    }
 
     private lateinit var binding: FragmentHomeBinding
     private lateinit var bottomSheetFragment: BottomSheetFragment
     private lateinit var adapter: ListAdapter
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var drawerLayout: DrawerLayout
-
-    // Get the drawable resource ID of a random avatar
-    private val avatars = AvatarManager()
-    private val avatarResource = avatars.getAvatar()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -76,6 +76,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
         binding.parentRecyclerView.adapter = adapter
 
+        /*
         binding.bottomNavigationView.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.starredList -> {
@@ -96,9 +97,12 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
             }
             true
         }
+
+         */
         binding.bottomNavigationView.selectedItemId = 0
 
         drawerLayout = binding.drawerLayout
+
         binding.toggleNav.setOnClickListener { toggleNavigationDrawer() }
 
         binding.navigationView.setNavigationItemSelectedListener(this)
@@ -109,23 +113,21 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
             getDataFromFirebase()
         }
 
-        // Observe userAvatarUrl LiveData
-        sharedViewModel.userAvatarUrl.observe(viewLifecycleOwner) { avatarUrl ->
-            val avatarImageViews =
-                arrayOf(binding.avatarHome, avatarNavDrw)
+        // Observe the avatar file path and set it to your ImageView
+        sharedViewModel.avatarFilePath.observe(viewLifecycleOwner) { path ->
+            if (path != null) {
+                val avatarImageViews =
+                    arrayOf(binding.avatarHome, avatarNavDrw)
 
-            val imageLoad = if (avatarUrl != null) {
-                Glide.with(requireContext()).load(avatarUrl)
-            } else {
-                Glide.with(requireContext()).load(avatarResource)
-            }
+                val imageLoad = Glide.with(requireContext()).load(File(path))
 
-            for (imageView in avatarImageViews) {
-                imageLoad.circleCrop().into(imageView)
+                for (imageView in avatarImageViews) {
+                    imageLoad.circleCrop().into(imageView)
+                }
             }
         }
 
-        // Observe userEmail LiveData
+        /* / Observe userEmail LiveData
         sharedViewModel.userEmail.observe(viewLifecycleOwner) {
             emailNavDrw.text = it
             emailNavDrw.visibility = View.VISIBLE
@@ -150,12 +152,14 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
                 logOutMenuItem.setIcon(R.drawable.login)
             }
         }
+        */
 
         // Observe allTasksList LiveData and update the adapter
         sharedViewModel.allTasksList.observe(viewLifecycleOwner) { allTasksList ->
             adapter.updateTaskLists(allTasksList)
             onEmptyLayout(allTasksList?.isEmpty() ?: true)
         }
+/*
 
         // Observe filteredTaskList LiveData and update the adapter for searchQuery
         sharedViewModel.filteredTaskList.observe(viewLifecycleOwner) { filteredTaskList ->
@@ -173,11 +177,18 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
                 return true
             }
         })
+
+         */
     }
 
     private fun registerEvents() {
         binding.fab.setOnClickListener {
 
+            bottomSheetFragment = BottomSheetFragment()
+            bottomSheetFragment.setListener(this)
+            bottomSheetFragment.show(parentFragmentManager, bottomSheetFragment.tag)
+
+            /*
             if (sharedViewModel.isUserSignedIn.value == true) {
                 bottomSheetFragment = BottomSheetFragment()
                 bottomSheetFragment.setListener(this)
@@ -190,6 +201,8 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
                     Toast.LENGTH_SHORT
                 ).show()
             }
+
+             */
 
         }
     }
@@ -221,11 +234,10 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
             // Set focus to the recyclerview to prevent the searchView from triggering the keyboard
             binding.parentRecyclerView.requestFocus()
         }
-
     }
 
     private fun getDataFromFirebase() {
-        sharedViewModel.getTasksFromFirebase()
+        sharedViewModel.startTasksListener()
 
         /* TODO Get condition from vieModel getTasksFromFirebase
         fun onCancelled(error: DatabaseError) {
@@ -247,29 +259,32 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
             binding.searchViewLayout.visibility = View.VISIBLE
         }
     }
-
-    private fun resetCurrentList() {
-        sharedViewModel.checkUserAuthState()
-        sharedViewModel.resetList() // Clear the RecyclerView
-        onEmptyLayout(true) // Show the empty layout
-    }
-
-    private fun getStarredList() {
-        sharedViewModel.filterTasks("", "star")
-    }
-
-    private fun sortCurrentList() {
-        //TODO
-    }
-
-    private fun toggleNavigationDrawer() {
-        // Toggle the navigation drawer open or close
-        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-            drawerLayout.closeDrawer(GravityCompat.START)
-        } else {
-            drawerLayout.openDrawer(GravityCompat.START)
+    /*
+        private fun resetCurrentList() {
+            sharedViewModel.checkUserAuthState()
+            sharedViewModel.resetList() // Clear the RecyclerView
+            onEmptyLayout(true) // Show the empty layout
         }
-    }
+
+        private fun getStarredList() {
+            sharedViewModel.filterTasks("", "star")
+        }
+
+        private fun sortCurrentList() {
+            //TODO
+        }
+
+     */
+
+        private fun toggleNavigationDrawer() {
+            // Toggle the navigation drawer open or close
+            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                drawerLayout.closeDrawer(GravityCompat.START)
+            } else {
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
+        }
+
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
 
@@ -305,12 +320,12 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
         dialogBinding.btnLogoutConfirm.setOnClickListener {
             // Call the ViewModel's logout method to sign out the user
-            sharedViewModel.logout()
+            // sharedViewModel.logout()
 
             // Dismiss the dialog
             dialog.dismiss()
 
-            resetCurrentList()
+            //resetCurrentList()
         }
 
         dialogBinding.btnLogoutCancel.setOnClickListener {
@@ -320,5 +335,6 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
         dialog.show()
     }
+
 
 }

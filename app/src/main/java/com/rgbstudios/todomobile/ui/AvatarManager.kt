@@ -15,6 +15,6 @@ class AvatarManager {
         R.drawable.asset_9,
         R.drawable.asset_10,
     )
-    fun getAvatar() = defaultAvatarsList.random()
+    val defaultAvatar = defaultAvatarsList.random()
 
 }

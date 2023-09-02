@@ -50,10 +50,10 @@ class OnboardingFragment : Fragment() {
         })
 
         binding.getStartedButton.setOnClickListener {
-            findNavController()?.navigate(R.id.action_onboardingFragment_to_onboardingFinalFragment)
+            findNavController().navigate(R.id.action_onboardingFragment_to_onboardingFinalFragment)
         }
         binding.skip.setOnClickListener {
-            findNavController()?.navigate(R.id.action_onboardingFragment_to_onboardingFinalFragment)
+            findNavController().navigate(R.id.action_onboardingFragment_to_onboardingFinalFragment)
         }
     }
 
