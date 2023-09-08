@@ -1,4 +1,5 @@
 package com.rgbstudios.todomobile.data.local
+
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -24,21 +25,4 @@ interface UserDao {
     @Query("DELETE FROM users")
     suspend fun deleteUser()
 
-    @Query("UPDATE users SET hasPendingTaskChanges = :flag")
-    suspend fun setTaskPendingChangesFlag(flag: Boolean)
-
-    @Query("SELECT hasPendingTaskChanges FROM users LIMIT 1")
-    fun observeTaskPendingChanges(): Flow<Boolean>
-
-    @Query("UPDATE users SET hasPendingAvatarChange = :flag")
-    suspend fun setAvatarPendingChangesFlag(flag: Boolean)
-
-    @Query("SELECT hasPendingAvatarChange FROM users LIMIT 1")
-    fun observeAvatarPendingChanges(): Flow<Boolean>
-
-    @Query("UPDATE users SET hasPendingDetailsChange = :flag")
-    suspend fun setDetailsPendingChangesFlag(flag: Boolean)
-
-    @Query("SELECT hasPendingDetailsChange FROM users LIMIT 1")
-    fun observeDetailsPendingChanges(): Flow<Boolean>
 }

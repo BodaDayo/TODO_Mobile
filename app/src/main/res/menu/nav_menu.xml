@@ -25,6 +25,7 @@
         android:icon="@drawable/thumbs"/>
     <item android:id="@+id/logInOut"
         android:title="Log Out"
-        android:icon="@drawable/logout"/>
+        android:icon="@drawable/logout"
+        android:iconTint="?colorOnSurface"/>
 
 </menu>

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     tools:context=".ui.fragments.OnboardingOneFragment">
 
     <LinearLayout
@@ -22,24 +22,24 @@
             android:layout_height="wrap_content"
             android:src="@drawable/onboard1"
             android:layout_marginTop="32sp"
-            android:contentDescription="Image that illustrates managing your tasks" />
+            android:contentDescription="@string/image_that_illustrates_managing_your_tasks" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16sp"
-            android:layout_marginTop="32sp"
+            android:layout_marginTop="24sp"
             android:gravity="center"
-            android:text="Manage your tasks"
+            android:text="@string/onboarding_one_title"
             android:textSize="24sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="40sp"
-            android:layout_marginTop="32sp"
+            android:layout_marginHorizontal="16sp"
+            android:layout_marginVertical="12sp"
             android:gravity="center"
-            android:text="You can easily manage all of your daily tasks for free"
+            android:text="@string/onboarding_one_body"
             android:textSize="16sp" />
 
     </LinearLayout>

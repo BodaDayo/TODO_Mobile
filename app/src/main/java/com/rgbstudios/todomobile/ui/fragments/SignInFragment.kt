@@ -19,6 +19,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.data.entity.UserEntity
+import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.databinding.DialogForgotPasswordBinding
 import com.rgbstudios.todomobile.databinding.FragmentSignInBinding
 import com.rgbstudios.todomobile.ui.AvatarManager
@@ -69,34 +70,12 @@ class SignInFragment : Fragment() {
             if (email.isNotEmpty() && pass.isNotEmpty()) {
 
                 binding.progressBar.visibility = View.VISIBLE
-                auth.signInWithEmailAndPassword(email, pass).addOnCompleteListener {
-                    if (it.isSuccessful) {
-
-                        // Notify user of successful sign in
-                        Toast.makeText(
-                            context,
-                            "Signed in successfully! Syncing your data...",
-                            Toast.LENGTH_SHORT
-                        ).show()
-
+                FirebaseAccess().signIn(email, pass) { signInSuccessful, errorMessage ->
+                    if (signInSuccessful) {
                         // Get the user ID from Firebase Auth
                         val userId = auth.currentUser?.uid ?: ""
 
-                        // Get random Avatar
-                        // val userAvatarData = getAvatar(requireContext(), userId)
-
-                        /* / Create userEntity with the user details available
-                        val newUser = UserEntity(
-                            userId = userId,
-                            name = null,
-                            email = email,
-                            occupation = null,
-                            avatarFilePath = userAvatarData
-                        )
-
-                         */
-
-                        // Send new user to repository
+                        // Send new user details to repository
                         sharedViewModel.setUpNewUser(userId, email, requireContext(), resources, TAG) { isSuccessful ->
                             if (isSuccessful) {
                                 findNavController().navigate(R.id.action_signInFragment_to_homeFragment)
@@ -110,9 +89,6 @@ class SignInFragment : Fragment() {
                             }
                         }
                     } else {
-                        val errorMessage =
-                            it.exception?.message?.substringAfter(": ")
-                                ?: "Unknown error occurred!\nTry Again"
                         Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                     }
                     binding.progressBar.visibility = View.GONE
@@ -126,6 +102,11 @@ class SignInFragment : Fragment() {
         binding.forgotPasswordTV.setOnClickListener {
             showForgotPasswordDialog()
         }
+
+        binding.googleLoginButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Coming soon!", Toast.LENGTH_SHORT).show()
+        }
+
     }
 
     private fun showForgotPasswordDialog() {
@@ -161,50 +142,6 @@ class SignInFragment : Fragment() {
             }
         }
         dialog.show()
-    }
-
-    private suspend fun getAvatar(context: Context, userId: String): String? {
-        return withContext(Dispatchers.IO) {
-            try {
-                val storageReference = FirebaseStorage.getInstance().reference
-                    .child("avatars")
-                    .child(userId)
-
-                // Fetch the download URL of the avatar
-                val uri = storageReference.downloadUrl.await()
-
-                // Convert the URI to a Bitmap
-                val avatarBitmap = Glide.with(context)
-                    .asBitmap()
-                    .load(uri)
-                    .submit()
-                    .get()
-
-                // Create a directory to store avatars in the app's internal storage
-                val avatarsDir = File(context.filesDir, "avatars")
-                if (!avatarsDir.exists()) {
-                    avatarsDir.mkdirs()
-                }
-
-                // Generate a unique file name for the avatar based on the user's ID
-                val fileName = "avatar_${userId}.png"
-
-                // Create the file to store the avatar
-                val file = File(avatarsDir, fileName)
-
-                // Save the avatar Bitmap to the file
-                val stream = FileOutputStream(file)
-                avatarBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-                stream.flush()
-                stream.close()
-
-                // Return the file path of the saved file
-                return@withContext file.absolutePath
-            } catch (e: Exception) {
-                e.printStackTrace()
-                return@withContext null
-            }
-        }
     }
 
     companion object {

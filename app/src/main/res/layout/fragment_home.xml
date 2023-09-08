@@ -33,7 +33,8 @@
                     android:layout_width="24sp"
                     android:layout_height="24sp"
                     android:layout_marginHorizontal="16sp"
-                    android:src="@drawable/menu" />
+                    android:src="@drawable/menu"
+                    app:tint="?attr/colorOnSurface"/>
 
                 <TextView
                     android:layout_width="0dp"
@@ -107,17 +108,19 @@
                     android:src="@drawable/empty_layout" />
 
                 <TextView
+                    android:id="@+id/emptyTaskTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="No tasks yet"
+                    android:text="@string/no_tasks_yet"
                     android:textSize="24sp" />
 
                 <TextView
+                    android:id="@+id/emptyTaskBody"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:text="Tap \u002B to add your tasks"
+                    android:text="@string/add_tasks"
                     android:textSize="16sp" />
 
             </LinearLayout>

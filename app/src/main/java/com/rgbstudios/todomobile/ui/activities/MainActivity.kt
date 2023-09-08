@@ -1,8 +1,7 @@
 package com.rgbstudios.todomobile.ui.activities
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.google.firebase.database.FirebaseDatabase
+import androidx.appcompat.app.AppCompatActivity
 import com.rgbstudios.todomobile.R
 
 class MainActivity : AppCompatActivity() {

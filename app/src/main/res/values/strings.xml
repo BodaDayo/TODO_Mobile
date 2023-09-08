@@ -7,6 +7,7 @@
     <string name="mark_as_completed">Mark Completed</string>
     <string name="mark_as_uncompleted">Mark Uncompleted</string>
     <string name="star_task">Star task</string>
+    <string name="delete_task">Are you sure you want to delete this item?</string>>
 
     <string name="developer_signature">© 2023 Oladayo.rgb</string>
     <string name="save">Save</string>
@@ -20,5 +21,25 @@
     <string name="navigation_drawer_close">close</string>
     <string name="password_hint">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</string>
     <string name="discard_changes">Discard Changes</string>
+    <string name="tasks_completed">All tasks completed</string>
+    <string name="well_done">Well done!</string>
+    <string name="no_tasks_yet">No tasks yet</string>
+    <string name="add_tasks">Tap + to add your tasks</string>
+    <string name="profile_picture">Profile Picture</string>
+    <string name="type_description">Type description</string>
+    <string name="onboarding_two_body">Create your personalized routine to stay productive</string>
+    <string name="onboarding_two_title">Create daily routine</string>
+    <string name="image_that_illustrates_creating_daily_routine">Image that illustrates creating daily routine</string>
+    <string name="onboarding_three_body">Organize your daily tasks by adding your tasks into separate categories</string>
+    <string name="onboarding_three_title">Organize your tasks</string>
+    <string name="onboarding_one_body">You can easily manage all of your daily tasks for free</string>
+    <string name="onboarding_one_title">Manage your tasks</string>
+    <string name="image_that_illustrates_managing_your_tasks">Image that illustrates managing your tasks</string>
+    <string name="image_that_illustrates_organizing_your_tasks">Image that illustrates organizing your tasks</string>
+    <string name="create_account">Create Account</string>
+    <string name="login">Login</string>
+    <string name="please_login_to_your_account_or_create_new_account_to_continue">Please login to your account or create new account to continue</string>
+    <string name="welcome_to_todo_mobile">Welcome to TODO Mobile</string>
+
 
 </resources>

@@ -14,6 +14,8 @@ class AvatarManager {
         R.drawable.asset_8,
         R.drawable.asset_9,
         R.drawable.asset_10,
+        R.drawable.asset_11,
+        R.drawable.asset_12,
     )
     val defaultAvatar = defaultAvatarsList.random()
 

@@ -2,15 +2,21 @@ package com.rgbstudios.todomobile.ui.fragments
 
 import android.content.Context
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.addCallback
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
+import com.rgbstudios.todomobile.databinding.DialogRemoveConfirmationBinding
 import com.rgbstudios.todomobile.databinding.FragmentEditTaskBinding
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 
@@ -34,15 +40,15 @@ class EditTaskFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        /*
 
         // Retrieve the selected task data from the ViewModel directly
         val selectedTaskData = sharedViewModel.selectedTaskData.value
 
         if (selectedTaskData != null) {
+
             // Get data from selected data
             val taskId = selectedTaskData.taskId
-            var taskCompleted = selectedTaskData.taskCompleted
+            val taskCompleted = selectedTaskData.taskCompleted
             var newStarred = selectedTaskData.starred
 
             // Update the UI with the selected task data
@@ -130,39 +136,21 @@ class EditTaskFragment : Fragment() {
                 activity?.supportFragmentManager?.popBackStack()
             }
             binding.deleteTaskTextView.setOnClickListener {
-                sharedViewModel.deleteTask(taskId) { isSuccessful ->
-                    if (isSuccessful) {
-                        Toast.makeText(
-                            fragmentContext,
-                            "Task deleted successfully!",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                showDeleteConfirmationDialog(taskId)
+            }
 
-                        // Remove the current fragment
-                        activity?.supportFragmentManager?.popBackStack()
-                    } else {
-                        Toast.makeText(fragmentContext, "Failed to delete task", Toast.LENGTH_SHORT)
-                            .show()
-                    }
-                }
+            binding.popBack.setOnClickListener {
+                popBackStackManager()
             }
 
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-                if (changesMade) {
-                    showDiscardDialog()
-                } else {
-                    // If no changes, simply pop the back stack
-                    parentFragmentManager.popBackStack()
-                }
+                popBackStackManager()
             }
 
         } else {
             Log.e("EditTaskFragment", "selectedTaskData is null")
             binding.saveButton.isEnabled = false
         }
-
-         */
-
     }
 
     private fun showDiscardDialog() {
@@ -191,7 +179,57 @@ class EditTaskFragment : Fragment() {
         dialog.show()
     }
 
-    private fun setTaskData(id: String, title: String, description: String, completed: Boolean, starred: Boolean) {
+    private fun showDeleteConfirmationDialog(taskId: String) {
+        val dialogBinding = DialogRemoveConfirmationBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.removeBody.text = getString(R.string.delete_task)
+
+        val errorColor = ContextCompat.getColor(
+            requireContext(),
+            com.google.android.material.R.color.design_error
+        )
+        dialogBinding.btnConfirm.setTextColor(errorColor)
+        dialogBinding.btnConfirm.text = getString(R.string.delete)
+
+        dialogBinding.btnConfirm.setOnClickListener {
+            // Call the ViewModel's logout method to sign out the user
+            sharedViewModel.deleteTask(taskId) { isSuccessful ->
+                if (isSuccessful) {
+                    Toast.makeText(
+                        fragmentContext,
+                        "Task deleted successfully!",
+                        Toast.LENGTH_SHORT
+                    ).show()
+
+                    // Remove the current fragment
+                    activity?.supportFragmentManager?.popBackStack()
+                } else {
+                    Toast.makeText(fragmentContext, "Failed to delete task", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+
+        }
+
+        dialogBinding.btnCancel.setOnClickListener {
+            // Dismiss the dialog
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+
+    private fun setTaskData(
+        id: String,
+        title: String,
+        description: String,
+        completed: Boolean,
+        starred: Boolean
+    ) {
 
         // Call the ViewModel's method to update the task
         sharedViewModel.updateTask(id, title, description, completed, starred) { isSuccessful ->
@@ -211,4 +249,12 @@ class EditTaskFragment : Fragment() {
         binding.star.setImageResource(starIcon)
     }
 
+    private fun popBackStackManager() {
+        if (changesMade) {
+            showDiscardDialog()
+        } else {
+            // If no changes, simply pop the back stack
+            parentFragmentManager.popBackStack()
+        }
+    }
 }

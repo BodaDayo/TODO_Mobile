@@ -1,4 +1,5 @@
 package com.rgbstudios.todomobile.data.entity
+
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

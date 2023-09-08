@@ -19,6 +19,7 @@ class ListAdapter(private val viewModel: TodoViewModel) :
         lists = newAllTasksList
         notifyDataSetChanged()
     }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
         val binding =
             ItemTaskParentBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -30,20 +31,24 @@ class ListAdapter(private val viewModel: TodoViewModel) :
         val taskAdapter = TaskAdapter(list.list, viewModel)
 
         if (list.name == "completed") {
-            holder.binding.separator.visibility = View.VISIBLE
-            holder.binding.listName.text = list.name
-            holder.binding.listNameLayout.visibility = View.VISIBLE
 
-            // Set the initial icon based on visibility
-            if (holder.binding.childRecyclerView.visibility == View.VISIBLE) {
-                holder.binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_up_24)
+            if (list.list.isNotEmpty()) {
+                holder.binding.separator.visibility = View.VISIBLE
+                holder.binding.listName.text = list.name
+                holder.binding.listNameLayout.visibility = View.VISIBLE
+
+                // Set the icon based on visibility of the layout
+                if (holder.binding.childRecyclerView.visibility == View.VISIBLE) {
+                    holder.binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_up_24)
+                } else {
+                    holder.binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
+                }
             } else {
-                holder.binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
+                holder.binding.listNameLayout.visibility = View.INVISIBLE
             }
-        } else {
-            // Hide the listNameLayout and separator for uncompleted lists
-            holder.binding.separator.visibility = View.GONE
-            holder.binding.listNameLayout.visibility = View.GONE
+        } else if (list.name != "uncompleted") {
+            holder.binding.listName.text = list.name
+            holder.binding.listName.visibility = View.VISIBLE
         }
 
         holder.binding.childRecyclerView.setHasFixedSize(true)
@@ -68,7 +73,7 @@ class ListAdapter(private val viewModel: TodoViewModel) :
 
         private fun toggleListExpansion(isExpanded: Boolean, binding: ItemTaskParentBinding) {
             if (isExpanded) {
-                binding.childRecyclerView.visibility = View.GONE
+                binding.childRecyclerView.visibility = View.INVISIBLE
                 binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
             } else {
                 binding.childRecyclerView.visibility = View.VISIBLE

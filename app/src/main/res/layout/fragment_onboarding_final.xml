@@ -23,7 +23,7 @@
             android:layout_marginHorizontal="24sp"
             android:layout_marginTop="32sp"
             android:gravity="center"
-            android:text="Welcome to TODO Mobile"
+            android:text="@string/welcome_to_todo_mobile"
             android:textSize="24sp" />
 
         <TextView
@@ -32,7 +32,7 @@
             android:layout_marginHorizontal="40sp"
             android:layout_marginTop="32sp"
             android:gravity="center"
-            android:text="Please login to your account or create new account to continue"
+            android:text="@string/please_login_to_your_account_or_create_new_account_to_continue"
             android:textSize="16sp" />
 
     </LinearLayout>
@@ -52,7 +52,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:text="Login"
+            android:text="@string/login"
             android:textSize="16sp"
             app:cornerRadius="8dp" />
         <com.google.android.material.button.MaterialButton
@@ -60,7 +60,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:text="Create Account"
+            android:text="@string/create_account"
             android:backgroundTint="?colorSurface"
             android:textColor="?colorPrimary"
             app:strokeColor="?colorPrimary"

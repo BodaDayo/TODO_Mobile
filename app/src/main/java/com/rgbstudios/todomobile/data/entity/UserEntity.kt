@@ -9,8 +9,5 @@ data class UserEntity(
     val name: String?,
     val email: String,
     val occupation: String?,
-    val avatarFilePath: String?,
-    val hasPendingTaskChanges: Boolean = false,
-    val hasPendingAvatarChange: Boolean = false,
-    val hasPendingDetailsChange: Boolean = false
+    val avatarFilePath: String?
 )

@@ -5,10 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
-import com.rgbstudios.todomobile.databinding.ItemTaskBinding
 import com.rgbstudios.todomobile.data.entity.TaskEntity
+import com.rgbstudios.todomobile.databinding.ItemTaskBinding
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 
 class TaskAdapter(
@@ -30,7 +31,6 @@ class TaskAdapter(
 
         var newTaskCompleted = task.taskCompleted
         var newStarred = task.starred
-
 
         holder.binding.apply {
             taskDateTime.visibility = View.VISIBLE // TODO work on picking up the time
@@ -62,6 +62,7 @@ class TaskAdapter(
                     taskTitleTextView.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 markCompletedImageView.setImageResource(R.drawable.check)
             }
+
             // Check if newStarred, and change icon if true
             val starIcon = if (newStarred) R.drawable.star_filled else R.drawable.star
             star.setImageResource(starIcon)
@@ -70,7 +71,7 @@ class TaskAdapter(
                 taskDescriptionTextView.visibility = View.GONE
             }
 
-            /*
+
             taskDetailsLayout.setOnClickListener {
                 // Set the selected task data in the ViewModel
                 viewModel.setSelectedTaskData(task)
@@ -105,8 +106,6 @@ class TaskAdapter(
                     newStarred
                 )
             }
-
-             */
         }
     }
 
@@ -125,7 +124,7 @@ class TaskAdapter(
         // Call the ViewModel's method to update the task
         viewModel.updateTask(id, title, description, completed, starred) { isSuccessful ->
             if (isSuccessful) {
-                // Handle success
+                // TODO Handle success
 
             } else {
                 // Handle failure

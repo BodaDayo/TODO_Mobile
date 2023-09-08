@@ -4,6 +4,9 @@
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
         <item name="android:fontFamily">@font/poppins_medium</item>
+        <!-- Set status bar color for the light (day) theme -->
+        <item name="android:statusBarColor">?attr/colorSurface</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
     <style name="Theme.TODOMobile" parent="Base.Theme.TODOMobile" />

@@ -1,14 +1,13 @@
 package com.rgbstudios.todomobile.worker
 
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.google.firebase.database.FirebaseDatabase
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.rgbstudios.todomobile.data.entity.TaskEntity
+import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -20,29 +19,34 @@ class UploadTasksWorker(appContext: Context, params: WorkerParameters) :
             val userId = inputData.getString("userId")
             val newDataJson = inputData.getString("newDataJson")
 
-            // Deserialize newDataJson using your preferred method (e.g., Gson)
+            // Deserialize newDataJson
             val newDataList = newDataJson?.let { convertJsonToTasks(it) }
 
-            val destinationRef = FirebaseDatabase.getInstance().reference
-                .child("users")
-                .child(userId!!)
-                .child("tasks")
+            if (userId != null) {
+                val destinationRef = FirebaseAccess().getTasksListRef(userId)
 
-            if (newDataList != null) {
-                for (task in newDataList) {
-                    val taskData = mapOf(
-                        "taskId" to task.taskId,
-                        "title" to task.title,
-                        "description" to task.description,
-                        "taskCompleted" to task.taskCompleted,
-                        "starred" to task.starred
-                    )
+                if (newDataList != null) {
+                    for (task in newDataList) {
+                        val taskData = mapOf(
+                            "taskId" to task.taskId,
+                            "title" to task.title,
+                            "description" to task.description,
+                            "taskCompleted" to task.taskCompleted,
+                            "starred" to task.starred
+                        )
 
-                    // Upload the task data to Firebase
-                    destinationRef.child(task.taskId).setValue(taskData)
+                        // Upload the task data to Firebase
+                        destinationRef.child(task.taskId).setValue(taskData)
+                    }
+                    Result.success()
+                } else {
+                    Log.d(TAG, "list to be uploaded in the UploadTasksWorker is null")
+                    Result.failure()
                 }
+            } else {
+                Log.d(TAG, "userId in the UploadTasksWorker is null")
+                Result.failure()
             }
-            Result.success()
         } catch (e: Exception) {
             Log.e(TAG, "Task upload work failed", e)
             Result.retry()
@@ -55,4 +59,7 @@ class UploadTasksWorker(appContext: Context, params: WorkerParameters) :
         return gson.fromJson(json, type)
     }
 
+    companion object {
+        private const val TAG = "UploadTasksWorker"
+    }
 }

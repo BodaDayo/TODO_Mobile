@@ -6,6 +6,7 @@
     android:padding="16dp">
 
     <TextView
+        android:id="@+id/removeTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginVertical="8sp"
@@ -15,6 +16,7 @@
         android:textStyle="bold" />
 
     <TextView
+        android:id="@+id/removeBody"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
@@ -28,28 +30,26 @@
         android:orientation="horizontal"
         android:paddingVertical="16sp">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLogoutConfirm"
+        <TextView
+            android:id="@+id/btnConfirm"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
+            android:gravity="center"
             android:layout_weight="1"
+            android:textColor="?attr/colorPrimary"
             android:text="Log Out"
-            app:cornerRadius="8dp" />
+            android:textStyle="bold"
+            android:textSize="16sp"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLogoutCancel"
+        <TextView
+            android:id="@+id/btnCancel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginStart="16sp"
+            android:gravity="center"
             android:layout_weight="1"
-            android:backgroundTint="?colorSurface"
             android:text="Cancel"
-            android:textColor="?colorPrimary"
-            app:cornerRadius="8dp"
-            app:strokeColor="?colorPrimary"
-            app:strokeWidth="1sp" />
+            android:textSize="16sp"
+            android:textColor="?colorOnSurface" />
 
     </LinearLayout>
 </LinearLayout>

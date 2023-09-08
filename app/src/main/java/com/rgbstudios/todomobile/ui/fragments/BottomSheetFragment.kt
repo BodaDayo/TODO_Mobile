@@ -91,7 +91,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             // Check if the title is empty before proceeding
             if (titleEditText.isBlank()) {
                 // Show a toast or perform any other appropriate action to notify the user
-                Toast.makeText(requireContext(), "Title cannot be empty!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Title cannot be empty!", Toast.LENGTH_SHORT)
+                    .show()
                 return@setOnClickListener
             }
 
@@ -130,7 +131,6 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         dialog.show()
     }
-
 
     interface DialogAddTaskBtnClickListener {
         fun onSaveTask(

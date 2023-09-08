@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     tools:context=".ui.fragments.OnboardingTwoFragment">
 
     <LinearLayout
@@ -21,25 +21,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/onboard2"
-            android:layout_marginTop="32sp"
-            android:contentDescription="Image that illustrates creating daily routine" />
+            android:layout_marginTop="12sp"
+            android:contentDescription="@string/image_that_illustrates_creating_daily_routine" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16sp"
-            android:layout_marginTop="32sp"
+            android:layout_marginTop="12sp"
             android:gravity="center"
-            android:text="Create daily routine"
+            android:text="@string/onboarding_two_title"
             android:textSize="24sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="40sp"
-            android:layout_marginTop="24sp"
+            android:layout_marginHorizontal="16sp"
+            android:layout_marginVertical="12sp"
             android:gravity="center"
-            android:text="Create your personalized routine to stay productive"
+            android:text="@string/onboarding_two_body"
             android:textSize="16sp" />
 
     </LinearLayout>

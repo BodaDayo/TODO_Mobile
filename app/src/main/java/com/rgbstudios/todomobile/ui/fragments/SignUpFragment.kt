@@ -1,9 +1,5 @@
 package com.rgbstudios.todomobile.ui.fragments
 
-import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,16 +12,10 @@ import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
-import com.rgbstudios.todomobile.data.entity.UserEntity
-import com.rgbstudios.todomobile.data.repository.TodoRepository
-import com.rgbstudios.todomobile.ui.AvatarManager
+import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.databinding.FragmentSignUpBinding
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
 
 class SignUpFragment : Fragment() {
@@ -66,57 +56,42 @@ class SignUpFragment : Fragment() {
             if (email.isNotEmpty() && pass.isNotEmpty() && confirmPass.isNotEmpty()) {
                 if (pass == confirmPass) {
 
-                    binding.progressBar.visibility = View.VISIBLE
-                    auth.createUserWithEmailAndPassword(email, pass).addOnCompleteListener {
+                    // Define a regex pattern for a strong password
+                    val passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#\$%^&+=])(?=\\S+\$).{8,}\$"
 
-                        if (it.isSuccessful) {
 
-                            // Notify user of successful account creation
-                            Toast.makeText(
-                                context,
-                                "Registered successfully! Setting up your database...",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                    if (pass.matches(Regex(passwordPattern))) {
+                        binding.progressBar.visibility = View.VISIBLE
+                        FirebaseAccess().signUp(email, pass) { signUpSuccessful, errorMessage ->
+                            if (signUpSuccessful) {
+                                // Get the user ID from Firebase Auth
+                                val userId = auth.currentUser?.uid ?: ""
 
-                            // Get the user ID from Firebase Auth
-                            val userId = auth.currentUser?.uid ?: ""
-
-                            /*/ Get random Avatar
-                            val defaultAvatarData = getAvatar(requireContext())
-
-                            // Create userEntity with the user details available
-                            val newUser = UserEntity(
-                                userId = userId,
-                                name = null,
-                                email = email,
-                                occupation = null,
-                                avatarFilePath = defaultAvatarData
-                            )
-
-                             */
-
-                            // Send new user to repository
-                            sharedViewModel.setUpNewUser(userId, email, requireContext(), resources, TAG) { isSuccessful ->
-                                if (isSuccessful) {
-                                    findNavController().navigate(R.id.action_signUpFragment_to_homeFragment)
-                                    Toast.makeText(
-                                        context,
-                                        "Set up complete!, Let's get things done! \uD83D\uDE80",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                } else {
-                                    Log.d("SignUpFragment", "UserEntity initiation failed")
+                                // Send new user to repository
+                                sharedViewModel.setUpNewUser(userId, email, requireContext(), resources, TAG) { isSuccessful ->
+                                    if (isSuccessful) {
+                                        findNavController().navigate(R.id.action_signUpFragment_to_homeFragment)
+                                        Toast.makeText(
+                                            context,
+                                            "Set up complete!, Let's get things done! \uD83D\uDE80",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    } else {
+                                        Log.d("SignUpFragment", "UserEntity initiation failed")
+                                    }
                                 }
+                            } else {
+                                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                             }
-                        } else {
-                            val errorMessage =
-                                it.exception?.message?.substringAfter(": ")
-                                    ?: "Unknown error occurred!\nTry Again"
-                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                            binding.progressBar.visibility = View.GONE
                         }
-                        binding.progressBar.visibility = View.GONE
+                    } else {
+                        Toast.makeText(
+                            context,
+                            "Password must be at least 8 characters long, containing uppercase, lowercase, numbers, and special characters.",
+                            Toast.LENGTH_LONG
+                        ).show()
                     }
-
                 } else {
                     Toast.makeText(
                         context,
@@ -129,38 +104,11 @@ class SignUpFragment : Fragment() {
                     .show()
             }
         }
-    }
 
-    private fun getAvatar(context: Context): String? {
-        // Get the drawable resource ID of a random avatar
-        val avatarResource = AvatarManager().defaultAvatar
-
-        // Convert the drawable resource to a bitmap
-        val avatarBitmap = BitmapFactory.decodeResource(resources, avatarResource)
-
-        // Create a directory to store avatars in the app's internal storage
-        val avatarsDir = File(context.filesDir, "avatars")
-        if (!avatarsDir.exists()) {
-            avatarsDir.mkdirs()
+        binding.googleLoginButton.setOnClickListener {
+            Toast.makeText(requireContext(), "Coming soon!", Toast.LENGTH_SHORT).show()
         }
-
-        val file = File(avatarsDir, "avatar.png")
-
-        try {
-            val stream = FileOutputStream(file)
-            avatarBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream)
-            stream.flush()
-            stream.close()
-
-            // Return the file path of the saved file
-            return file.absolutePath
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-
-        return null
     }
-
     companion object {
         private const val TAG = "SignUpFragment"
     }

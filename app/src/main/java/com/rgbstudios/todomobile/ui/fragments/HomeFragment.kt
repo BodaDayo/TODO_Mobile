@@ -8,11 +8,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.SearchView
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -22,13 +22,13 @@ import com.google.android.material.navigation.NavigationView
 import com.google.android.material.textfield.TextInputEditText
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
-import com.rgbstudios.todomobile.ui.adapters.ListAdapter
-import com.rgbstudios.todomobile.databinding.DialogLogoutConfirmationBinding
+import com.rgbstudios.todomobile.databinding.DialogRemoveConfirmationBinding
 import com.rgbstudios.todomobile.databinding.FragmentHomeBinding
+import com.rgbstudios.todomobile.model.TaskList
+import com.rgbstudios.todomobile.ui.adapters.ListAdapter
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
 import java.io.File
-
 
 class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListener,
     NavigationView.OnNavigationItemSelectedListener {
@@ -42,6 +42,8 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
     private lateinit var adapter: ListAdapter
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var drawerLayout: DrawerLayout
+    private var isStarredListShowing = false
+    private var isCurrentUserInitialized = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -55,7 +57,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         super.onViewCreated(view, savedInstanceState)
 
         init()
-        getDataFromFirebase()
+        updateFromDatabase()
         registerEvents()
     }
 
@@ -76,15 +78,30 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
         binding.parentRecyclerView.adapter = adapter
 
-        /*
         binding.bottomNavigationView.setOnItemSelectedListener {
             when (it.itemId) {
                 R.id.starredList -> {
-                    getStarredList()
+                    //Clear the searchView
+                    binding.searchView.setQuery("", false)
+
+                    if (isStarredListShowing) {
+                        isStarredListShowing = false
+
+                        // Change the icon to outline star
+                        updateStarredListIcon(R.drawable.star)
+                        sharedViewModel.startTasksListener()
+                    } else {
+                        isStarredListShowing = true
+
+                        getStarredList()
+
+                        // Change the icon to star_filled
+                        updateStarredListIcon(R.drawable.star_filled)
+                    }
                 }
 
                 R.id.sort -> {
-                    sortCurrentList()
+                    // sortCurrentList()
                 }
 
                 R.id.focus -> {
@@ -92,14 +109,13 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
                 }
 
                 R.id.profile -> {
-                    findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
+                    if (isCurrentUserInitialized) {
+                        findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
+                    }
                 }
             }
             true
         }
-
-         */
-        binding.bottomNavigationView.selectedItemId = 0
 
         drawerLayout = binding.drawerLayout
 
@@ -110,56 +126,61 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         swipeRefreshLayout = binding.swipeRefreshLayout
         swipeRefreshLayout.setOnRefreshListener {
             // This code will be triggered when the user performs the pull-to-refresh action
-            getDataFromFirebase()
+            updateFromDatabase()
         }
 
-        // Observe the avatar file path and set it to your ImageView
-        sharedViewModel.avatarFilePath.observe(viewLifecycleOwner) { path ->
-            if (path != null) {
-                val avatarImageViews =
-                    arrayOf(binding.avatarHome, avatarNavDrw)
-
-                val imageLoad = Glide.with(requireContext()).load(File(path))
-
-                for (imageView in avatarImageViews) {
-                    imageLoad.circleCrop().into(imageView)
-                }
-            }
-        }
-
-        /* / Observe userEmail LiveData
-        sharedViewModel.userEmail.observe(viewLifecycleOwner) {
-            emailNavDrw.text = it
-            emailNavDrw.visibility = View.VISIBLE
+        headerView.setOnClickListener {
+            drawerLayout.closeDrawer(GravityCompat.START)
+            findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
         }
 
         // Observe userDetails LiveData
-        sharedViewModel.userDetailsFromFirebase.observe(viewLifecycleOwner) {
-            nameNavDrw.text = it.name
-            occupationNavDrw.text = it.occupation
-        }
+        sharedViewModel.currentUser.observe(viewLifecycleOwner) { user ->
 
-        // Observe isUserSignedIn LiveData
-        sharedViewModel.isUserSignedIn.observe(viewLifecycleOwner) { isUserSignedIn ->
-            // Update menu item title and icon based on user sign-in status
-            val logOutMenuItem = binding.navigationView.menu.findItem(R.id.logInOut)
+            if (user != null) {
 
-            if (isUserSignedIn) {
-                logOutMenuItem.title = "Log Out"
-                logOutMenuItem.setIcon(R.drawable.logout)
-            } else {
-                logOutMenuItem.title = "Sign In"
-                logOutMenuItem.setIcon(R.drawable.login)
+                isCurrentUserInitialized = true
+
+                // Set the nav drawer and home avatar imageViews
+                if (user.avatarFilePath != null) {
+                    val avatarImageViews =
+                        arrayOf(binding.avatarHome, avatarNavDrw)
+
+                    val imageLoad = Glide.with(requireContext()).load(File(user.avatarFilePath))
+
+                    for (imageView in avatarImageViews) {
+                        imageLoad.circleCrop().into(imageView)
+                    }
+                }
+
+                // Set the nav drawer email
+                emailNavDrw.text = user.email
+                emailNavDrw.visibility = View.VISIBLE
+
+                // Set the nav drawer name
+                if (!user.name.isNullOrEmpty())
+                    nameNavDrw.text = user.name
+
+                // Set the nav drawer occupation
+                if (!user.occupation.isNullOrEmpty())
+                    occupationNavDrw.text = user.occupation
             }
         }
-        */
 
         // Observe allTasksList LiveData and update the adapter
         sharedViewModel.allTasksList.observe(viewLifecycleOwner) { allTasksList ->
+            when (checkTaskLists(allTasksList)) {
+                1 -> onEmptyLayout(1)
+
+                2 -> onEmptyLayout(2)
+
+                3 -> onEmptyLayout(3)
+
+            }
+
             adapter.updateTaskLists(allTasksList)
-            onEmptyLayout(allTasksList?.isEmpty() ?: true)
         }
-/*
+
 
         // Observe filteredTaskList LiveData and update the adapter for searchQuery
         sharedViewModel.filteredTaskList.observe(viewLifecycleOwner) { filteredTaskList ->
@@ -172,13 +193,16 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
                 return false
             }
 
-            override fun onQueryTextChange(newText: String?): Boolean {
-                sharedViewModel.filterTasks(newText, "search")
+            override fun onQueryTextChange(query: String?): Boolean {
+                if (query.isNullOrEmpty()) {
+                    sharedViewModel.startTasksListener()
+                } else {
+                    sharedViewModel.filterTasks(query, SEARCH)
+                }
                 return true
             }
         })
 
-         */
     }
 
     private fun registerEvents() {
@@ -187,22 +211,6 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
             bottomSheetFragment = BottomSheetFragment()
             bottomSheetFragment.setListener(this)
             bottomSheetFragment.show(parentFragmentManager, bottomSheetFragment.tag)
-
-            /*
-            if (sharedViewModel.isUserSignedIn.value == true) {
-                bottomSheetFragment = BottomSheetFragment()
-                bottomSheetFragment.setListener(this)
-                bottomSheetFragment.show(parentFragmentManager, bottomSheetFragment.tag)
-            } else {
-                drawerLayout.openDrawer(GravityCompat.START)
-                Toast.makeText(
-                    context,
-                    "Sign in to continue\nOffline mode coming soon!",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-
-             */
 
         }
     }
@@ -223,7 +231,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
                 // Clear the EditText fields
                 titleEt.text = null
                 descriptionEt.text = null
-                binding.emptinessLayout.visibility = View.GONE
+                binding.emptinessLayout.visibility = View.INVISIBLE
             } else {
                 // Handle failure
                 Toast.makeText(context, "Failed to save task", Toast.LENGTH_SHORT).show()
@@ -236,13 +244,9 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         }
     }
 
-    private fun getDataFromFirebase() {
+    private fun updateFromDatabase() {
+        sharedViewModel.startUserListener()
         sharedViewModel.startTasksListener()
-
-        /* TODO Get condition from vieModel getTasksFromFirebase
-        fun onCancelled(error: DatabaseError) {
-            //Toast.makeText(context, error.message, Toast.LENGTH_SHORT).show()
-        }*/
         stopRefreshing()
     }
 
@@ -250,41 +254,52 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         swipeRefreshLayout.isRefreshing = false
     }
 
-    private fun onEmptyLayout(isEmpty: Boolean) {
-        if (isEmpty) {
-            binding.emptinessLayout.visibility = View.VISIBLE
-            binding.searchViewLayout.visibility = View.GONE
-        } else {
-            binding.emptinessLayout.visibility = View.GONE
-            binding.searchViewLayout.visibility = View.VISIBLE
+    private fun checkTaskLists(newList: List<TaskList>): Int {
+        val isEmpty = newList.all { it.list.isEmpty() }
+        val uncompletedListIsEmpty = newList.any { it.name == "uncompleted" && it.list.isEmpty() }
+
+        return when {
+            isEmpty -> 1
+            uncompletedListIsEmpty -> 2
+            else -> 3
         }
     }
-    /*
-        private fun resetCurrentList() {
-            sharedViewModel.checkUserAuthState()
-            sharedViewModel.resetList() // Clear the RecyclerView
-            onEmptyLayout(true) // Show the empty layout
-        }
 
-        private fun getStarredList() {
-            sharedViewModel.filterTasks("", "star")
-        }
+    private fun onEmptyLayout(isEmpty: Int) {
+        when (isEmpty) {
+            1 -> {
+                binding.emptyTaskTitle.text = getString(R.string.no_tasks_yet)
+                binding.emptyTaskBody.text = getString(R.string.add_tasks)
+                binding.emptinessLayout.visibility = View.VISIBLE
+                binding.searchViewLayout.visibility = View.INVISIBLE
+                binding.parentRecyclerView.visibility = View.INVISIBLE
+            }
 
-        private fun sortCurrentList() {
-            //TODO
-        }
+            2 -> {
+                binding.emptyTaskTitle.text = getString(R.string.tasks_completed)
+                binding.emptyTaskBody.text = getString(R.string.well_done)
+                binding.emptinessLayout.visibility = View.VISIBLE
+                binding.searchViewLayout.visibility = View.INVISIBLE
+                binding.parentRecyclerView.visibility = View.INVISIBLE
+            }
 
-     */
-
-        private fun toggleNavigationDrawer() {
-            // Toggle the navigation drawer open or close
-            if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
-                drawerLayout.closeDrawer(GravityCompat.START)
-            } else {
-                drawerLayout.openDrawer(GravityCompat.START)
+            3 -> {
+                binding.emptinessLayout.visibility = View.INVISIBLE
+                binding.searchViewLayout.visibility = View.VISIBLE
+                binding.parentRecyclerView.visibility = View.VISIBLE
             }
         }
 
+    }
+
+    private fun toggleNavigationDrawer() {
+        // Toggle the navigation drawer open or close
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+    }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
 
@@ -313,22 +328,36 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
     }
 
     private fun showLogoutConfirmationDialog() {
-        val dialogBinding = DialogLogoutConfirmationBinding.inflate(layoutInflater)
+        val dialogBinding = DialogRemoveConfirmationBinding.inflate(layoutInflater)
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(dialogBinding.root)
             .create()
 
-        dialogBinding.btnLogoutConfirm.setOnClickListener {
+        dialogBinding.btnConfirm.setOnClickListener {
             // Call the ViewModel's logout method to sign out the user
-            // sharedViewModel.logout()
+            sharedViewModel.logOut { logOutSuccessful, errorMessage ->
 
-            // Dismiss the dialog
-            dialog.dismiss()
+                if (logOutSuccessful) {
+                    // Dismiss the dialog
+                    dialog.dismiss()
 
-            //resetCurrentList()
+                    // Navigate to SignInFragment
+                    findNavController().navigate(R.id.action_homeFragment_to_signInFragment)
+
+                } else {
+                    // Dismiss the dialog
+                    dialog.dismiss()
+
+                    errorMessage?.let { message ->
+                        val output = message.substringAfter(": ")
+                        Toast.makeText(context, output, Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+
         }
 
-        dialogBinding.btnLogoutCancel.setOnClickListener {
+        dialogBinding.btnCancel.setOnClickListener {
             // Dismiss the dialog
             dialog.dismiss()
         }
@@ -336,5 +365,29 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         dialog.show()
     }
 
+    private fun updateStarredListIcon(iconResId: Int) {
+        // Get the bottom navigation menu
+        val menu = binding.bottomNavigationView.menu
 
+        // Find the starredList item by its ID
+        val starredListItem = menu.findItem(R.id.starredList)
+
+        // Set the icon for the starredList item
+        starredListItem.setIcon(iconResId)
+    }
+
+    private fun getStarredList() {
+        sharedViewModel.filterTasks(null, STAR)
+    }
+
+    private fun sortCurrentList() {
+        //TODO
+    }
+
+    companion object {
+        private const val TAG = "HomeFragment"
+        private const val STAR = "Starred List"
+        private const val SEARCH = "Search Results"
+
+    }
 }

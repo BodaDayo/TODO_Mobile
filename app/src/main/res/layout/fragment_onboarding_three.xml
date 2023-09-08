@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     tools:context=".ui.fragments.OnboardingThreeFragment">
 
     <LinearLayout
@@ -21,25 +21,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="56sp"
-            android:contentDescription="Image that illustrates organizing your tasks"
+            android:contentDescription="@string/image_that_illustrates_organizing_your_tasks"
             android:src="@drawable/onboard3" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16sp"
-            android:layout_marginTop="32sp"
+            android:layout_marginTop="24sp"
             android:gravity="center"
-            android:text="Organize your tasks"
+            android:text="@string/onboarding_three_title"
             android:textSize="24sp" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="40sp"
-            android:layout_marginTop="32sp"
+            android:layout_marginHorizontal="16sp"
+            android:layout_marginVertical="12sp"
             android:gravity="center"
-            android:text="Organize your daily tasks by adding your tasks into separate categories"
+            android:text="@string/onboarding_three_body"
             android:textSize="16sp" />
 
     </LinearLayout>
