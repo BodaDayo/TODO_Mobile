@@ -13,8 +13,11 @@ import androidx.activity.addCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import com.google.android.gms.tasks.Task
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import com.rgbstudios.todomobile.R
+import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.DialogRemoveConfirmationBinding
 import com.rgbstudios.todomobile.databinding.FragmentEditTaskBinding
@@ -27,6 +30,8 @@ class EditTaskFragment : Fragment() {
     private lateinit var binding: FragmentEditTaskBinding
     private lateinit var fragmentContext: Context
     private var changesMade = false
+    private var deletedTask: TaskEntity? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -126,6 +131,7 @@ class EditTaskFragment : Fragment() {
 
                 activity?.supportFragmentManager?.popBackStack()
             }
+
             binding.markCompletedTextView.setOnClickListener {
                 val newCompletedStatus = !taskCompleted
                 val newTitle = binding.editTitleEt.text.toString()
@@ -135,8 +141,9 @@ class EditTaskFragment : Fragment() {
 
                 activity?.supportFragmentManager?.popBackStack()
             }
+
             binding.deleteTaskTextView.setOnClickListener {
-                showDeleteConfirmationDialog(taskId)
+                showDeleteConfirmationDialog(requireContext(), taskId)
             }
 
             binding.popBack.setOnClickListener {
@@ -179,7 +186,7 @@ class EditTaskFragment : Fragment() {
         dialog.show()
     }
 
-    private fun showDeleteConfirmationDialog(taskId: String) {
+    private fun showDeleteConfirmationDialog(etContext: Context, Id: String) {
         val dialogBinding = DialogRemoveConfirmationBinding.inflate(layoutInflater)
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(dialogBinding.root)
@@ -195,14 +202,41 @@ class EditTaskFragment : Fragment() {
         dialogBinding.btnConfirm.text = getString(R.string.delete)
 
         dialogBinding.btnConfirm.setOnClickListener {
+
+            // Store a reference to the deleted task before deleting it
+            deletedTask = sharedViewModel.selectedTaskData.value
+
             // Call the ViewModel's logout method to sign out the user
-            sharedViewModel.deleteTask(taskId) { isSuccessful ->
+            sharedViewModel.deleteTask(Id) { isSuccessful ->
                 if (isSuccessful) {
-                    Toast.makeText(
-                        fragmentContext,
-                        "Task deleted successfully!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+
+                    // Dismiss the dialog
+                    dialog.dismiss()
+
+                    val snackBar = view?.let {
+                        Snackbar.make(
+                            it,
+                            "Task deleted successfully!",
+                            Snackbar.LENGTH_LONG
+                        )
+                    }
+                    snackBar?.setAction("Undo") {
+                        // Restore the deleted task
+                        deletedTask?.let {
+                            sharedViewModel.saveTask(it.title, it.description, it.starred) { isSuccessful ->
+                                if (isSuccessful) {
+                                    // Handle success
+                                    Toast.makeText(etContext, "Task Restored!", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    // Handle failure
+                                    Toast.makeText(etContext, "Failed to restore task", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                          deletedTask = null
+                        }
+                    }
+                    // Show the snackBar
+                    snackBar?.show()
 
                     // Remove the current fragment
                     activity?.supportFragmentManager?.popBackStack()

@@ -1,16 +1,21 @@
 package com.rgbstudios.todomobile.ui.adapters
 
+import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.ItemTaskParentBinding
 import com.rgbstudios.todomobile.model.TaskList
+import com.rgbstudios.todomobile.ui.fragments.HomeFragment
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 
-class ListAdapter(private val viewModel: TodoViewModel) :
+class ListAdapter(private val context: Context, private val viewModel: TodoViewModel) :
     RecyclerView.Adapter<ListAdapter.ListViewHolder>() {
 
     private var lists: List<TaskList> = emptyList()
@@ -22,7 +27,7 @@ class ListAdapter(private val viewModel: TodoViewModel) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
         val binding =
-            ItemTaskParentBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            ItemTaskParentBinding.inflate(LayoutInflater.from(context), parent, false)
         return ListViewHolder(binding)
     }
 
@@ -36,6 +41,7 @@ class ListAdapter(private val viewModel: TodoViewModel) :
                 holder.binding.separator.visibility = View.VISIBLE
                 holder.binding.listName.text = list.name
                 holder.binding.listNameLayout.visibility = View.VISIBLE
+                holder.binding.closeList.visibility = View.GONE
 
                 // Set the icon based on visibility of the layout
                 if (holder.binding.childRecyclerView.visibility == View.VISIBLE) {
@@ -44,11 +50,22 @@ class ListAdapter(private val viewModel: TodoViewModel) :
                     holder.binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
                 }
             } else {
-                holder.binding.listNameLayout.visibility = View.INVISIBLE
+                holder.binding.listNameLayout.visibility = View.GONE
             }
         } else if (list.name != "uncompleted") {
             holder.binding.listName.text = list.name
-            holder.binding.listName.visibility = View.VISIBLE
+            holder.binding.listName.setTextColor(ContextCompat.getColor(context, R.color.myPrimary))
+
+            holder.binding.listNameLayout.visibility = View.VISIBLE
+            holder.binding.collapseList.visibility = View.GONE
+
+            val errorColor = ContextCompat.getColor(
+                context,com.google.android.material.R.color.design_error
+            )
+            holder.binding.closeList.setColorFilter(errorColor)
+            holder.binding.closeList.visibility = View.VISIBLE
+        } else {
+            holder.binding.listNameLayout.visibility = View.GONE
         }
 
         holder.binding.childRecyclerView.setHasFixedSize(true)
@@ -69,11 +86,14 @@ class ListAdapter(private val viewModel: TodoViewModel) :
                 val isExpanded = binding.childRecyclerView.visibility == View.VISIBLE
                 toggleListExpansion(isExpanded, binding)
             }
+            binding.closeList.setOnClickListener {
+                viewModel.startTasksListener()
+            }
         }
 
         private fun toggleListExpansion(isExpanded: Boolean, binding: ItemTaskParentBinding) {
             if (isExpanded) {
-                binding.childRecyclerView.visibility = View.INVISIBLE
+                binding.childRecyclerView.visibility = View.GONE
                 binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
             } else {
                 binding.childRecyclerView.visibility = View.VISIBLE

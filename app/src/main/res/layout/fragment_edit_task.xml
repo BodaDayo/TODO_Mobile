@@ -100,7 +100,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:contentDescription="@string/mark_as_completed"
-                android:src="@drawable/check" />
+                android:src="@drawable/check"
+                app:tint="?attr/colorOnSurface" />
 
             <TextView
                 android:id="@+id/markCompletedTextView"

@@ -1,14 +1,17 @@
 package com.rgbstudios.todomobile.ui.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
@@ -19,7 +22,9 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.navigation.NavigationView
+import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
+import com.google.firebase.analytics.FirebaseAnalytics.Event.SEARCH
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.databinding.DialogRemoveConfirmationBinding
@@ -29,6 +34,7 @@ import com.rgbstudios.todomobile.ui.adapters.ListAdapter
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
 import java.io.File
+import kotlin.reflect.KTypeProjection.Companion.STAR
 
 class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListener,
     NavigationView.OnNavigationItemSelectedListener {
@@ -43,6 +49,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
     private lateinit var swipeRefreshLayout: SwipeRefreshLayout
     private lateinit var drawerLayout: DrawerLayout
     private var isStarredListShowing = false
+    private var isSearchResultsShowing = false
     private var isCurrentUserInitialized = false
 
     override fun onCreateView(
@@ -63,63 +70,16 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
 
     private fun init() {
 
-        val navigationView = requireView().findViewById<NavigationView>(R.id.navigationView)
-        val headerView = navigationView.getHeaderView(0) // Get the header view from NavigationView
-
-        val avatarNavDrw = headerView.findViewById<ImageView>(R.id.avatarNavDrw)
-        val nameNavDrw = headerView.findViewById<TextView>(R.id.userNameTxt)
-        val emailNavDrw = headerView.findViewById<TextView>(R.id.emailTxt)
-        val occupationNavDrw = headerView.findViewById<TextView>(R.id.occupationTxt)
-
         binding.parentRecyclerView.setHasFixedSize(true)
         binding.parentRecyclerView.layoutManager = LinearLayoutManager(context)
 
-        adapter = ListAdapter(sharedViewModel)
+        adapter = ListAdapter(requireContext(), sharedViewModel)
 
         binding.parentRecyclerView.adapter = adapter
 
-        binding.bottomNavigationView.setOnItemSelectedListener {
-            when (it.itemId) {
-                R.id.starredList -> {
-                    //Clear the searchView
-                    binding.searchView.setQuery("", false)
-
-                    if (isStarredListShowing) {
-                        isStarredListShowing = false
-
-                        // Change the icon to outline star
-                        updateStarredListIcon(R.drawable.star)
-                        sharedViewModel.startTasksListener()
-                    } else {
-                        isStarredListShowing = true
-
-                        getStarredList()
-
-                        // Change the icon to star_filled
-                        updateStarredListIcon(R.drawable.star_filled)
-                    }
-                }
-
-                R.id.sort -> {
-                    // sortCurrentList()
-                }
-
-                R.id.focus -> {
-                    // TODO Navigate to focus fragment
-                }
-
-                R.id.profile -> {
-                    if (isCurrentUserInitialized) {
-                        findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
-                    }
-                }
-            }
-            true
-        }
-
         drawerLayout = binding.drawerLayout
 
-        binding.toggleNav.setOnClickListener { toggleNavigationDrawer() }
+        binding.avatarHome.setOnClickListener { toggleNavigationDrawer() }
 
         binding.navigationView.setNavigationItemSelectedListener(this)
 
@@ -129,12 +89,52 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
             updateFromDatabase()
         }
 
+        // Set up SearchView's query text listener
+        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                return false
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean {
+                isSearchResultsShowing = if (query.isNullOrEmpty()) {
+                    sharedViewModel.startTasksListener()
+                    false
+                } else {
+                    sharedViewModel.filterTasks(query, SEARCH)
+                    true
+                }
+                return true
+            }
+        })
+
+        // Set up OnClickListener for the "moreOptions" ImageView
+        binding.moreOptions.setOnClickListener { view ->
+            showOverflowMenu(view)
+        }
+
+        // Observe LiveData
+        observeLiveData()
+    }
+
+    private fun observeLiveData() {
+        val navigationView = requireView().findViewById<NavigationView>(R.id.navigationView)
+        val headerView = navigationView.getHeaderView(0) // Get the header view from NavigationView
+
+        val avatarNavDrw = headerView.findViewById<ImageView>(R.id.avatarNavDrw)
+        val nameNavDrw = headerView.findViewById<TextView>(R.id.userNameTxt)
+        val emailNavDrw = headerView.findViewById<TextView>(R.id.emailTxt)
+        val occupationNavDrw = headerView.findViewById<TextView>(R.id.occupationTxt)
+        val uncompletedTasks = headerView.findViewById<TextView>(R.id.unCompletedTasksNumber)
+        val completedTasks = headerView.findViewById<TextView>(R.id.completedTasksNumber)
+        val progressBarNavDrw = headerView.findViewById<View>(R.id.progressBar)
+        val progressBackNavDrw = headerView.findViewById<View>(R.id.progressBackground)
+
+        // Set up OnClickListener for the navigation drawer header
         headerView.setOnClickListener {
             drawerLayout.closeDrawer(GravityCompat.START)
             findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
         }
 
-        // Observe userDetails LiveData
         sharedViewModel.currentUser.observe(viewLifecycleOwner) { user ->
 
             if (user != null) {
@@ -167,47 +167,60 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
             }
         }
 
-        // Observe allTasksList LiveData and update the adapter
         sharedViewModel.allTasksList.observe(viewLifecycleOwner) { allTasksList ->
             when (checkTaskLists(allTasksList)) {
                 1 -> onEmptyLayout(1)
-
                 2 -> onEmptyLayout(2)
-
                 3 -> onEmptyLayout(3)
+            }
+            adapter.updateTaskLists(allTasksList)
 
+            val uncompletedNumber = allTasksList.find { it.name == "uncompleted" }?.list?.size ?: 0
+            val completedNumber = allTasksList.find { it.name == "completed" }?.list?.size ?: 0
+
+            // Update uncompleted tasks text
+            uncompletedTasks.text = resources.getQuantityString(
+                R.plurals.tasks_left,
+                uncompletedNumber,
+                uncompletedNumber
+            )
+
+            // Update completed tasks text
+            completedTasks.text = resources.getQuantityString(
+                R.plurals.tasks_done,
+                completedNumber,
+                completedNumber
+            )
+
+            // Calculate the completion level
+            val totalTasks = uncompletedNumber + completedNumber
+            val completionLevel = if (totalTasks > 0) uncompletedNumber.toFloat() / totalTasks else 0f
+
+            // Set the width of the progress bar
+            val progressBarWidth = (headerView.width * completionLevel).toInt()
+            progressBarNavDrw.layoutParams.width = progressBarWidth
+            progressBarNavDrw.requestLayout()
+
+            // Check if progressBarWidth is 0 and completedNumber is greater than 0
+            if (progressBarWidth == 0 && completedNumber > 0) {
+                // Set the background color of progressBackNavDrw to R.color.myGreen
+                progressBackNavDrw.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.myGreen))
+            } else {
+                // Set the background color of progressBackNavDrw to your default color
+                progressBackNavDrw.setBackgroundColor(ContextCompat.getColor(requireContext(), android.R.color.darker_gray))
             }
 
-            adapter.updateTaskLists(allTasksList)
+            isStarredListShowing = false
+            isSearchResultsShowing = false
         }
 
-
-        // Observe filteredTaskList LiveData and update the adapter for searchQuery
         sharedViewModel.filteredTaskList.observe(viewLifecycleOwner) { filteredTaskList ->
             adapter.updateTaskLists(filteredTaskList)
         }
-
-        // Set up SearchView's query text listener
-        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
-                return false
-            }
-
-            override fun onQueryTextChange(query: String?): Boolean {
-                if (query.isNullOrEmpty()) {
-                    sharedViewModel.startTasksListener()
-                } else {
-                    sharedViewModel.filterTasks(query, SEARCH)
-                }
-                return true
-            }
-        })
-
     }
 
     private fun registerEvents() {
         binding.fab.setOnClickListener {
-
             bottomSheetFragment = BottomSheetFragment()
             bottomSheetFragment.setListener(this)
             bottomSheetFragment.show(parentFragmentManager, bottomSheetFragment.tag)
@@ -228,6 +241,7 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
             if (isSuccessful) {
                 // Handle success
                 Toast.makeText(context, "Task saved successfully!", Toast.LENGTH_SHORT).show()
+
                 // Clear the EditText fields
                 titleEt.text = null
                 descriptionEt.text = null
@@ -365,17 +379,6 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         dialog.show()
     }
 
-    private fun updateStarredListIcon(iconResId: Int) {
-        // Get the bottom navigation menu
-        val menu = binding.bottomNavigationView.menu
-
-        // Find the starredList item by its ID
-        val starredListItem = menu.findItem(R.id.starredList)
-
-        // Set the icon for the starredList item
-        starredListItem.setIcon(iconResId)
-    }
-
     private fun getStarredList() {
         sharedViewModel.filterTasks(null, STAR)
     }
@@ -384,10 +387,53 @@ class HomeFragment : Fragment(), BottomSheetFragment.DialogAddTaskBtnClickListen
         //TODO
     }
 
+    private fun showOverflowMenu(view: View) {
+        val popupMenu = PopupMenu(requireContext(), view)
+
+        // Inflate the menu resource
+        popupMenu.menuInflater.inflate(R.menu.home_overflow_menu, popupMenu.menu)
+
+        // Set an OnMenuItemClickListener for the menu items
+        popupMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menu_favorites -> {
+                    if (isSearchResultsShowing) {
+                        Toast.makeText(
+                            requireContext(),
+                            "Clear the search bar to get complete results",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+
+                    getStarredList()
+
+                    isStarredListShowing = true
+                    true
+                }
+
+                R.id.menu_sort -> {
+                    true
+                }
+
+                R.id.menu_category -> {
+                    true
+                }
+
+                R.id.menu_focus -> {
+                    true
+                }
+
+                else -> false
+            }
+        }
+
+        // Show the popup menu
+        popupMenu.show()
+    }
+
     companion object {
         private const val TAG = "HomeFragment"
-        private const val STAR = "Starred List"
+        private const val STAR = "Favorites"
         private const val SEARCH = "Search Results"
-
     }
 }

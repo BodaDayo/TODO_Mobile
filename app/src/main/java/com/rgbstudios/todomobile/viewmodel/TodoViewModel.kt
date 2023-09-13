@@ -3,6 +3,7 @@ package com.rgbstudios.todomobile.viewmodel
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -260,6 +261,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     }
 
     fun filterTasks(query: String?, condition: String) {
+        Log.d("aaaaVM", "offender function entered")
         val allTasksList = _allTasksList.value ?: emptyList()
 
         when (condition) {
@@ -372,7 +374,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
 
     companion object {
         private const val TAG = "TodoViewModel"
-        private const val STAR = "Starred List"
+        private const val STAR = "Favorites"
         private const val SEARCH = "Search Results"
         private const val USERID = "userId"
         private const val COMPLETED = "completed"

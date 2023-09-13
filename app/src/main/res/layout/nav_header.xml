@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/navigation_header_container"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="bottom"
+    android:orientation="vertical"
     android:paddingHorizontal="16dp"
     android:paddingTop="32sp">
 
@@ -15,63 +13,85 @@
         android:layout_width="72sp"
         android:layout_height="72sp"
         android:layout_gravity="center"
-        android:src="@drawable/usericon"/>
+        android:src="@drawable/user_icon" />
+
     <TextView
         android:id="@+id/userNameTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="name"
         android:layout_gravity="center"
+        android:text="name"
         android:textSize="20sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
+
     <TextView
         android:id="@+id/emailTxt"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:paddingBottom="4sp"
-        android:layout_height="wrap_content"
         android:text="email@todo.com"
         android:textSize="14sp"
-        android:visibility="gone"/>
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/occupationTxt"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:paddingBottom="4sp"
-        android:layout_height="wrap_content"
         android:text="Occupation"
-        android:textSize="14sp"/>
+        android:textSize="14sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-        <Button
+        <TextView
+            android:id="@+id/unCompletedTasksNumber"
             android:layout_width="0sp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:paddingVertical="16sp"
             android:layout_marginHorizontal="4sp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:gravity="center"
+            android:paddingVertical="16sp"
             android:text="10 Tasks left"
-            android:textSize="11sp"
-            app:cornerRadius="8dp"
-            android:backgroundTint="?colorSurface"
-            android:textColor="?colorOnSurface"
-            app:strokeColor="?colorOnSurface"
-            app:strokeWidth="1sp"/>
-        <Button
-            android:layout_width="0sp"
-            android:layout_weight="1"
-            android:layout_marginHorizontal="4sp"
-            android:layout_height="wrap_content"
-            android:paddingVertical="16sp"
-            android:textSize="11sp"
-            android:text="5 Tasks done"
-            app:cornerRadius="8dp"
-            android:backgroundTint="?colorSurface"
-            app:strokeColor="?colorOnSurface"
-            android:textColor="?colorOnSurface"
-            app:strokeWidth="1sp"/>
+            android:textSize="12sp" />
 
+        <TextView
+            android:id="@+id/completedTasksNumber"
+            android:layout_width="0sp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="4sp"
+            android:layout_weight="1"
+            android:background="@drawable/rounded_corners"
+            android:gravity="center"
+            android:paddingVertical="16sp"
+            android:text="5 Tasks done"
+            android:textSize="12sp" />
     </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:layout_marginVertical="8dp"
+        android:layout_marginHorizontal="4dp">
+
+        <!-- Gray background view -->
+        <View
+            android:id="@+id/progressBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/darker_gray" />
+
+        <!-- Progress bar -->
+        <View
+            android:id="@+id/progressBar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/colorPrimary" />
+    </FrameLayout>
+
 </LinearLayout>

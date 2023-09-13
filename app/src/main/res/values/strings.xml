@@ -41,5 +41,15 @@
     <string name="please_login_to_your_account_or_create_new_account_to_continue">Please login to your account or create new account to continue</string>
     <string name="welcome_to_todo_mobile">Welcome to TODO Mobile</string>
 
+    <plurals name="tasks_left">
+        <item quantity="one">%d Task left</item>
+        <item quantity="other">%d Tasks left</item>
+    </plurals>
+
+    <plurals name="tasks_done">
+        <item quantity="one">%d Task done</item>
+        <item quantity="other">%d Tasks done</item>
+    </plurals>
+
 
 </resources>

@@ -1,5 +1,7 @@
 package com.rgbstudios.todomobile.ui.fragments
 
+import android.app.UiModeManager
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
@@ -59,6 +61,10 @@ class ProfileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val uiModeManager =
+            requireContext().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        val isNightMode = uiModeManager.nightMode == UiModeManager.MODE_NIGHT_YES
 
         binding.profileImageView.setOnClickListener {
 
@@ -219,20 +225,28 @@ class ProfileFragment : Fragment() {
             }
         }
 
-        // Set up click listeners for default avatars
-        binding.circleImageView1.setOnClickListener { onCircleImageViewClicked(binding.circleImageView1) }
-        binding.circleImageView2.setOnClickListener { onCircleImageViewClicked(binding.circleImageView2) }
-        binding.circleImageView3.setOnClickListener { onCircleImageViewClicked(binding.circleImageView3) }
-        binding.circleImageView4.setOnClickListener { onCircleImageViewClicked(binding.circleImageView4) }
-        binding.circleImageView5.setOnClickListener { onCircleImageViewClicked(binding.circleImageView5) }
-        binding.circleImageView6.setOnClickListener { onCircleImageViewClicked(binding.circleImageView6) }
-        binding.circleImageView7.setOnClickListener { onCircleImageViewClicked(binding.circleImageView7) }
-        binding.circleImageView8.setOnClickListener { onCircleImageViewClicked(binding.circleImageView8) }
-        binding.circleImageView9.setOnClickListener { onCircleImageViewClicked(binding.circleImageView9) }
-        binding.circleImageView10.setOnClickListener { onCircleImageViewClicked(binding.circleImageView10) }
-        binding.circleImageView11.setOnClickListener { onCircleImageViewClicked(binding.circleImageView11) }
-        binding.circleImageView12.setOnClickListener { onCircleImageViewClicked(binding.circleImageView12) }
+        // Create a list of CircleImageView objects
+        val circleImageViews = listOf(
+            binding.circleImageView1,
+            binding.circleImageView2,
+            binding.circleImageView3,
+            binding.circleImageView4,
+            binding.circleImageView5,
+            binding.circleImageView6,
+            binding.circleImageView7,
+            binding.circleImageView8,
+            binding.circleImageView9,
+            binding.circleImageView10,
+            binding.circleImageView11,
+            binding.circleImageView12
+        )
 
+        // Set up click listeners for default avatars using a loop
+        circleImageViews.forEach { circleImageView ->
+            circleImageView.setOnClickListener {
+                onCircleImageViewClicked(circleImageView, isNightMode)
+            }
+        }
         binding.saveAvatarButton.setOnClickListener {
             binding.saveAvatarButton.isSelected = true
 
@@ -399,19 +413,25 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun onCircleImageViewClicked(circleImageView: CircleImageView) {
+    private fun onCircleImageViewClicked(circleImageView: CircleImageView, isNightMode: Boolean) {
         // Deselect the previously selected item (if any)
         selectedImageView?.isSelected = false
         selectedImageView?.borderColor = Color.TRANSPARENT // Clear previous border
 
         // Select the clicked item
         circleImageView.isSelected = true
-        val borderColor = ContextCompat.getColor(requireContext(), R.color.myPrimary)
-        circleImageView.borderColor = borderColor
-        circleImageView.borderWidth = borderWidth // Set border width
 
-        // Select the clicked item
-        circleImageView.isSelected = true
+        // Set the border color
+        val colorResourceId = if (isNightMode) {
+            R.color.myPrimaryVariant // Use night mode color resource
+        } else {
+            R.color.myPrimary // Use regular color resource
+        }
+        val borderColor = ContextCompat.getColor(requireContext(), colorResourceId)
+        circleImageView.borderColor = borderColor
+
+        // Set border width
+        circleImageView.borderWidth = borderWidth
 
         // Update the selectedImageView variable
         selectedImageView = circleImageView
