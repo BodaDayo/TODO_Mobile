@@ -24,6 +24,7 @@
     <string name="tasks_completed">All tasks completed</string>
     <string name="well_done">Well done!</string>
     <string name="no_tasks_yet">No tasks yet</string>
+    <string name="no_tasks_here">No tasks here</string>
     <string name="add_tasks">Tap + to add your tasks</string>
     <string name="profile_picture">Profile Picture</string>
     <string name="type_description">Type description</string>

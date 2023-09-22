@@ -312,8 +312,10 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                         // Check if the task's categoryIds contain the query
                         task.categoryIds.any { it.contains(query!!, ignoreCase = true) }
                     }
+                val categoryName =
+                    _categories.value?.find { it.categoryId == query }?.categoryName ?: CATEGORY
 
-                _filteredTaskList.value = groupFilteredTasks(condition, categoryEntities)
+                _filteredTaskList.value = groupFilteredTasks(categoryName, categoryEntities)
             }
         }
     }
@@ -426,6 +428,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
             }
         }
     }
+
     fun updateCategory(
         categoryName: String,
         categoryIconIdentifier: String,

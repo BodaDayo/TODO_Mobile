@@ -241,6 +241,11 @@ class HomeFragment : Fragment(),
             }
 
             sharedViewModel.filteredTaskList.observe(viewLifecycleOwner) { filteredTaskList ->
+                if (checkTaskLists(filteredTaskList) == 1) {
+                    onEmptyLayout(4)
+                } else {
+                    onEmptyLayout(3)
+                }
                 taskListAdapter.updateTaskLists(filteredTaskList)
             }
         }
@@ -335,8 +340,10 @@ class HomeFragment : Fragment(),
                     // No tasks in list
                     emptyTaskTitle.text = getString(R.string.no_tasks_yet)
                     emptyTaskBody.text = getString(R.string.add_tasks)
-
                     emptinessLayout.visibility = View.VISIBLE
+                    emptyTaskImage.visibility = View.VISIBLE
+                    emptyTaskTitle.visibility = View.VISIBLE
+
                     searchViewLayout.visibility = View.INVISIBLE
                     parentRecyclerView.visibility = View.INVISIBLE
                 }
@@ -345,8 +352,10 @@ class HomeFragment : Fragment(),
                     // All tasks completed
                     emptyTaskTitle.text = getString(R.string.tasks_completed)
                     emptyTaskBody.text = getString(R.string.well_done)
-
                     emptinessLayout.visibility = View.VISIBLE
+                    emptyTaskImage.visibility = View.VISIBLE
+                    emptyTaskTitle.visibility = View.VISIBLE
+
                     searchViewLayout.visibility = View.INVISIBLE
                     parentRecyclerView.visibility = View.INVISIBLE
                 }
@@ -355,6 +364,17 @@ class HomeFragment : Fragment(),
                     // List contains tasks
                     emptinessLayout.visibility = View.INVISIBLE
                     searchViewLayout.visibility = View.VISIBLE
+                    parentRecyclerView.visibility = View.VISIBLE
+                }
+
+                4 -> {
+                    // FilteredList empty
+                    emptyTaskImage.visibility = View.GONE
+                    emptyTaskTitle.visibility = View.GONE
+                    emptyTaskBody.text = getString(R.string.no_tasks_here)
+
+                    emptinessLayout.visibility = View.VISIBLE
+                    searchViewLayout.visibility = View.INVISIBLE
                     parentRecyclerView.visibility = View.VISIBLE
                 }
             }

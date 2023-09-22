@@ -48,6 +48,7 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
                 }
             } else {
                 holder.binding.listNameLayout.visibility = View.GONE
+                holder.binding.separator.visibility = View.GONE
             }
         } else if (list.name != "uncompleted") {
             holder.binding.listName.text = list.name
@@ -63,6 +64,7 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
             holder.binding.closeList.visibility = View.VISIBLE
         } else {
             holder.binding.listNameLayout.visibility = View.GONE
+            holder.binding.separator.visibility = View.GONE
         }
 
         holder.binding.childRecyclerView.setHasFixedSize(true)
