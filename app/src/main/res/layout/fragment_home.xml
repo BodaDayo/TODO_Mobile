@@ -49,8 +49,8 @@
                     android:layout_height="24sp"
                     android:layout_marginHorizontal="16sp"
                     android:src="@drawable/more_vert"
-                    app:tint="?attr/colorOnSurface"
-                    app:menu="@menu/home_overflow_menu"/>
+                    app:menu="@menu/home_overflow_menu"
+                    app:tint="?attr/colorOnSurface" />
 
             </LinearLayout>
 
@@ -132,12 +132,67 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="24sp"
-                android:contentDescription="add new task button"
+                android:contentDescription="@string/add_new_task"
                 android:src="@drawable/add"
-                app:layout_anchorGravity="top"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
+            <!-- Onboarding overlay views -->
+            <LinearLayout
+                android:id="@+id/topBarOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:layout_marginHorizontal="8dp"
+                android:gravity="center"
+                android:visibility="gone"
+                android:background="?attr/colorSurface"
+                android:orientation="horizontal"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:id="@+id/avatarHomeOverlay"
+                    android:layout_width="36sp"
+                    android:layout_height="36sp"
+                    android:layout_margin="24sp"
+                    android:src="@drawable/user_icon" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center" />
+
+                <ImageView
+                    android:id="@+id/moreOptionsOverlay"
+                    android:layout_width="24sp"
+                    android:layout_height="24sp"
+                    android:layout_marginHorizontal="16sp"
+                    android:src="@drawable/more_vert"
+                    app:tint="?attr/colorOnSurface" />
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/swipeRefreshLayoutOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:background="@drawable/transparent_rectangle_background"
+                android:clickable="true"
+                android:focusable="true"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@id/fab"
+                app:layout_constraintTop_toBottomOf="@id/topBar" />
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/fabOverlay"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="24sp"
+                android:contentDescription="@null"
+                android:src="@drawable/add"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

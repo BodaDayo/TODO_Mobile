@@ -11,11 +11,10 @@ import com.google.firebase.storage.StorageReference
 
 class FirebaseAccess {
 
-    private val auth = FirebaseAuth.getInstance()
+    val auth = FirebaseAuth.getInstance()
     private val database = FirebaseDatabase.getInstance()
     private val storage = FirebaseStorage.getInstance()
     private val crashlytics = Firebase.crashlytics
-
 
     fun signIn(email: String, pass: String, callback: (Boolean, String?) -> Unit) {
         auth.signInWithEmailAndPassword(email, pass).addOnCompleteListener {
@@ -44,12 +43,10 @@ class FirebaseAccess {
     }
 
     fun logOut(callback: (Boolean, String?) -> Unit) {
-        Log.d("aaaaLog", "attempt entering firebaseAccess")
         try {
             auth.signOut()
             callback(true, null)
         } catch (e: Exception) {
-            Log.e("aaaaLog", "Error logging out: ${e.message}", e)
             callback(false, e.message)
         }
     }
@@ -60,6 +57,14 @@ class FirebaseAccess {
             .child("users")
             .child(userId)
             .child("tasks")
+    }
+
+    fun getCategoriesListRef(userId: String): DatabaseReference {
+
+        return database.reference
+            .child("users")
+            .child(userId)
+            .child("categories")
     }
 
     fun getUserDetailsRef(userId: String): DatabaseReference {

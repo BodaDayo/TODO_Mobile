@@ -40,6 +40,9 @@
     <string name="login">Login</string>
     <string name="please_login_to_your_account_or_create_new_account_to_continue">Please login to your account or create new account to continue</string>
     <string name="welcome_to_todo_mobile">Welcome to TODO Mobile</string>
+    <string name="add_new_task">add new task</string>
+    <string name="edit_category">Edit Category</string>
+    <string name="create_new_category">Create new category</string>
 
     <plurals name="tasks_left">
         <item quantity="one">%d Task left</item>

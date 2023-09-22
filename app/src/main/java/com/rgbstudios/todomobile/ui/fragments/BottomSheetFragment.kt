@@ -11,18 +11,18 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.rgbstudios.todomobile.R
-import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentBottomSheetBinding
+import com.rgbstudios.todomobile.utils.DialogManager
 
 class BottomSheetFragment : BottomSheetDialogFragment() {
 
     private lateinit var binding: FragmentBottomSheetBinding
-    private lateinit var listener: DialogAddTaskBtnClickListener
+    private lateinit var listener: AddTaskBtnClickListener
+    private val dialogManager = DialogManager()
 
-    fun setListener(listener: DialogAddTaskBtnClickListener) {
+    fun setListener(listener: AddTaskBtnClickListener) {
         this.listener = listener
     }
 
@@ -110,29 +110,16 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     }
 
     private fun showDiscardDialog() {
-        val dialogBinding = DialogDiscardTaskBinding.inflate(layoutInflater)
-        val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setView(dialogBinding.root)
-            .create()
-
-        dialogBinding.btnDiscardConfirm.setOnClickListener {
-            // Clear the title and description EditText fields
-            binding.taskTitleEt.text?.clear()
-            binding.taskDescriptionEt.text?.clear()
-
-            // Dismiss the dialog
-            dialog.dismiss()
+        dialogManager.showDiscardDialog(this) { isSuccessful ->
+            if (isSuccessful) {
+                // Clear the title and description EditText fields
+                binding.taskTitleEt.text?.clear()
+                binding.taskDescriptionEt.text?.clear()
+            }
         }
-
-        dialogBinding.btnDiscardCancel.setOnClickListener {
-            // Dismiss the dialog
-            dialog.dismiss()
-        }
-
-        dialog.show()
     }
 
-    interface DialogAddTaskBtnClickListener {
+    interface AddTaskBtnClickListener {
         fun onSaveTask(
             title: String,
             description: String,

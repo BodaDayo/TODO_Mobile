@@ -15,13 +15,19 @@ import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.rgbstudios.todomobile.data.entity.CategoryEntity
 import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.data.entity.UserEntity
+import com.rgbstudios.todomobile.data.local.CategoryDao
 import com.rgbstudios.todomobile.data.local.TaskDao
 import com.rgbstudios.todomobile.data.local.UserDao
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
-import com.rgbstudios.todomobile.ui.AvatarManager
+import com.rgbstudios.todomobile.utils.AvatarManager
+import com.rgbstudios.todomobile.utils.CategoryManager
 import com.rgbstudios.todomobile.worker.UploadAvatarWorker
+import com.rgbstudios.todomobile.worker.UploadCategoriesWorker
 import com.rgbstudios.todomobile.worker.UploadTasksWorker
 import com.rgbstudios.todomobile.worker.UploadUserDetailsWorker
 import kotlinx.coroutines.CoroutineScope
@@ -38,9 +44,15 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.util.UUID
 
-class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao) {
+class TodoRepository(
+    private val taskDao: TaskDao,
+    private val userDao: UserDao,
+    private val categoryDao: CategoryDao
+) {
 
     private var currentUserId: String? = null
+    private val defaultCategories = CategoryManager()
+    private val avatars = AvatarManager()
 
     /* The MUTEX ensures that only one thread can execute a block of code enclosed within
      the withLock function at any given time, it helps to avoid potential race conditions that
@@ -57,12 +69,16 @@ class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao)
         return taskDao.getAllTasks()
     }
 
+    fun getCategoriesFromDatabase(): Flow<List<CategoryEntity>> {
+        return categoryDao.getCategories()
+    }
+
     suspend fun setUpNewUserInDatabase(
         userId: String,
         email: String,
         userAvatarData: String?,
         sender: String
-    ): UserEntity {
+    ): Pair<UserEntity, List<CategoryEntity>> {
         return withContext(Dispatchers.IO) {
             try {
 
@@ -76,7 +92,7 @@ class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao)
                     else -> Pair(null, null)
                 }
 
-                // Create new use Entity
+                // Create new user Entity
                 val newUser = UserEntity(
                     userId = userId,
                     name = name,
@@ -93,11 +109,18 @@ class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao)
 
                         // Save new user's details in the local database
                         userDao.insertUser(newUser)
-                        Log.d(TAG, "new user: ${newUser.userId} inserted in database")
 
                         // Import new user's tasks
                         importUserTasks(newUser.userId)
-                        Log.d(TAG, "new user: ${newUser.userId} tasks imported in database")
+
+                        // Import new user's tasks categories
+                        val importedCategories = importCategories(newUser.userId)
+
+                        // Add Default categories to local database
+                        val deserializedCategories = convertJsonToCategories(importedCategories!!)
+                        categoryDao.insertAllCategories(deserializedCategories)
+
+                        return@withContext Pair(newUser, deserializedCategories)
                     }
                 } else {
 
@@ -107,11 +130,15 @@ class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao)
 
                         // Save new user's details in local database
                         userDao.insertUser(newUser)
-                        Log.d(TAG, "new user: ${newUser.userId} inserted in database")
-                    }
 
+                        // Add Default categories to local database
+                        val defaultCategories = defaultCategories.getDefaultCategories()
+                        categoryDao.insertAllCategories(defaultCategories)
+
+                        return@withContext Pair(newUser, defaultCategories)
+                    }
                 }
-                newUser
+
             } catch (e: Exception) {
                 throw e
             }
@@ -135,6 +162,25 @@ class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao)
                     }
                 }
 
+                // Wait for the async block to complete
+                deferred.await()
+            } catch (e: Exception) {
+                firebase.recordCaughtException(e)
+                null
+            }
+        }
+    }
+
+    private suspend fun importCategories(userId: String): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                val categoryListRef = FirebaseAccess().getCategoriesListRef(userId)
+
+                val deferred = async {
+                    val snapshot = categoryListRef.get().await()
+                    val categories = snapshot.getValue(String::class.java)
+                    categories
+                }
                 // Wait for the async block to complete
                 deferred.await()
             } catch (e: Exception) {
@@ -192,6 +238,7 @@ class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao)
         try {
             userDao.deleteUser()
             taskDao.deleteAllTasks()
+            categoryDao.deleteAllCategories()
         } catch (e: Exception) {
             firebase.recordCaughtException(e)
         }
@@ -229,7 +276,7 @@ class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao)
     ): String? {
         val avatarBitmap: Bitmap = if (sender == "SignUpFragment") {
             // Get the drawable resource ID of a random avatar
-            val avatarResource = AvatarManager().defaultAvatar
+            val avatarResource = avatars.defaultAvatar
 
             // Convert the drawable resource to a bitmap
             BitmapFactory.decodeResource(resources, avatarResource)
@@ -294,7 +341,6 @@ class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao)
         }
     }
 
-
     fun saveCurrentUserId(userId: String) {
         currentUserId = userId
     }
@@ -313,6 +359,24 @@ class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao)
         WorkManager.getInstance(context)
             .enqueueUniqueWork(
                 "uploadUserDetails",
+                ExistingWorkPolicy.REPLACE,
+                uploadWorkRequest
+            )
+    }
+
+    fun enqueueUploadCategoryWork(data: Data, context: Context) {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED) // Requires network connection
+            .build()
+
+        val uploadWorkRequest = OneTimeWorkRequestBuilder<UploadCategoriesWorker>()
+            .setConstraints(constraints)
+            .setInputData(data)
+            .build()
+
+        WorkManager.getInstance(context)
+            .enqueueUniqueWork(
+                "uploadUserCategories",
                 ExistingWorkPolicy.REPLACE,
                 uploadWorkRequest
             )
@@ -362,6 +426,35 @@ class TodoRepository(private val taskDao: TaskDao, private val userDao: UserDao)
             throw e
         }
     }
+
+    suspend fun saveCategoryToDatabase(categoryEntity: CategoryEntity) {
+        categoryDao.insertCategory(categoryEntity)
+    }
+
+    suspend fun updateCategoryInDatabase(categoryEntity: CategoryEntity) {
+        try {
+            categoryDao.updateCategory(categoryEntity)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+
+    suspend fun deleteCategoryFromDatabase(categoryId: String) {
+        try {
+            categoryDao.deleteCategory(categoryId)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+
+    private fun convertJsonToCategories(json: String): List<CategoryEntity> {
+        val gson = Gson()
+        val type = object : TypeToken<List<CategoryEntity>>() {}.type
+        return gson.fromJson(json, type)
+    }
+
 
     companion object {
         private const val TAG = "TodoRepository"

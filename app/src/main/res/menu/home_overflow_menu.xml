@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/menu_favorites"
         android:title="Favorites"/>
@@ -14,6 +13,10 @@
         android:title="Categories"/>
 
     <item
-        android:id="@+id/menu_focus"
-        android:title="Focus Mode"/>
+        android:id="@+id/menu_batch"
+        android:title="Add Multiple Tasks"/>
+
+    <item
+        android:id="@+id/menu_view"
+        android:title="Calender view"/>
 </menu>

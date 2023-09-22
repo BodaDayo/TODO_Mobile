@@ -9,20 +9,18 @@
         <item android:id="@+id/appSettings"
             android:title="App Settings"
             android:icon="@drawable/settings"/>
-        <item android:id="@+id/profile"
+        <item android:id="@+id/account"
             android:title="Account Settings"
             android:icon="@drawable/avatar"/>
-        <item android:id="@+id/aboutUs"
-            android:title="About Us"
-            android:icon="@drawable/circles_four"/>
-        <item android:id="@+id/faq"
-            android:title="FAQ"
-            android:icon="@drawable/info_circle"/>
+        <item android:id="@+id/supportUs"
+            android:title="Support Us"
+            android:icon="@drawable/thumbs"/>
+
     </group>
 
-    <item android:id="@+id/supportUs"
-        android:title="Support Us"
-        android:icon="@drawable/thumbs"/>
+    <item android:id="@+id/feedback"
+        android:title="Send Feedback"
+        android:icon="@drawable/flash"/>
     <item android:id="@+id/logInOut"
         android:title="Log Out"
         android:icon="@drawable/logout"

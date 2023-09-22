@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="32sp"
+    android:layout_height="32sp"
+    android:layout_margin="4sp">
+
+    <View
+        android:id="@+id/categoryColorBack"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/circular_primary_background"
+        android:visibility="invisible" />
+
+    <View
+        android:id="@+id/categoryColorView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="2sp"
+        android:background="@drawable/circular_primary_background" />
+</androidx.constraintlayout.widget.ConstraintLayout>
+

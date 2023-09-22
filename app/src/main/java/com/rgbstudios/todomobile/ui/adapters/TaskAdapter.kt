@@ -8,6 +8,7 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
+import com.rgbstudios.todomobile.data.entity.CategoryEntity
 import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.databinding.ItemTaskBinding
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
@@ -31,6 +32,7 @@ class TaskAdapter(
 
         var newTaskCompleted = task.taskCompleted
         var newStarred = task.starred
+        val taskCategories = task.categoryIds
 
         holder.binding.apply {
             taskDateTime.visibility = View.VISIBLE // TODO work on picking up the time
@@ -89,7 +91,9 @@ class TaskAdapter(
                     task.title,
                     task.description,
                     newTaskCompleted,
-                    newStarred
+                    newStarred,
+                    taskCategories
+
                 )
             }
 
@@ -103,7 +107,8 @@ class TaskAdapter(
                     task.title,
                     task.description,
                     newTaskCompleted,
-                    newStarred
+                    newStarred,
+                    taskCategories
                 )
             }
         }
@@ -118,17 +123,14 @@ class TaskAdapter(
         title: String,
         description: String,
         completed: Boolean,
-        starred: Boolean
+        starred: Boolean,
+        taskCategories: List<String>
     ) {
 
         // Call the ViewModel's method to update the task
-        viewModel.updateTask(id, title, description, completed, starred) { isSuccessful ->
+        viewModel.updateTask(id, title, description, completed, starred, taskCategories) { isSuccessful ->
             if (isSuccessful) {
-                // TODO Handle success
-
-            } else {
-                // Handle failure
-
+                return@updateTask
             }
         }
 

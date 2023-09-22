@@ -1,36 +1,32 @@
 package com.rgbstudios.todomobile.ui.fragments
 
-import android.app.UiModeManager
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.GridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.transition.Transition
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
-import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentProfileBinding
+import com.rgbstudios.todomobile.ui.adapters.AvatarAdapter
+import com.rgbstudios.todomobile.utils.AvatarManager
+import com.rgbstudios.todomobile.utils.DialogManager
+import com.rgbstudios.todomobile.utils.ToastManager
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
-import de.hdodenhof.circleimageview.CircleImageView
 import java.io.ByteArrayOutputStream
 import java.io.File
 
@@ -40,14 +36,21 @@ class ProfileFragment : Fragment() {
     private val sharedViewModel: TodoViewModel by activityViewModels {
         TodoViewModelFactory(activity?.application as TodoMobileApplication)
     }
+
     private lateinit var binding: FragmentProfileBinding
     private lateinit var newAvatarBitmap: Bitmap
     private var changesMade = false
-    private var isImageExpandLayoutVisible = false
+    private var isImageSampleLayoutVisible = false
+    private var isExpandedImageLayoutVisible = false
     private var userDetailsSetFromViewModel = false
-    private var selectedImageView: CircleImageView? = null
-    private var selectedDefaultAvatar: Int? = null
-    private val borderWidth = 6
+    private var selectedDefaultAvatar: Bitmap? = null
+    private var defaultChanges = false
+    private var avatarHolder: Bitmap? = null
+    private lateinit var fragmentContext: Context
+    private val toastManager = ToastManager()
+    private val dialogManager = DialogManager()
+    private val avatarManager = AvatarManager()
+    private lateinit var avatarAdapter: AvatarAdapter
 
 
     override fun onCreateView(
@@ -55,6 +58,7 @@ class ProfileFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentProfileBinding.inflate(inflater, container, false)
+        fragmentContext = requireContext()
         changesMade = savedInstanceState?.getBoolean("changesMade") ?: false
         return binding.root
     }
@@ -62,211 +66,226 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val uiModeManager =
-            requireContext().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-        val isNightMode = uiModeManager.nightMode == UiModeManager.MODE_NIGHT_YES
+        val defaultAvatarList = avatarManager.defaultAvatarsList
 
-        binding.profileImageView.setOnClickListener {
+        binding.apply {
 
-            // Set the expandedImage with current newAvatar
-            binding.expandedImage.setImageBitmap(newAvatarBitmap)
+            // Set up the adapter
+            avatarAdapter = AvatarAdapter(defaultAvatarList,
+                object : AvatarAdapter.AvatarClickListener {
+                    override fun onAvatarClick(avatar: Int) {
+                        selectedDefaultAvatar = BitmapFactory.decodeResource(resources, avatar)
 
-            // show the expanded profile image
-            binding.imageExpandLayout.visibility = View.VISIBLE
+                        defaultChanges = true
 
-            binding.editAvatar.setOnClickListener {
+                        imageSampleView.setImageBitmap(selectedDefaultAvatar)
+                        expandedImageView.setImageBitmap(selectedDefaultAvatar)
+                    }
+                }
+            )
+
+            // Set up the recyclerview with the adapter
+            defaultAvatarRecyclerView.setHasFixedSize(true)
+            defaultAvatarRecyclerView.layoutManager = GridLayoutManager(context, 4)
+            defaultAvatarRecyclerView.adapter = avatarAdapter
+
+            // Set up listeners
+            profileImageView.setOnClickListener {
+                // keep a reference of the current newAvatar
+                avatarHolder = newAvatarBitmap
+
+                // Set the preview imageViews
+                imageSampleView.setImageBitmap(avatarHolder)
+                expandedImageView.setImageBitmap(avatarHolder)
+
+                // Show the imageSample layout
+                imageSampleLayout.visibility = View.VISIBLE
+
+                // Pick image from local storage
+                editAvatar.setOnClickListener {
+                    pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }
+
+                // Custom up button
+                imageSamplePopBack.setOnClickListener {
+
+                    // Reset the preview imageViews
+                    imageSampleView.setImageBitmap(avatarHolder)
+                    expandedImageView.setImageBitmap(avatarHolder)
+
+                    imageSampleLayout.visibility = View.GONE
+                    isImageSampleLayoutVisible = false
+                }
+
+                // Save avatar button
+                saveAvatarButton.setOnClickListener {
+                    saveAvatarButton.isSelected = true
+
+                    if (defaultChanges) {
+
+                        // Set the 'newAvatarBitmap' variable with the currentAvatar Bitmap
+                        if (selectedDefaultAvatar != null) {
+                            newAvatarBitmap = selectedDefaultAvatar!!
+                        }
+
+                        defaultChanges = false
+
+                        // save the selected image to database
+                        saveAvatarToDatabase()
+                    }
+                }
+
+                // Expand the avatar
+                imageSampleView.setOnClickListener {
+                    expandedImageLayout.visibility = View.VISIBLE
+
+                    // close expanded image layout
+                    closeExpandedImage.setOnClickListener {
+                        expandedImageLayout.visibility = View.GONE
+
+                        isExpandedImageLayoutVisible = false
+                    }
+
+                    isExpandedImageLayoutVisible = true
+                }
+
+                isImageSampleLayoutVisible = true
+            }
+
+            changeAvatar.setOnClickListener {
                 pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }
 
-            // Highlight last selected default avatar option
-            selectedImageView?.isSelected = true
-            val borderColor = ContextCompat.getColor(requireContext(), R.color.myPrimary)
-            selectedImageView?.borderColor = borderColor
-            selectedImageView?.borderWidth = borderWidth
+            saveButton.setOnClickListener {
 
-            isImageExpandLayoutVisible = true
-        }
+                val name = nameEditText.text.toString()
+                val occupation = occupationText.text.toString()
 
-        binding.changeAvatar.setOnClickListener {
-            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-        }
+                if (changesMade) {
+                    sharedViewModel.updateUserDetails(name, occupation) { isSuccessful ->
+                        if (isSuccessful) {
+                            toastManager.showToast(fragmentContext, "Changes saved Successfully!")
 
-        binding.saveButton.setOnClickListener {
-
-            val name = binding.nameEditText.text.toString()
-            val occupation = binding.occupationText.text.toString()
-
-            if (changesMade) {
-                sharedViewModel.updateUserDetails(name, occupation) { isSuccessful ->
-                    if (isSuccessful) {
-                        Toast.makeText(
-                            context,
-                            "Changes saved Successfully!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        activity?.supportFragmentManager?.popBackStack()
-                    } else {
-                        Toast.makeText(
-                            context,
-                            "Something went wrong...\nTry Again!",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                            activity?.supportFragmentManager?.popBackStack()
+                        } else {
+                            toastManager.showToast(
+                                fragmentContext,
+                                "Something went wrong...\nTry Again!"
+                            )
+                        }
                     }
-                }
-            } else {
-                activity?.supportFragmentManager?.popBackStack()
-            }
-        }
-
-        // Observe userDetails LiveData
-        sharedViewModel.currentUser.observe(viewLifecycleOwner) { user ->
-
-            if (user != null) {
-
-                // Set profile image and stop animation
-                if (user.avatarFilePath != null) {
-
-                    Glide.with(requireContext())
-                        .asBitmap()
-                        .load(File(user.avatarFilePath))
-                        .into(object : CustomTarget<Bitmap>() {
-                            override fun onResourceReady(
-                                resource: Bitmap,
-                                transition: Transition<in Bitmap>?
-                            ) {
-                                newAvatarBitmap = resource
-
-                                // Update profileImage
-                                Glide.with(requireContext())
-                                    .load(resource)
-                                    .circleCrop()
-                                    .into(binding.profileImageView)
-
-                                // stop loading animation
-                                binding.overlayView.visibility = View.GONE
-                                binding.progressBar.visibility = View.GONE
-                            }
-
-                            override fun onLoadCleared(placeholder: Drawable?) {
-                                // Do nothing
-                            }
-                        })
                 } else {
-
-                    // Stop the loading animation
-                    binding.overlayView.visibility = View.GONE
-                    binding.progressBar.visibility = View.GONE
-                }
-
-                // Set user email
-                binding.emailText.text = user.email
-                binding.emailText.visibility = View.VISIBLE
-
-                // Set user details
-                if (!userDetailsSetFromViewModel && user.name != null && user.occupation != null) {
-                    binding.nameEditText.text =
-                        Editable.Factory.getInstance().newEditable(user.name)
-                    binding.occupationText.text =
-                        Editable.Factory.getInstance().newEditable(user.occupation)
-                    userDetailsSetFromViewModel = true
-                    changesMade = false
+                    activity?.supportFragmentManager?.popBackStack()
                 }
             }
-        }
 
-        // Set up nameText text listener
-        binding.nameEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {
-            }
+            // Set up text listeners
+            nameEditText.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                changesMade = true
-                Log.d("aaaa", "name changed")
-            }
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    changesMade = true
+                }
 
-            override fun afterTextChanged(s: Editable?) {}
-        })
+                override fun afterTextChanged(s: Editable?) {}
+            })
 
-        // Set up occupationText text listener
-        binding.occupationText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int
-            ) {
-            }
+            occupationText.addTextChangedListener(object : TextWatcher {
+                override fun beforeTextChanged(
+                    s: CharSequence?,
+                    start: Int,
+                    count: Int,
+                    after: Int
+                ) {
+                }
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                changesMade = true
-                Log.d("aaaa", "occupation changed")
-            }
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                    changesMade = true
+                }
 
-            override fun afterTextChanged(s: Editable?) {}
-        })
+                override fun afterTextChanged(s: Editable?) {}
+            })
 
-        // custom up button
-        binding.popBack.setOnClickListener {
-            popBackStackManager()
-        }
-
-        // customize onBackPressed method
-        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-            if (isImageExpandLayoutVisible) {
-                binding.imageExpandLayout.visibility = View.GONE
-                isImageExpandLayoutVisible = false
-            } else {
+            // Custom up button
+            popBack.setOnClickListener {
                 popBackStackManager()
             }
-        }
 
-        // Create a list of CircleImageView objects
-        val circleImageViews = listOf(
-            binding.circleImageView1,
-            binding.circleImageView2,
-            binding.circleImageView3,
-            binding.circleImageView4,
-            binding.circleImageView5,
-            binding.circleImageView6,
-            binding.circleImageView7,
-            binding.circleImageView8,
-            binding.circleImageView9,
-            binding.circleImageView10,
-            binding.circleImageView11,
-            binding.circleImageView12
-        )
+            // Customize onBackPressed method
+            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+                if (isExpandedImageLayoutVisible) {
 
-        // Set up click listeners for default avatars using a loop
-        circleImageViews.forEach { circleImageView ->
-            circleImageView.setOnClickListener {
-                onCircleImageViewClicked(circleImageView, isNightMode)
+                    expandedImageLayout.visibility = View.GONE
+                    isExpandedImageLayoutVisible = false
+                } else if (isImageSampleLayoutVisible) {
+
+                    imageSampleLayout.visibility = View.GONE
+                    isImageSampleLayoutVisible = false
+                } else {
+                    popBackStackManager()
+                }
             }
-        }
-        binding.saveAvatarButton.setOnClickListener {
-            binding.saveAvatarButton.isSelected = true
 
-            if (selectedDefaultAvatar != null) {
+            // Observe userDetails LiveData
+            sharedViewModel.currentUser.observe(viewLifecycleOwner) { user ->
+                if (user != null) {
 
-                // Get the Bitmap from the drawable resource
-                val bitmap = BitmapFactory.decodeResource(resources, selectedDefaultAvatar!!)
+                    // Set profile image and stop animation
+                    if (user.avatarFilePath != null) {
 
-                // Set the 'newAvatarBitmap' variable with the loaded Bitmap
-                newAvatarBitmap = bitmap
+                        Glide.with(requireContext())
+                            .asBitmap()
+                            .load(File(user.avatarFilePath))
+                            .into(object : CustomTarget<Bitmap>() {
+                                override fun onResourceReady(
+                                    resource: Bitmap,
+                                    transition: Transition<in Bitmap>?
+                                ) {
+                                    newAvatarBitmap = resource
 
-                // save the selected image to database
-                saveAvatarToDatabase()
+                                    // Update profileImage
+                                    Glide.with(requireContext())
+                                        .load(resource)
+                                        .circleCrop()
+                                        .into(profileImageView)
+
+                                    // stop loading animation
+                                    overlayView.visibility = View.GONE
+                                    progressBar.visibility = View.GONE
+                                }
+
+                                override fun onLoadCleared(placeholder: Drawable?) {
+                                    // Do nothing
+                                }
+                            })
+                    } else {
+
+                        // Stop the loading animation
+                        overlayView.visibility = View.GONE
+                        progressBar.visibility = View.GONE
+                    }
+
+                    // Set user email
+                    emailText.text = user.email
+                    emailText.visibility = View.VISIBLE
+
+                    // Set user details
+                    if (!userDetailsSetFromViewModel && user.name != null && user.occupation != null) {
+                        nameEditText.text =
+                            Editable.Factory.getInstance().newEditable(user.name)
+                        occupationText.text =
+                            Editable.Factory.getInstance().newEditable(user.occupation)
+                        userDetailsSetFromViewModel = true
+                        changesMade = false
+                    }
+                }
             }
-        }
-
-        // custom up button
-        binding.expandedPopBack.setOnClickListener {
-            binding.imageExpandLayout.visibility = View.GONE
-            isImageExpandLayoutVisible = false
 
         }
     }
@@ -311,27 +330,20 @@ class ProfileFragment : Fragment() {
 
             // close the cropping layer and expanded image layout
             imageCropLayout.visibility = View.GONE
-            imageExpandLayout.visibility = View.GONE
-            isImageExpandLayoutVisible = false
+            imageSampleLayout.visibility = View.GONE
+            isImageSampleLayoutVisible = false
 
             sharedViewModel.changeUserAvatar(
                 newAvatarBitmap,
                 requireContext()
             ) { isSuccessful ->
                 if (isSuccessful) {
-                    Toast.makeText(
-                        context,
-                        "Profile image changed Successfully!",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    toastManager.showToast(fragmentContext, "Profile image changed Successfully!")
                 } else {
-                    Toast.makeText(
-                        context,
-                        "Image upload failed!\n check your network connection",
-                        Toast.LENGTH_SHORT
+                    toastManager.showToast(
+                        fragmentContext,
+                        "Image upload failed!\n check your network connection"
                     )
-                        .show()
-
                     // Stop the loading animation
                     overlayView.visibility = View.GONE
                     progressBar.visibility = View.GONE
@@ -360,101 +372,59 @@ class ProfileFragment : Fragment() {
         }
     }
 
-
     private fun showDiscardDialog() {
-        val dialogBinding = DialogDiscardTaskBinding.inflate(layoutInflater)
-        val dialog = MaterialAlertDialogBuilder(requireContext())
-            .setView(dialogBinding.root)
-            .create()
+        if (changesMade) {
+            dialogManager.showDiscardDialog(this) { isSuccessful ->
+                if (isSuccessful) {
+                    // Reset changesMade flag
+                    changesMade = false
 
-        dialogBinding.discardQ.text = getString(R.string.discard_changes)
-        dialogBinding.btnDiscardConfirm.setOnClickListener {
-
-            // Reset changesMade flag
-            changesMade = false
-
-            // Dismiss the dialog
-            dialog.dismiss()
-
-            // pop back stack
+                    // pop back stack
+                    activity?.supportFragmentManager?.popBackStack()
+                }
+            }
+        } else {
+            // If no changes, simply pop the back stack
             activity?.supportFragmentManager?.popBackStack()
         }
-
-        dialogBinding.btnDiscardCancel.setOnClickListener {
-            // Dismiss the dialog
-            dialog.dismiss()
-        }
-
-        dialog.show()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        // Save the state of imageExpandLayout visibility, changesMade and
-        outState.putBoolean("imageExpandLayoutVisible", isImageExpandLayoutVisible)
+        // Save the state of flags
+        outState.putBoolean("imageSampleLayoutVisible", isImageSampleLayoutVisible)
+        outState.putBoolean("isExpandedImageLayoutVisible", isExpandedImageLayoutVisible)
         outState.putBoolean("changesMade", changesMade)
         outState.putBoolean("userDetailsSetFromViewModel", userDetailsSetFromViewModel)
+        outState.putBoolean("defaultChanges", defaultChanges)
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
 
-        // Restore the state of isImageExpandLayoutVisible and changesMade
-        isImageExpandLayoutVisible =
-            savedInstanceState?.getBoolean("imageExpandLayoutVisible") ?: false
-        changesMade = savedInstanceState?.getBoolean("changesMade") ?: false
+        // Restore the state of flags
+        isImageSampleLayoutVisible =
+            savedInstanceState?.getBoolean("imageSampleLayoutVisible") ?: false
+        isExpandedImageLayoutVisible =
+            savedInstanceState?.getBoolean("isExpandedImageLayoutVisible") ?: false
+        changesMade =
+            savedInstanceState?.getBoolean("changesMade") ?: false
         userDetailsSetFromViewModel =
             savedInstanceState?.getBoolean("userDetailsSetFromViewModel") ?: true
+        defaultChanges =
+            savedInstanceState?.getBoolean("defaultChanges", defaultChanges) ?: false
 
-        // Reset imageExpand layout visibility
-        if (isImageExpandLayoutVisible) {
-            binding.imageExpandLayout.visibility = View.VISIBLE
+        binding.apply {
+            // Reset imageSample layout visibility
+            if (isImageSampleLayoutVisible) {
+                imageSampleLayout.visibility = View.VISIBLE
+            }
+            // Reset imageExpand layout visibility
+            if (isExpandedImageLayoutVisible) {
+                expandedImageLayout.visibility = View.VISIBLE
+            }
         }
     }
 
-    private fun onCircleImageViewClicked(circleImageView: CircleImageView, isNightMode: Boolean) {
-        // Deselect the previously selected item (if any)
-        selectedImageView?.isSelected = false
-        selectedImageView?.borderColor = Color.TRANSPARENT // Clear previous border
-
-        // Select the clicked item
-        circleImageView.isSelected = true
-
-        // Set the border color
-        val colorResourceId = if (isNightMode) {
-            R.color.myPrimaryVariant // Use night mode color resource
-        } else {
-            R.color.myPrimary // Use regular color resource
-        }
-        val borderColor = ContextCompat.getColor(requireContext(), colorResourceId)
-        circleImageView.borderColor = borderColor
-
-        // Set border width
-        circleImageView.borderWidth = borderWidth
-
-        // Update the selectedImageView variable
-        selectedImageView = circleImageView
-
-        // Now you can access the selected item's drawable resource ID
-        val selectedDrawableResource = when (circleImageView) {
-
-            // Add cases for each CircleImageView item
-            binding.circleImageView1 -> R.drawable.asset_1
-            binding.circleImageView2 -> R.drawable.asset_2
-            binding.circleImageView3 -> R.drawable.asset_3
-            binding.circleImageView4 -> R.drawable.asset_4
-            binding.circleImageView5 -> R.drawable.asset_5
-            binding.circleImageView6 -> R.drawable.asset_6
-            binding.circleImageView7 -> R.drawable.asset_7
-            binding.circleImageView8 -> R.drawable.asset_8
-            binding.circleImageView9 -> R.drawable.asset_9
-            binding.circleImageView10 -> R.drawable.asset_10
-            binding.circleImageView11 -> R.drawable.asset_11
-            binding.circleImageView12 -> R.drawable.asset_12
-
-            else -> null
-        }
-        selectedDefaultAvatar = selectedDrawableResource
-    }
 }

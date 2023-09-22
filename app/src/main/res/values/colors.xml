@@ -4,8 +4,31 @@
     <color name="white">#FFFFFFFF</color>
     <color name="myPrimary">#FF6750A4</color>
     <color name="myPrimaryVariant">#FFD0BCFF</color>
+    <color name="myOnSurfaceDay">#FF1C1B1F</color>
+    <color name="myOnSurfaceNight">#FFFFFBFE</color>
     <color name="myGreen">#48DD48</color>
     <color name="circular_progress_overlay_background">#80000000</color>
     <color name="ic_launcher_background">#6750A4</color>
+
+    <color name="light_gold">#FFFFD700</color>
+    <color name="dark_orange">#AC7001</color>
+    <color name="light_dark_turquoise">#56F7FA</color>
+    <color name="dark_dark_cyan">#FF008B8B</color>
+    <color name="light_hot_pink">#FA9CCB</color>
+    <color name="dark_deep_pink">#9F0659</color>
+    <color name="light_lime_green">#6DEC6D</color>
+    <color name="dark_green">#FF008000</color>
+    <color name="light_medium_orchid">#ECBBF8</color>
+    <color name="dark_purple">#FF800080</color>
+    <color name="light_light_salmon">#FABAA1</color>
+    <color name="dark_orange_red">#FFFF4500</color>
+    <color name="light_sky_blue">#FF87CEEB</color>
+    <color name="dark_royal_blue">#3357C3</color>
+    <color name="light_light_coral">#F6A2A2</color>
+    <color name="dark_indian_red">#982A2A</color>
+    <color name="light_light_sea_green">#53EDE5</color>
+    <color name="dark_cyan">#FF008080</color>
+    <color name="my_darker_grey">#FFAAAAAA</color>
+
 
 </resources>

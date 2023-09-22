@@ -1,18 +1,15 @@
 package com.rgbstudios.todomobile.ui.adapters
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.ItemTaskParentBinding
 import com.rgbstudios.todomobile.model.TaskList
-import com.rgbstudios.todomobile.ui.fragments.HomeFragment
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 
 class ListAdapter(private val context: Context, private val viewModel: TodoViewModel) :
@@ -87,7 +84,7 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
                 toggleListExpansion(isExpanded, binding)
             }
             binding.closeList.setOnClickListener {
-                viewModel.startTasksListener()
+                viewModel.startDatabaseListeners()
             }
         }
 

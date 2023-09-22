@@ -1,9 +1,9 @@
-package com.rgbstudios.todomobile.ui
+package com.rgbstudios.todomobile.utils
 
 import com.rgbstudios.todomobile.R
 
 class AvatarManager {
-    private val defaultAvatarsList = listOf(
+    val defaultAvatarsList = listOf(
         R.drawable.asset_1,
         R.drawable.asset_2,
         R.drawable.asset_3,

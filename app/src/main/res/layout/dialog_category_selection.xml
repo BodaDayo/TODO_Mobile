@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    android:paddingBottom="24sp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="16sp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8sp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Choose Category"
+            android:textSize="18sp" />
+
+        <ImageView
+            android:id="@+id/editIcon"
+            android:layout_width="20sp"
+            android:layout_height="20sp"
+            android:layout_marginHorizontal="4sp"
+            android:src="@drawable/edit"
+            android:visibility="gone"
+            app:tint="@color/myPrimary" />
+
+        <ImageView
+            android:id="@+id/deleteIcon"
+            android:layout_width="20sp"
+            android:layout_height="20sp"
+            android:layout_marginHorizontal="8sp"
+            android:src="@drawable/trash3"
+            android:visibility="gone"
+            app:tint="@color/myPrimary" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/separator"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_margin="8sp"
+        android:background="@android:color/darker_gray"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/categoryRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="8dp"
+        android:paddingStart="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:scrollbars="none"
+        tools:ignore="RtlSymmetry" />
+
+</LinearLayout>

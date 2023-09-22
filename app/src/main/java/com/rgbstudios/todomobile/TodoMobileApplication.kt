@@ -11,6 +11,7 @@ class TodoMobileApplication : Application() {
     val repository: TodoRepository by lazy {
         val taskDao = database.taskDao()
         val userDao = database.userDao()
-        TodoRepository(taskDao, userDao)
+        val categoryDao = database.categoryDao()
+        TodoRepository(taskDao, userDao, categoryDao)
     }
 }

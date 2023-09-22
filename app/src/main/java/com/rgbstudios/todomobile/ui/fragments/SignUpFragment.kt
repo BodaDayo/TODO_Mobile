@@ -24,9 +24,9 @@ class SignUpFragment : Fragment() {
         TodoViewModelFactory(activity?.application as TodoMobileApplication)
     }
 
+    private val firebase = FirebaseAccess()
+    private val auth = firebase.auth
     private lateinit var binding: FragmentSignUpBinding
-    private lateinit var auth: FirebaseAuth
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -38,8 +38,6 @@ class SignUpFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        auth = FirebaseAuth.getInstance()
         registerEvents()
     }
 
@@ -62,7 +60,7 @@ class SignUpFragment : Fragment() {
 
                     if (pass.matches(Regex(passwordPattern))) {
                         binding.progressBar.visibility = View.VISIBLE
-                        FirebaseAccess().signUp(email, pass) { signUpSuccessful, errorMessage ->
+                        firebase.signUp(email, pass) { signUpSuccessful, errorMessage ->
                             if (signUpSuccessful) {
                                 // Get the user ID from Firebase Auth
                                 val userId = auth.currentUser?.uid ?: ""
