@@ -20,7 +20,7 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/onboard1"
+            android:src="@drawable/onboarding1"
             android:layout_marginTop="32sp"
             android:contentDescription="@string/image_that_illustrates_managing_your_tasks" />
 

@@ -53,6 +53,7 @@ class HomeFragment : Fragment(),
     private val dialogManager = DialogManager()
     private val toastManager = ToastManager()
     private var isSearchResultsShowing = false
+    private var userEmail: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -155,6 +156,9 @@ class HomeFragment : Fragment(),
             sharedViewModel.currentUser.observe(viewLifecycleOwner) { user ->
                 if (user != null) {
 
+                    // Set the user Email for feeback use
+                    userEmail = user.email
+
                     // Set the nav drawer and home avatar imageViews
                     if (user.avatarFilePath != null) {
                         val avatarImageViews =
@@ -224,7 +228,7 @@ class HomeFragment : Fragment(),
                     progressBackNavDrw.setBackgroundColor(
                         ContextCompat.getColor(
                             fragmentContext,
-                            R.color.myGreen
+                            R.color.excellent
                         )
                     )
                 } else {
@@ -406,7 +410,9 @@ class HomeFragment : Fragment(),
             }
 
             R.id.feedback -> {
-                dialogManager.showFeedbackDialog()
+                userEmail?.let { dialogManager.showFeedbackDialog(this, it) }
+
+                navDrawerLayout.closeDrawer(GravityCompat.START)
             }
 
             R.id.logInOut -> {

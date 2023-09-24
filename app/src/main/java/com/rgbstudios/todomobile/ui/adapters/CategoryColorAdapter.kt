@@ -44,6 +44,7 @@ class CategoryColorAdapter(
             colorClickListener.onColorClick(color)
             selectItem(position)
         }
+
         if (position == selectedColorPosition) {
             holder.binding.categoryColorBack.visibility = View.VISIBLE
         } else {

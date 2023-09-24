@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Give Feedback"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24sp">
+
+        <ImageView
+            android:id="@+id/feedbackImageView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/user_giving_feedback"
+            android:src="@drawable/feedback"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/emojiSelectedBack"
+            android:layout_width="match_parent"
+            android:layout_height="106dp"
+            android:contentDescription="@null"
+            android:src="@drawable/emo_selected"
+            android:visibility="invisible"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/emojiSelectedView"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginVertical="24sp"
+            android:contentDescription="@null"
+            android:src="@drawable/emo1"
+            android:visibility="invisible"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/feedbackThanks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:visibility="invisible"
+            app:layout_constraintTop_toBottomOf="@id/emojiSelectedBack"
+            android:text="Thanks for the feedback!"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4sp"
+        android:gravity="center_vertical"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Rate your experience" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/emojiRecyclerView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:scrollbars="none" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Additional comments" />
+
+        <EditText
+            android:id="@+id/editCommentEt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:gravity="start"
+            android:hint="Type comments here"
+            android:maxLines="3"
+            android:minLines="3" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/submitButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="4dp"
+            android:padding="16dp"
+            android:text="Submit feedback"
+            android:textSize="16sp"
+            app:cornerRadius="8dp" />
+    </LinearLayout>
+
+</LinearLayout>

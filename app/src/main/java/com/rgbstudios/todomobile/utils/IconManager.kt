@@ -44,4 +44,16 @@ class IconManager {
         return iconPairs[iconIdentifier] ?: R.drawable.tag
     }
 
+    private val emojiTriples = listOf(
+        Triple("poor", R.drawable.emo5, R.color.poor),
+        Triple("fair", R.drawable.emo4, R.color.fair),
+        Triple("good", R.drawable.emo3, R.color.good),
+        Triple("very_good", R.drawable.emo2, R.color.very_good),
+        Triple("excellent", R.drawable.emo1, R.color.excellent),
+    )
+
+    fun getEmojiList(): List<Triple<String, Int, Int>> {
+        return emojiTriples
+    }
+
 }

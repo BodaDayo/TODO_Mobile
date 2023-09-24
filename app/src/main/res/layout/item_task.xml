@@ -42,7 +42,7 @@
             android:id="@+id/taskDateTime"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Today At 18:00"
+            tools:text="Today At 18:00"
             android:textColor="@color/material_on_surface_disabled"
             android:visibility="gone" />
 

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation_header_container"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -14,6 +15,7 @@
         android:layout_width="72sp"
         android:layout_height="72sp"
         android:layout_gravity="center"
+        android:contentDescription="@string/profile_picture"
         android:src="@drawable/user_icon" />
 
     <TextView
@@ -21,7 +23,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:text="name"
+        android:text="@string/name"
         android:textSize="20sp"
         android:textStyle="bold" />
 
@@ -31,7 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:paddingBottom="4sp"
-        android:text="email@todo.com"
+        tools:text="email@todo.com"
         android:textSize="14sp"
         android:visibility="gone" />
 
@@ -41,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:paddingBottom="4sp"
-        android:text="Occupation"
+        android:text="@string/occupation"
         android:textSize="14sp" />
 
     <LinearLayout
@@ -63,7 +65,7 @@
                 android:gravity="center"
                 android:background="@drawable/rounded_corners"
                 android:paddingVertical="16sp"
-                android:text="10 Tasks left"
+                tools:text="10 Tasks left"
                 android:textSize="12sp" />
         </androidx.cardview.widget.CardView>
 
@@ -81,7 +83,7 @@
                 android:background="@drawable/rounded_corners"
                 android:gravity="center"
                 android:paddingVertical="16sp"
-                android:text="5 Tasks done"
+                tools:text="5 Tasks done"
                 android:textSize="12sp" />
         </androidx.cardview.widget.CardView>
     </LinearLayout>
@@ -104,7 +106,6 @@
             android:id="@+id/progressBar"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:layout_weight="1"
             android:background="?attr/colorPrimary" />
     </FrameLayout>
 

@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="56sp"
             android:contentDescription="@string/image_that_illustrates_organizing_your_tasks"
-            android:src="@drawable/onboard3" />
+            android:src="@drawable/onboarding3" />
 
         <TextView
             android:layout_width="match_parent"

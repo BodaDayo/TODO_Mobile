@@ -20,7 +20,7 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/onboard2"
+            android:src="@drawable/onboarding2"
             android:layout_marginTop="12sp"
             android:contentDescription="@string/image_that_illustrates_creating_daily_routine" />
 

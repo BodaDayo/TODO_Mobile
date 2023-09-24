@@ -16,34 +16,38 @@
         android:id="@+id/listNameLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:orientation="horizontal">
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/listName"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:layout_weight="1"
             android:paddingHorizontal="16dp"
             android:textSize="18sp" />
+
         <ImageView
             android:id="@+id/collapseList"
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:layout_gravity="center"
             android:layout_marginEnd="16dp"
-            android:src="@drawable/baseline_keyboard_arrow_up_24"
-            android:layout_gravity="center" />
+            android:contentDescription="@string/collapse_list_icon"
+            android:src="@drawable/baseline_keyboard_arrow_up_24" />
+
         <ImageView
             android:id="@+id/closeList"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:layout_marginEnd="16dp"
-            android:src="@drawable/close"
             android:layout_gravity="center"
-            android:visibility="gone"/>
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@string/close_list_icon"
+            android:src="@drawable/close"
+            android:visibility="gone" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

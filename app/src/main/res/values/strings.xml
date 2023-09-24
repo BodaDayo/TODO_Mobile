@@ -44,6 +44,11 @@
     <string name="add_new_task">add new task</string>
     <string name="edit_category">Edit Category</string>
     <string name="create_new_category">Create new category</string>
+    <string name="user_giving_feedback">User giving feedback</string>
+    <string name="name">name</string>
+    <string name="occupation">Occupation</string>
+    <string name="collapse_list_icon">collapse list icon</string>
+    <string name="close_list_icon">close list icon</string>
 
     <plurals name="tasks_left">
         <item quantity="one">%d Task left</item>
