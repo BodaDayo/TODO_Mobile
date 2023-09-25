@@ -87,7 +87,7 @@ class SplashFragment : Fragment() {
                     findNavController().navigate(R.id.action_splashFragment_to_onboardingFinalFragment)
                 }
             }
-        }, 1000)
+        }, 500)
     }
 
     private fun checkNetworkConnectivity() {
@@ -109,7 +109,7 @@ class SplashFragment : Fragment() {
             // There is internet connection
         } else {
             // There is no internet connection
-            toastManager.showToast(
+            toastManager.showLongToast(
                 requireContext(),
                 "No connection.\nSome features might be unavailable"
             )

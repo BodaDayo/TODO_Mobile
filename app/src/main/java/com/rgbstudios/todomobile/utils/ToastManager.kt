@@ -4,7 +4,13 @@ import android.content.Context
 import android.widget.Toast
 
 class ToastManager {
-    fun showToast(context: Context, text: String) {
+
+    fun showShortToast(context: Context, text: String) {
+        Toast.makeText(context, text, Toast.LENGTH_SHORT)
+            .show()
+    }
+
+    fun showLongToast(context: Context, text: String) {
         Toast.makeText(context, text, Toast.LENGTH_SHORT)
             .show()
     }

@@ -2,21 +2,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/menu_favorites"
-        android:title="Favorites"/>
+        android:title="@string/favorites"/>
 
     <item
         android:id="@+id/menu_sort"
-        android:title="Sort"/>
+        android:title="@string/sort_by"/>
 
     <item
         android:id="@+id/menu_category"
-        android:title="Categories"/>
+        android:title="@string/categories"/>
 
     <item
         android:id="@+id/menu_batch"
-        android:title="Add Multiple Tasks"/>
+        android:title="@string/add_multiple_tasks"/>
 
     <item
         android:id="@+id/menu_view"
-        android:title="Calender view"/>
+        android:title="@string/calender_view"/>
 </menu>

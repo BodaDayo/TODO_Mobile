@@ -164,11 +164,11 @@ class ProfileFragment : Fragment() {
                 if (changesMade) {
                     sharedViewModel.updateUserDetails(name, occupation) { isSuccessful ->
                         if (isSuccessful) {
-                            toastManager.showToast(fragmentContext, "Changes saved Successfully!")
+                            toastManager.showShortToast(fragmentContext, "Changes saved Successfully!")
 
                             activity?.supportFragmentManager?.popBackStack()
                         } else {
-                            toastManager.showToast(
+                            toastManager.showLongToast(
                                 fragmentContext,
                                 "Something went wrong...\nTry Again!"
                             )
@@ -338,9 +338,9 @@ class ProfileFragment : Fragment() {
                 requireContext()
             ) { isSuccessful ->
                 if (isSuccessful) {
-                    toastManager.showToast(fragmentContext, "Profile image changed Successfully!")
+                    toastManager.showShortToast(fragmentContext, "Profile image changed Successfully!")
                 } else {
-                    toastManager.showToast(
+                    toastManager.showShortToast(
                         fragmentContext,
                         "Image upload failed!\n check your network connection"
                     )

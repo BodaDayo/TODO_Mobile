@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
-import com.google.android.material.textfield.TextInputEditText
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.databinding.FragmentHomeBinding
@@ -33,6 +32,7 @@ import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
 import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt
 import java.io.File
+import java.util.Calendar
 
 
 class HomeFragment : Fragment(),
@@ -54,6 +54,7 @@ class HomeFragment : Fragment(),
     private val toastManager = ToastManager()
     private var isSearchResultsShowing = false
     private var userEmail: String? = null
+    private var allTasks: List<TaskList>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -192,6 +193,9 @@ class HomeFragment : Fragment(),
                     2 -> onEmptyLayout(2)
                     3 -> onEmptyLayout(3)
                 }
+
+                allTasks = allTasksList
+
                 taskListAdapter.updateTaskLists(allTasksList)
 
                 val uncompletedNumber =
@@ -270,30 +274,26 @@ class HomeFragment : Fragment(),
                         override fun onSaveTask(
                             title: String,
                             description: String,
-                            titleEt: TextInputEditText,
-                            descriptionEt: TextInputEditText,
-                            starred: Boolean
+                            starred: Boolean,
+                            dateTimeValue: Calendar?
                         ) {
                             // Call the ViewModel's method to save the task
                             sharedViewModel.saveTask(
                                 title,
                                 description,
-                                starred
+                                starred,
+                                dateTimeValue
                             ) { isSuccessful ->
                                 if (isSuccessful) {
                                     // Handle success
-                                    toastManager.showToast(
+                                    toastManager.showShortToast(
                                         fragmentContext,
                                         "Task saved successfully!"
                                     )
-
-                                    // Clear the EditText fields
-                                    titleEt.text = null
-                                    descriptionEt.text = null
                                     emptinessLayout.visibility = View.INVISIBLE
                                 } else {
                                     // Handle failure
-                                    toastManager.showToast(
+                                    toastManager.showShortToast(
                                         fragmentContext,
                                         "Failed to save task"
                                     )
@@ -397,7 +397,7 @@ class HomeFragment : Fragment(),
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
 
         when (item.itemId) {
-            R.id.appSettings -> {
+            R.id.settings -> {
                 findNavController().navigate(R.id.action_homeFragment_to_settingsFragment)
             }
 
@@ -450,7 +450,7 @@ class HomeFragment : Fragment(),
             when (item.itemId) {
                 R.id.menu_favorites -> {
                     if (isSearchResultsShowing) {
-                        toastManager.showToast(
+                        toastManager.showLongToast(
                             fragmentContext,
                             "Clear the search bar to get complete results"
                         )
@@ -462,6 +462,11 @@ class HomeFragment : Fragment(),
                 }
 
                 R.id.menu_sort -> {
+                    dialogManager.showSortingDialog(
+                        this,
+                        sharedViewModel,
+                        allTasks
+                    )
                     true
                 }
 

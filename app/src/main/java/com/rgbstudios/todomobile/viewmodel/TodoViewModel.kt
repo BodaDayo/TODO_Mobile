@@ -21,6 +21,7 @@ import com.rgbstudios.todomobile.data.entity.UserEntity
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.model.TaskList
 import kotlinx.coroutines.launch
+import java.util.Calendar
 import java.util.UUID
 import kotlin.reflect.KTypeProjection.Companion.STAR
 
@@ -83,7 +84,10 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         viewModelScope.launch {
             repository.getTasksFromLocalDatabase().collect { taskEntities ->
                 allTaskEntities = taskEntities
-                val sortedTaskList = sortDatabaseList(taskEntities)
+                val sortedDatabaseList = sortDatabaseList(taskEntities)
+
+                val sortedTaskList = sortAllTasksList(sortedDatabaseList, Pair(DATE, true))
+
                 _allTasksList.postValue(sortedTaskList)
 
                 val newData = convertTasksToJson(taskEntities)
@@ -120,6 +124,51 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
 
         return listOf(uncompletedTasksList, completedTasksList)
     }
+
+    fun sortAllTasksList(taskLists: List<TaskList>, sortingCondition: Pair<String, Boolean>): List<TaskList> {
+        val uncompletedTasksList = taskLists.first().list
+        val completedTasksList = taskLists.last().list
+
+        return sortTaskListsByCondition(uncompletedTasksList, completedTasksList, sortingCondition)
+    }
+
+    private fun sortTaskListsByCondition(
+        uncompletedList: List<TaskEntity>,
+        completedList: List<TaskEntity>,
+        sortingCondition: Pair<String, Boolean>
+    ): List<TaskList> {
+        val (sortBy, ascendingOrder) = sortingCondition
+
+        val uncompletedSorted = sortTaskEntities(uncompletedList, sortBy, ascendingOrder)
+        val completedSorted = sortTaskEntities(completedList, sortBy, ascendingOrder)
+
+        return listOf(
+            TaskList(UNCOMPLETED, uncompletedSorted),
+            TaskList(COMPLETED, completedSorted)
+        )
+    }
+
+    private fun sortTaskEntities(
+        taskEntities: List<TaskEntity>,
+        sortBy: String,
+        ascendingOrder: Boolean
+    ): List<TaskEntity> {
+        return when (sortBy) {
+            DATE -> {
+                // Sort by dueDateTime, and then by title if dueDateTime is equal
+                taskEntities.sortedWith(compareBy({ it.dueDateTime }, { it.title }))
+            }
+            TITLE -> {
+                // Sort by title
+                taskEntities.sortedBy { it.title }
+            }
+            else -> {
+                // Default sorting (no change)
+                taskEntities
+            }
+        }.let { if (ascendingOrder) it else it.reversed() }
+    }
+
 
     fun setUpNewUser(
         userId: String,
@@ -163,6 +212,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         title: String,
         description: String,
         starred: Boolean,
+        dueDateTime: Calendar?,
         callback: (Boolean) -> Unit
     ) {
         viewModelScope.launch {
@@ -173,7 +223,8 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 title = title,
                 description = description,
                 taskCompleted = false,
-                starred = starred
+                starred = starred,
+                dueDateTime = dueDateTime
             )
             try {
                 repository.saveTaskToDatabase(taskEntity)
@@ -193,6 +244,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         description: String,
         completed: Boolean,
         starred: Boolean,
+        dueDateTime: Calendar?,
         categoryIds: List<String>,
         callback: (Boolean) -> Unit
     ) {
@@ -204,6 +256,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 description = description,
                 taskCompleted = completed,
                 starred = starred,
+                dueDateTime = dueDateTime,
                 categoryIds = categoryIds
             )
             try {
@@ -573,5 +626,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         private const val OCCUPATION = "occupation"
         private const val FILEPATH = "avatarFilePath"
         private const val CATEGORY = "category"
+        private const val DATE = "date"
+        private const val TITLE = "title"
     }
 }

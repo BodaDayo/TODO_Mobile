@@ -6,21 +6,23 @@
     <group android:id="@+id/it_1"
         android:checkableBehavior="single">
 
-        <item android:id="@+id/appSettings"
-            android:title="App Settings"
-            android:icon="@drawable/settings"/>
+
         <item android:id="@+id/account"
-            android:title="Account Settings"
+            android:title="Edit Profile"
             android:icon="@drawable/avatar"/>
         <item android:id="@+id/supportUs"
             android:title="Support Us"
             android:icon="@drawable/thumbs"/>
+        <item android:id="@+id/feedback"
+            android:title="Send Feedback"
+            android:icon="@drawable/flash"/>
 
     </group>
 
-    <item android:id="@+id/feedback"
-        android:title="Send Feedback"
-        android:icon="@drawable/flash"/>
+
+    <item android:id="@+id/settings"
+        android:title="Settings"
+        android:icon="@drawable/settings"/>
     <item android:id="@+id/logInOut"
         android:title="Log Out"
         android:icon="@drawable/logout"

@@ -51,6 +51,55 @@ class FirebaseAccess {
         }
     }
 
+    fun changePasswordAndEmail(newEmail: String, newPassword: String, callback: (Boolean, String?) -> Unit) {
+        val user = FirebaseAuth.getInstance().currentUser
+
+        // Step 1: Update Email
+        user?.updateEmail(newEmail)
+            ?.addOnCompleteListener { emailUpdateTask ->
+                if (emailUpdateTask.isSuccessful) {
+                    // Step 2: Change Password
+                    user.updatePassword(newPassword)
+                        .addOnCompleteListener { passwordUpdateTask ->
+                            if (passwordUpdateTask.isSuccessful) {
+                                callback(true, null)
+                            } else {
+                                callback(false, "Failed to update password.")
+                            }
+                        }
+                } else {
+                    callback(false, "Failed to update email.")
+                }
+            }
+    }
+
+    fun deleteAccountAndData(callback: (Boolean, String?) -> Unit) {
+        val user = FirebaseAuth.getInstance().currentUser
+        val userId = user?.uid
+
+        // Delete Firebase Authentication account
+        user?.delete()
+            ?.addOnCompleteListener { accountDeleteTask ->
+                if (accountDeleteTask.isSuccessful) {
+                    // Delete data from Realtime Database
+                    if (userId != null) {
+                        val userRef = database.reference.child("users").child(userId)
+                        userRef.removeValue()
+                    }
+
+                    // Delete avatar from Firebase Storage
+                    if (userId != null) {
+                        val avatarRef = storage.reference.child("avatars").child(userId)
+                        avatarRef.delete()
+                    }
+
+                    callback(true, null)
+                } else {
+                    callback(false, "Failed to delete account.")
+                }
+            }
+    }
+
     fun getTasksListRef(userId: String): DatabaseReference {
 
         return database.reference

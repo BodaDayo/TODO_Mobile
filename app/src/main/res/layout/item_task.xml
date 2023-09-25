@@ -43,8 +43,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:text="Today At 18:00"
-            android:textColor="@color/material_on_surface_disabled"
-            android:visibility="gone" />
+            android:textColor="@color/my_darker_grey" />
 
     </LinearLayout>
 

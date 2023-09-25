@@ -30,7 +30,9 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
 
     override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
         val list = lists[position]
-        val taskAdapter = TaskAdapter(list.list, viewModel)
+
+        val tasks = list.list.reversed()
+        val taskAdapter = TaskAdapter(context, tasks, viewModel)
 
         if (list.name == "completed") {
 
@@ -58,7 +60,7 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
             holder.binding.collapseList.visibility = View.GONE
 
             val errorColor = ContextCompat.getColor(
-                context,com.google.android.material.R.color.design_error
+                context, com.google.android.material.R.color.design_error
             )
             holder.binding.closeList.setColorFilter(errorColor)
             holder.binding.closeList.visibility = View.VISIBLE

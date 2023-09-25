@@ -27,13 +27,7 @@ class UploadTasksWorker(appContext: Context, params: WorkerParameters) :
 
                 if (newDataList != null) {
                     for (task in newDataList) {
-                        val taskData = mapOf(
-                            "taskId" to task.taskId,
-                            "title" to task.title,
-                            "description" to task.description,
-                            "taskCompleted" to task.taskCompleted,
-                            "starred" to task.starred
-                        )
+                        val taskData = convertTaskToJson(task)
 
                         // Upload the task data to Firebase
                         destinationRef.child(task.taskId).setValue(taskData)
@@ -57,6 +51,11 @@ class UploadTasksWorker(appContext: Context, params: WorkerParameters) :
         val gson = Gson()
         val type = object : TypeToken<List<TaskEntity>>() {}.type
         return gson.fromJson(json, type)
+    }
+
+    private fun convertTaskToJson(task: TaskEntity): String {
+        val gson = Gson()
+        return gson.toJson(task)
     }
 
     companion object {

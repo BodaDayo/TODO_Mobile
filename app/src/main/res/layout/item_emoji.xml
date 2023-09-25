@@ -4,7 +4,7 @@
     android:id="@+id/emojiItemLayout"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="4sp"
+    android:layout_marginEnd="8sp"
     android:gravity="center">
 
     <View

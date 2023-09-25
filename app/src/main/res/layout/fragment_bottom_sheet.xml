@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:padding="16sp">
 
@@ -18,23 +19,33 @@
         android:id="@+id/taskTitleEt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="@string/title"
         android:background="@android:color/transparent"
-        app:boxBackgroundMode="none"/>
+        android:hint="@string/title"
+        app:boxBackgroundMode="none" />
 
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/taskDescriptionEt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:gravity="top|start"
         android:hint="@string/description"
         android:inputType="textMultiLine"
-        android:maxLines="10"
+        android:maxLines="5"
         android:scrollbars="vertical"
-        android:gravity="top|start"
-        app:boxBackgroundMode="none"
+        android:visibility="gone"
+        app:boxBackgroundMode="none" />
+
+    <TextView
+        android:id="@+id/taskDateTimeTVB"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        android:visibility="gone"/>
+        android:textColor="@color/material_on_surface_disabled"
+        tools:text="Tomorrow at 8:00pm"
+        android:visibility="gone"
+        android:layout_marginVertical="8dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -46,36 +57,34 @@
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <ImageButton
                 android:id="@+id/addDescriptionBtn"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:background="@android:color/transparent"
-                android:src="@drawable/details"
                 android:contentDescription="@string/add_task_description"
-                app:tint="?attr/colorOnSurface"/>
+                android:src="@drawable/details" />
 
             <ImageButton
+                android:id="@+id/taskDateTimeIcon"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:background="@android:color/transparent"
-                android:src="@drawable/clock"
                 android:layout_marginStart="24dp"
+                android:background="@android:color/transparent"
                 android:contentDescription="@string/set_time_and_date"
-                app:tint="?attr/colorOnSurface"/>
+                android:src="@drawable/clock" />
 
             <ImageButton
                 android:id="@+id/star"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:background="@android:color/transparent"
-                android:src="@drawable/star"
                 android:layout_marginStart="24dp"
+                android:background="@android:color/transparent"
                 android:contentDescription="@string/star_task"
-                app:tint="?attr/colorOnSurface" />
+                android:src="@drawable/star" />
 
         </LinearLayout>
 
@@ -90,13 +99,12 @@
             android:id="@+id/saveTask"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/save"
-            android:textColor="@color/material_grey_600"
+            android:layout_gravity="end"
             android:layout_marginEnd="16dp"
-            android:layout_gravity="end" />
+            android:text="@string/save"
+            android:textColor="@color/material_grey_600" />
 
     </LinearLayout>
-
 
 
 </LinearLayout>

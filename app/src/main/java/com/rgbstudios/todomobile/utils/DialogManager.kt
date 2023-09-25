@@ -1,24 +1,20 @@
 package com.rgbstudios.todomobile.utils
 
+import android.app.DatePickerDialog
 import android.app.Dialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.PorterDuff
-import android.graphics.drawable.GradientDrawable
 import android.os.Build
-import android.os.FileObserver.CREATE
 import android.os.Handler
 import android.os.Looper
-import android.provider.MediaStore.Video.VideoColumns.CATEGORY
 import android.text.Editable
 import android.view.View
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.startActivity
-import androidx.core.content.PackageManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.google.android.gms.common.util.ClientLibraryUtils.getPackageInfo
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
@@ -31,12 +27,14 @@ import com.rgbstudios.todomobile.databinding.DialogFeedbackBinding
 import com.rgbstudios.todomobile.databinding.DialogForgotPasswordBinding
 import com.rgbstudios.todomobile.databinding.DialogNewCategoryBinding
 import com.rgbstudios.todomobile.databinding.DialogRemoveConfirmationBinding
+import com.rgbstudios.todomobile.databinding.DialogSortingBinding
+import com.rgbstudios.todomobile.model.TaskList
 import com.rgbstudios.todomobile.ui.adapters.CategoryAdapter
 import com.rgbstudios.todomobile.ui.adapters.CategoryColorAdapter
 import com.rgbstudios.todomobile.ui.adapters.CategoryIconAdapter
 import com.rgbstudios.todomobile.ui.adapters.EmojiAdapter
-import com.rgbstudios.todomobile.ui.fragments.HomeFragment
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
+import java.util.Calendar
 
 class DialogManager {
 
@@ -85,15 +83,15 @@ class DialogManager {
                                         viewModel.addTaskToCategory(category) { isSuccessful ->
                                             if (isSuccessful) {
                                                 // Handle success
-                                                toastManager.showToast(
+                                                toastManager.showShortToast(
                                                     context,
-                                                    "Task added to ${category.categoryName} Category"
+                                                    "${category.categoryName} tag added to task"
                                                 )
                                             } else {
                                                 // Handle failure
-                                                toastManager.showToast(
+                                                toastManager.showShortToast(
                                                     context,
-                                                    "Failed to add task to ${category.categoryName} category"
+                                                    "Failed to add ${category.categoryName} tag to task"
                                                 )
                                             }
                                         }
@@ -150,13 +148,13 @@ class DialogManager {
                                                         ) { isSuccessful ->
                                                             if (isSuccessful) {
                                                                 // Handle success
-                                                                toastManager.showToast(
+                                                                toastManager.showShortToast(
                                                                     context,
                                                                     "Category Restored!"
                                                                 )
                                                             } else {
                                                                 // Handle failure
-                                                                toastManager.showToast(
+                                                                toastManager.showShortToast(
                                                                     context,
                                                                     "Failed to restore Category"
                                                                 )
@@ -168,7 +166,7 @@ class DialogManager {
                                                 snackBar?.show()
 
                                             } else {
-                                                toastManager.showToast(
+                                                toastManager.showShortToast(
                                                     context, "Failed to delete category"
                                                 )
                                             }
@@ -287,7 +285,7 @@ class DialogManager {
 
                     // Check if the title is empty before proceeding
                     if (categoryName.isBlank()) {
-                        toastManager.showToast(
+                        toastManager.showShortToast(
                             context,
                             "Category name cannot be empty!"
                         )
@@ -425,7 +423,7 @@ class DialogManager {
 
                     // Check if the title is empty before proceeding
                     if (categoryName.isBlank()) {
-                        toastManager.showToast(
+                        toastManager.showShortToast(
                             context,
                             "Category name cannot be empty!"
                         )
@@ -506,17 +504,18 @@ class DialogManager {
                                 viewModel.saveTask(
                                     it.title,
                                     it.description,
-                                    it.starred
+                                    it.starred,
+                                    it.dueDateTime
                                 ) { isSuccessful ->
                                     if (isSuccessful) {
                                         // Handle success
-                                        toastManager.showToast(
+                                        toastManager.showShortToast(
                                             context,
                                             "Task Restored!"
                                         )
                                     } else {
                                         // Handle failure
-                                        toastManager.showToast(
+                                        toastManager.showShortToast(
                                             context,
                                             "Failed to restore task"
                                         )
@@ -529,7 +528,7 @@ class DialogManager {
 
                         callback(true)
                     } else {
-                        toastManager.showToast(
+                        toastManager.showShortToast(
                             context,
                             "Failed to delete task"
                         )
@@ -610,7 +609,7 @@ class DialogManager {
 
                         errorMessage?.let { message ->
                             val output = message.substringAfter(": ")
-                            toastManager.showToast(context, output)
+                            toastManager.showLongToast(context, output)
                         }
                     }
                 }
@@ -647,12 +646,12 @@ class DialogManager {
                     auth.sendPasswordResetEmail(email)
                         .addOnCompleteListener {
                             if (it.isSuccessful) {
-                                toastManager.showToast(
+                                toastManager.showLongToast(
                                     context,
                                     "Password reset link sent to your email"
                                 )
                             } else {
-                                toastManager.showToast(
+                                toastManager.showShortToast(
                                     context,
                                     "Failed to send password reset email"
                                 )
@@ -661,7 +660,7 @@ class DialogManager {
                             dialog.dismiss()
                         }
                 } else {
-                    toastManager.showToast(
+                    toastManager.showShortToast(
                         context,
                         "Please enter your email"
                     )
@@ -678,7 +677,6 @@ class DialogManager {
     ) {
         val context = fragment.context
         val layoutInflater = fragment.layoutInflater
-
 
         if (context != null) {
             val dialogBinding = DialogFeedbackBinding.inflate(layoutInflater)
@@ -707,7 +705,7 @@ class DialogManager {
                         emojiList,
                         object : EmojiAdapter.EmojiClickListener {
                             override fun onEmojiClick(emojiTriple: Triple<String, Int, Int>) {
-                              selectedEmojiTriple = emojiTriple
+                                selectedEmojiTriple = emojiTriple
                             }
 
                         }
@@ -722,7 +720,7 @@ class DialogManager {
                 submitButton.setOnClickListener {
                     try {// Check if an emoji has been selected before proceeding
                         if (selectedEmojiTriple == null) {
-                            toastManager.showToast(
+                            toastManager.showLongToast(
                                 context,
                                 "Please rate your user experience using one of the emojis"
                             )
@@ -732,9 +730,11 @@ class DialogManager {
                         val emojiIconResource = selectedEmojiTriple!!.second
                         val emojiColor = selectedEmojiTriple!!.third
 
-                        val userRating = emojiIdentifier.replaceFirstChar { it.uppercase() }.replace('_', ' ')
+                        val userRating =
+                            emojiIdentifier.replaceFirstChar { it.uppercase() }.replace('_', ' ')
 
-                        val userComment = editCommentEt.text.toString().ifEmpty { "No additional comments" }
+                        val userComment =
+                            editCommentEt.text.toString().ifEmpty { "No additional comments" }
 
                         emojiSelectedView.setImageResource(emojiIconResource)
 
@@ -776,26 +776,34 @@ class DialogManager {
                             // Create an Intent to send feedback
                             val emailIntent = Intent(Intent.ACTION_SEND)
                             emailIntent.type = "text/plain"
-                            emailIntent.putExtra(Intent.EXTRA_EMAIL, arrayOf("rgb.mobile.studios@gmail.com"))
+                            emailIntent.putExtra(
+                                Intent.EXTRA_EMAIL,
+                                arrayOf("rgb.mobile.studios@gmail.com")
+                            )
                             emailIntent.putExtra(Intent.EXTRA_SUBJECT, "User Feedback")
                             emailIntent.putExtra(Intent.EXTRA_TEXT, feedbackMessage.toString())
 
                             // Start the email client or any other app that can handle this intent
-                            context.startActivity(Intent.createChooser(emailIntent, "Send Feedback"))
+                            context.startActivity(
+                                Intent.createChooser(
+                                    emailIntent,
+                                    "Send Feedback"
+                                )
+                            )
 
                             // Clear the EditText field
                             editCommentEt.text = null
 
                             // Dismiss the dialog
                             dialog.dismiss()
-                        }, 2000)
+                        }, 1500)
                     } catch (e: Exception) {
                         firebase.recordCaughtException(e)
 
                         // Dismiss the dialog
                         dialog.dismiss()
 
-                        toastManager.showToast(
+                        toastManager.showLongToast(
                             context,
                             "Feedback Sending failed, something went wrong!"
                         )
@@ -806,6 +814,157 @@ class DialogManager {
             dialog.show()
         }
 
+    }
+
+    fun showSortingDialog(
+        fragment: Fragment,
+        viewModel: TodoViewModel,
+        allTaskList: List<TaskList>?
+    ) {
+        val context = fragment.context
+        val layoutInflater = fragment.layoutInflater
+
+        if (context != null) {
+            val dialogBinding = DialogSortingBinding.inflate(layoutInflater)
+
+            // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
+            val dialog = MaterialAlertDialogBuilder(context)
+                .setView(dialogBinding.root)
+                .create()
+
+            // Variable to store the sorting details
+            var sortingCondition: Pair<String, Boolean>
+            var condition = DATE
+            var order = true
+
+            dialogBinding.apply {
+                // Set the default checked options
+                radioDate.isChecked = true
+                radioAscending.isChecked = true
+
+                // Set the radio group listeners to capture user selections
+                radioSortBy.setOnCheckedChangeListener { _, checkedId ->
+                    when (checkedId) {
+                        R.id.radioTitle -> condition = TITLE
+                        R.id.radioDate -> condition = DATE
+                    }
+                }
+
+                radioSortOrder.setOnCheckedChangeListener { _, checkedId ->
+                    when (checkedId) {
+                        R.id.radioAscending -> order = true
+                        R.id.radioDescending -> order = false
+                    }
+                }
+
+                btnConfirm.setOnClickListener {
+                    sortingCondition = Pair(condition, order)
+                    if (allTaskList != null) {
+                        viewModel.sortAllTasksList(allTaskList, sortingCondition)
+                    } else {
+                        toastManager.showShortToast(context, "No tasks to sort")
+                    }
+                    dialog.dismiss()
+                }
+
+                btnCancel.setOnClickListener {
+                    dialog.dismiss()
+                }
+            }
+            dialog.show()
+        }
+    }
+
+
+    fun showDatePickerDialog(
+        fragment: Fragment,
+        dueDateTime: Calendar?,
+        callback: (Calendar?) -> Unit
+    ) {
+        val context = fragment.context
+        val calendar = Calendar.getInstance()
+
+        // Set the initial date value to dueDateTime if it's not null
+        if (dueDateTime != null) {
+            calendar.timeInMillis = dueDateTime.timeInMillis
+        }
+
+        if (context != null) {
+            val datePickerDialog = DatePickerDialog(
+                context,
+                { _, year, month, dayOfMonth ->
+                    try {
+                        // Handle selected date
+                        calendar.set(year, month, dayOfMonth)
+
+                        // Return selectedDate
+                        callback(calendar)
+                    } catch (e: Exception) {
+                        callback(null)
+                        toastManager.showShortToast(context, "Pick a valid Date")
+                    }
+                },
+                calendar.get(Calendar.YEAR),
+                calendar.get(Calendar.MONTH),
+                calendar.get(Calendar.DAY_OF_MONTH)
+            )
+
+            // Set the minimum date to the current date
+            datePickerDialog.datePicker.minDate = System.currentTimeMillis()
+
+            datePickerDialog.show()
+        }
+    }
+
+    fun showTimePickerDialog(
+        fragment: Fragment,
+        dueDateTime: Calendar?,
+        selectedDate: Calendar,
+        callback: (Calendar?) -> Unit
+    ) {
+        val context = fragment.context
+        val calendar = Calendar.getInstance()
+
+        // Add two hours to the current time
+        calendar.add(Calendar.HOUR_OF_DAY, 2)
+
+        // Set the initial time value to dueDateTime if it's not null
+        if (dueDateTime != null) {
+            calendar.timeInMillis = dueDateTime.timeInMillis
+        }
+
+        if (context != null) {
+            val timePickerDialog = TimePickerDialog(
+                context,
+                { _, hourOfDay, minute ->
+                    try {
+                        // Handle selected time
+                        selectedDate.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                        selectedDate.set(Calendar.MINUTE, minute)
+
+                        // Check if the selected time is not in the past (only if selected date is today)
+                        val currentDate = Calendar.getInstance()
+                        if (selectedDate.get(Calendar.YEAR) == currentDate.get(Calendar.YEAR) &&
+                            selectedDate.get(Calendar.DAY_OF_YEAR) == currentDate.get(Calendar.DAY_OF_YEAR) &&
+                            selectedDate.before(currentDate)
+                        ) {
+                            toastManager.showShortToast(context, "Please select a future time")
+                            return@TimePickerDialog
+                        }
+
+                        callback(selectedDate)
+                    } catch (e: Exception) {
+                        callback(null)
+                        toastManager.showShortToast(context, "Pick a valid Time")
+                    }
+                },
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                false
+            )
+
+            timePickerDialog.show()
+        }
     }
 
     /**
@@ -826,13 +985,13 @@ class DialogManager {
         ) { isSuccessful ->
             if (isSuccessful) {
                 // Handle success
-                toastManager.showToast(
+                toastManager.showShortToast(
                     context,
                     "New category added successfully!"
                 )
             } else {
                 // Handle failure
-                toastManager.showToast(
+                toastManager.showShortToast(
                     context,
                     "Failed to add new category"
                 )
@@ -856,13 +1015,13 @@ class DialogManager {
         ) { isSuccessful ->
             if (isSuccessful) {
                 // Handle success
-                toastManager.showToast(
+                toastManager.showShortToast(
                     context,
                     "Category updated successfully!"
                 )
             } else {
                 // Handle failure
-                toastManager.showToast(
+                toastManager.showShortToast(
                     context,
                     "Failed to update category"
                 )
@@ -880,5 +1039,7 @@ class DialogManager {
         private const val CREATE = "create_new"
         private const val EDIT = "edit"
         private const val CATEGORY = "category"
+        private const val DATE = "date"
+        private const val TITLE = "title"
     }
 }

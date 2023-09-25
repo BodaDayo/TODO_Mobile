@@ -1,6 +1,8 @@
 package com.rgbstudios.todomobile.ui.adapters
 
+import android.content.Context
 import android.graphics.Paint
+import android.text.format.DateUtils.formatDateTime
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,8 +14,12 @@ import com.rgbstudios.todomobile.data.entity.CategoryEntity
 import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.databinding.ItemTaskBinding
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class TaskAdapter(
+    private val context: Context,
     private val tasks: List<TaskEntity>,
     private val viewModel: TodoViewModel
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
@@ -32,10 +38,31 @@ class TaskAdapter(
 
         var newTaskCompleted = task.taskCompleted
         var newStarred = task.starred
+        var dueDateTime = task.dueDateTime
         val taskCategories = task.categoryIds
 
         holder.binding.apply {
-            taskDateTime.visibility = View.VISIBLE // TODO work on picking up the time
+
+            if (dueDateTime != null) {
+                val formattedDateTime = formatDateTime(dueDateTime!!)
+
+                // Check if dueDateTime is in the past
+                val currentTime = Calendar.getInstance()
+                if (dueDateTime!!.before(currentTime)) {
+                    // Set the text color to R.color.poor
+                    taskDateTime.setTextColor(ContextCompat.getColor(context, R.color.poor))
+                    val overdueTime = formattedDateTime + context.getString(R.string.overdue_task)
+                    taskDateTime.text = overdueTime
+                } else {
+                    // Set the text color to the default color
+                    taskDateTime.setTextColor(ContextCompat.getColor(context, R.color.my_darker_grey))
+                    taskDateTime.text = formattedDateTime
+                }
+                taskDateTime.visibility = View.VISIBLE
+            } else {
+                taskDateTime.visibility = View.GONE
+            }
+
             taskTitleTextView.text = task.title
             taskDescriptionTextView.text = task.description
 
@@ -73,7 +100,6 @@ class TaskAdapter(
                 taskDescriptionTextView.visibility = View.GONE
             }
 
-
             taskDetailsLayout.setOnClickListener {
                 // Set the selected task data in the ViewModel
                 viewModel.setSelectedTaskData(task)
@@ -92,13 +118,16 @@ class TaskAdapter(
                     task.description,
                     newTaskCompleted,
                     newStarred,
+                    dueDateTime,
                     taskCategories
-
                 )
             }
 
             markCompletedImageView.setOnClickListener {
                 newTaskCompleted = !newTaskCompleted
+                if (newTaskCompleted) {
+                    dueDateTime = null
+                }
 
                 // TODO markCompleted animation or not
 
@@ -108,6 +137,7 @@ class TaskAdapter(
                     task.description,
                     newTaskCompleted,
                     newStarred,
+                    dueDateTime,
                     taskCategories
                 )
             }
@@ -124,16 +154,47 @@ class TaskAdapter(
         description: String,
         completed: Boolean,
         starred: Boolean,
+        dueDateTime: Calendar?,
         taskCategories: List<String>
     ) {
 
         // Call the ViewModel's method to update the task
-        viewModel.updateTask(id, title, description, completed, starred, taskCategories) { isSuccessful ->
+        viewModel.updateTask(
+            id,
+            title,
+            description,
+            completed,
+            starred,
+            dueDateTime,
+            taskCategories
+        ) { isSuccessful ->
             if (isSuccessful) {
                 return@updateTask
             }
         }
 
+    }
+
+    private fun formatDateTime(dateTime: Calendar): String {
+        val now = Calendar.getInstance()
+        val sdf = SimpleDateFormat("EEE, MMM dd, yyyy 'At' hh:mm a", Locale.getDefault())
+
+        val isToday = now.get(Calendar.YEAR) == dateTime.get(Calendar.YEAR) &&
+                now.get(Calendar.DAY_OF_YEAR) == dateTime.get(Calendar.DAY_OF_YEAR)
+
+        if (isToday) {
+            sdf.applyPattern("'Today At' hh:mm a")
+        } else {
+            val tomorrow = Calendar.getInstance()
+            tomorrow.add(Calendar.DAY_OF_YEAR, 1)
+            if (tomorrow.get(Calendar.YEAR) == dateTime.get(Calendar.YEAR) &&
+                tomorrow.get(Calendar.DAY_OF_YEAR) == dateTime.get(Calendar.DAY_OF_YEAR)
+            ) {
+                sdf.applyPattern("'Tomorrow At' hh:mm a")
+            }
+        }
+
+        return sdf.format(dateTime.time)
     }
 
 }

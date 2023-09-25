@@ -10,7 +10,7 @@ import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.data.entity.UserEntity
 
 @Database(entities = [TaskEntity::class, UserEntity::class, CategoryEntity::class], version = 1, exportSchema = false)
-@TypeConverters(ListStringConverter::class)
+@TypeConverters(ListStringConverter::class, CalenderConverter::class)
 abstract class TodoAppDatabase : RoomDatabase() {
 
     abstract fun userDao(): UserDao
