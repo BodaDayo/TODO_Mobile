@@ -1,6 +1,7 @@
 package com.rgbstudios.todomobile.ui.adapters
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
+import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.databinding.ItemTaskParentBinding
 import com.rgbstudios.todomobile.model.TaskList
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
@@ -17,6 +19,7 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
 
     private var lists: List<TaskList> = emptyList()
     private lateinit var taskAdapter: TaskAdapter
+    private lateinit var binAdapter: BinAdapter
 
     fun updateTaskLists(newAllTasksList: List<TaskList>) {
         lists = newAllTasksList
@@ -31,13 +34,24 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
 
     override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
         val list = lists[position]
-
         val name = list.name
         val tasks = list.list
-        taskAdapter = TaskAdapter(context, name, tasks, viewModel)
-        if (name == "completed") {
 
-            if (list.list.isNotEmpty()) {
+        if (name == COMPLETED) {
+            // Create and set the BinAdapter for the "completed" list
+            binAdapter = BinAdapter(context, name, tasks, viewModel)
+            setListData(holder, name, tasks, binAdapter)
+        } else {
+            // Create and set the TaskAdapter for other lists
+            taskAdapter = TaskAdapter(context, name, tasks, viewModel)
+            setListData(holder, name, tasks, taskAdapter)
+        }
+    }
+
+    private fun setListData(holder: ListViewHolder, name: String, tasks: List<TaskEntity>, adapter: RecyclerView.Adapter<*>) {
+
+        if (name == COMPLETED) {
+            if (tasks.isNotEmpty()) {
                 holder.binding.separator.visibility = View.VISIBLE
                 holder.binding.listName.text = name
                 holder.binding.listNameLayout.visibility = View.VISIBLE
@@ -53,9 +67,15 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
                 holder.binding.listNameLayout.visibility = View.GONE
                 holder.binding.separator.visibility = View.GONE
             }
-        } else if (name != "uncompleted") {
+        } else {
+            if (name != UNCOMPLETED) {
                 holder.binding.listName.text = name
-                holder.binding.listName.setTextColor(ContextCompat.getColor(context, R.color.myPrimary))
+                holder.binding.listName.setTextColor(
+                    ContextCompat.getColor(
+                        context,
+                        R.color.myPrimary
+                    )
+                )
 
                 holder.binding.listNameLayout.visibility = View.VISIBLE
                 holder.binding.collapseList.visibility = View.GONE
@@ -65,19 +85,29 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
                 holder.binding.listNameLayout.visibility = View.GONE
                 holder.binding.separator.visibility = View.GONE
             }
+        }
 
         holder.binding.childRecyclerView.setHasFixedSize(true)
         holder.binding.childRecyclerView.layoutManager =
             LinearLayoutManager(holder.itemView.context)
-        holder.binding.childRecyclerView.adapter = taskAdapter
-
+        holder.binding.childRecyclerView.adapter = adapter
     }
 
-    fun setTaskSelection(isAddAll: Boolean) {
-        if (isAddAll) {
-            taskAdapter.fillSelection()
+
+    fun clearTasksSelection(taskListName: String) {
+        if (taskListName == COMPLETED) {
+            binAdapter.clearSelection()
         } else {
-            taskAdapter.clearSelection()}
+            taskAdapter.clearSelection()
+        }
+    }
+
+    fun fillTasKSelection(taskListName: String, list: List<TaskEntity>) {
+        if (taskListName == COMPLETED) {
+            binAdapter.fillSelection(list)
+        } else {
+            taskAdapter.fillSelection(list)
+        }
     }
 
     override fun getItemCount(): Int {
@@ -108,4 +138,9 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
             notifyDataSetChanged()
         }
     }
+    companion object {
+        private const val UNCOMPLETED = "uncompleted"
+        private const val COMPLETED = "completed"
+    }
+
 }

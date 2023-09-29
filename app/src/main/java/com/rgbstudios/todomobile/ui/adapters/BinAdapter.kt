@@ -2,7 +2,6 @@ package com.rgbstudios.todomobile.ui.adapters
 
 import android.content.Context
 import android.graphics.Paint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,12 +16,12 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class TaskAdapter(
+class BinAdapter(
     private val context: Context,
     private val name: String,
     private val tasks: List<TaskEntity>,
     private val viewModel: TodoViewModel
-) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
+) : RecyclerView.Adapter<BinAdapter.TaskViewHolder>() {
 
     private var highlightedListName: String = "" // Keep track of list currently being selected from
     private val selectedItems = mutableListOf<Int>() // Keep track of selected items

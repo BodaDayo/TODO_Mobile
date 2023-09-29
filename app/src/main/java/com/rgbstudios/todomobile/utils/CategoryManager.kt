@@ -1,7 +1,9 @@
 package com.rgbstudios.todomobile.utils
 
+import com.google.firebase.analytics.FirebaseAnalytics.Event.SEARCH
 import com.rgbstudios.todomobile.data.entity.CategoryEntity
 import java.util.UUID
+import kotlin.reflect.KTypeProjection.Companion.STAR
 
 class CategoryManager {
 
@@ -12,6 +14,8 @@ class CategoryManager {
 
     val newCategory =
         CategoryEntity(CREATE, NAME, ICON, colorManager.newPair)
+
+    val specialCategoryNames = listOf( UNCOMPLETED, COMPLETED, SEARCH, STAR)
 
     fun getDefaultCategories(): List<CategoryEntity> {
         return icons.map { name ->
@@ -32,6 +36,10 @@ class CategoryManager {
         private const val CREATE = "create_new"
         private const val NAME = "Add New"
         private const val ICON = "add_new"
+        private const val STAR = "Favorites"
+        private const val SEARCH = "Search Results"
+        private const val UNCOMPLETED = "uncompleted"
+        private const val COMPLETED = "completed"
     }
 
 }

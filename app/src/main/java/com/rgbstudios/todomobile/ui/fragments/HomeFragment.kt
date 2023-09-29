@@ -4,6 +4,7 @@ import android.app.UiModeManager
 import android.content.Context
 import android.graphics.PorterDuff
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -24,12 +25,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
-import com.google.firebase.analytics.FirebaseAnalytics.Event.SEARCH
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.databinding.FragmentHomeBinding
 import com.rgbstudios.todomobile.model.TaskList
 import com.rgbstudios.todomobile.ui.adapters.ListAdapter
+import com.rgbstudios.todomobile.utils.CategoryManager
 import com.rgbstudios.todomobile.utils.DialogManager
 import com.rgbstudios.todomobile.utils.ToastManager
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
@@ -37,7 +38,6 @@ import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
 import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt
 import java.io.File
 import java.util.Calendar
-import kotlin.reflect.KTypeProjection.Companion.STAR
 
 
 class HomeFragment : Fragment(),
@@ -57,10 +57,10 @@ class HomeFragment : Fragment(),
     private val listener = this as OnNavigationItemSelectedListener
     private val dialogManager = DialogManager()
     private val toastManager = ToastManager()
+    private val categoryManager = CategoryManager()
     private var isSearchResultsShowing = false
     private var userEmail: String? = null
     private var currentTasks: List<TaskList>? = null
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -128,7 +128,7 @@ class HomeFragment : Fragment(),
 
                             bottomSheetFragment.dismiss()
 
-                            // Set focus to the recyclerview to prevent the searchView from triggering the keyboard
+                            // Set focus to the fab to prevent the searchView from triggering the keyboard
                             fab.requestFocus()
                         }
                     }
@@ -145,7 +145,11 @@ class HomeFragment : Fragment(),
             //Set up back pressed call back
             callback =
                 requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-                    taskListAdapter.setTaskSelection(false)
+                    val taskListName = sharedViewModel.highlightedListName.value
+
+                    if (taskListName != null) {
+                        taskListAdapter.clearTasksSelection(taskListName)
+                    }
                 }
             callback.isEnabled = false
 
@@ -161,6 +165,7 @@ class HomeFragment : Fragment(),
             swipeRefreshLayout.setOnRefreshListener {
                 // Update data from database when the user performs the pull-to-refresh action
                 updateFromDatabase()
+                sharedViewModel.setIsSelectionModeOn(false)
             }
 
             // Set up SearchView's query text listener
@@ -220,37 +225,124 @@ class HomeFragment : Fragment(),
             // ItemCountLayout Views
 
             selectAllTasks.setOnClickListener {
-                taskListAdapter.setTaskSelection(true)
+                val taskList = sharedViewModel.highlightedTaskList.value
+                val taskListName = sharedViewModel.highlightedListName.value
+
+                if (taskList != null && taskListName != null) {
+                    // Find the TaskList with the matching name
+                    val matchingTaskList = currentTasks?.find { it.name == taskListName }
+
+                    if (matchingTaskList != null) {
+                        val selectedList = matchingTaskList.list
+                        val isFilledList = taskList.size == selectedList.size
+
+                        // Pass the current state to adapter
+                        if (isFilledList) {
+                            taskListAdapter.clearTasksSelection(taskListName)
+                        } else {
+                            taskListAdapter.fillTasKSelection(taskListName, selectedList)
+                        }
+
+                    }
+                }
             }
 
             closeSelection.setOnClickListener {
-                taskListAdapter.setTaskSelection(false)
+                val taskListName = sharedViewModel.highlightedListName.value
+
+                if (taskListName != null) {
+                    taskListAdapter.clearTasksSelection(taskListName)
+                }
             }
 
             // RefactorTaskLayout views
 
             deleteSelected.setOnClickListener {
-                toastManager.showShortToast(fragmentContext, "Let's go")
+                dialogManager.showBatchDeleteConfirmationDialog(
+                    this@HomeFragment,
+                    sharedViewModel
+                ) {
+                    if (it) sharedViewModel.setIsSelectionModeOn(false)
+                }
             }
 
             renameSelected.setOnClickListener {
-                val task = sharedViewModel.highlightedTaskList.value?.first()
-                if (task != null) {
-                    dialogManager.showTaskRenameDialog(task, this@HomeFragment, sharedViewModel) {
-                        if (it) taskListAdapter.setTaskSelection(false)
-                    }
+                dialogManager.showTaskRenameDialog(this@HomeFragment, sharedViewModel) {
+                    if (it) sharedViewModel.setIsSelectionModeOn(false)
                 }
             }
 
             addToCategory.setOnClickListener {
-                toastManager.showShortToast(fragmentContext, "Let's go")
-                // TODO the dialog should show remove from category if we an in a category list
+
+                val taskListName = sharedViewModel.highlightedListName.value
+                val exemptionList = categoryManager.specialCategoryNames
+
+                if (exemptionList.contains(taskListName)) {
+                    dialogManager.showCategoriesDialog(
+                        this@HomeFragment,
+                        sharedViewModel,
+                        BATCHADD,
+                        null
+                    ) {
+                        if (it) sharedViewModel.setIsSelectionModeOn(false)
+                    }
+                } else {
+                    dialogManager.showBatchRemoveTagConfirmationDialog(
+                        this@HomeFragment,
+                        sharedViewModel
+                    ) {
+                        if (it) sharedViewModel.setIsSelectionModeOn(false)
+                    }
+                }
             }
 
             editDateTime.setOnClickListener {
-                toastManager.showShortToast(fragmentContext, "Let's go")
-            }
+                val task = sharedViewModel.highlightedTaskList.value?.first()
+                val taskDueDateTime = task?.dueDateTime
+                if (task != null) {
+                    dialogManager.showDatePickerDialog(
+                        this@HomeFragment,
+                        taskDueDateTime
+                    ) { selectedDate ->
+                        if (selectedDate != null) {
+                            dialogManager.showTimePickerDialog(
+                                this@HomeFragment,
+                                taskDueDateTime,
+                                selectedDate
+                            ) {
 
+                                if (it != null) {
+                                    // Call the ViewModel's method to update the task
+                                    sharedViewModel.updateTask(
+                                        task.taskId,
+                                        task.title,
+                                        task.description,
+                                        task.taskCompleted,
+                                        task.starred,
+                                        it,
+                                        task.categoryIds
+                                    ) { isSuccessful ->
+                                        if (isSuccessful) {
+                                            // Handle success
+                                            toastManager.showShortToast(
+                                                fragmentContext,
+                                                "Task updated successfully!"
+                                            )
+                                            sharedViewModel.setIsSelectionModeOn(false)
+                                        } else {
+                                            // Handle failure
+                                            toastManager.showShortToast(
+                                                fragmentContext,
+                                                "Failed to update task"
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             // Observe current user data
             sharedViewModel.currentUser.observe(viewLifecycleOwner) { user ->
@@ -288,6 +380,14 @@ class HomeFragment : Fragment(),
 
             // Observe all current user's tasks
             sharedViewModel.allTasksList.observe(viewLifecycleOwner) { allTasksList ->
+
+                if (isSearchResultsShowing) {
+                    searchView.setQuery(null, false)
+
+                    isSearchResultsShowing = false
+                    return@observe
+                }
+
                 when (checkTaskLists(allTasksList)) {
                     1 -> onEmptyLayout(1)
                     2 -> onEmptyLayout(2)
@@ -345,8 +445,6 @@ class HomeFragment : Fragment(),
                         )
                     )
                 }
-
-                isSearchResultsShowing = false
             }
 
             // Observe task selection mode
@@ -433,18 +531,11 @@ class HomeFragment : Fragment(),
     }
 
     fun upDateAdapterWithFilteredTasks() {
-
         val filteredTaskList = sharedViewModel.filteredTaskList.value ?: emptyList()
 
-            if (checkTaskLists(filteredTaskList) == 1) {
-                onEmptyLayout(4)
-            } else {
-                onEmptyLayout(3)
-            }
+        currentTasks = filteredTaskList
 
-            currentTasks = filteredTaskList
-
-            taskListAdapter.updateTaskLists(filteredTaskList)
+        taskListAdapter.updateTaskLists(filteredTaskList)
 
     }
 
@@ -713,6 +804,8 @@ class HomeFragment : Fragment(),
         private const val SEARCH = "Search Results"
         private const val UNCOMPLETED = "uncompleted"
         private const val COMPLETED = "completed"
+        private const val BATCHADD = "BatchAdd"
+        private const val BATCHREMOVE = "BatchRemove"
     }
 
 }

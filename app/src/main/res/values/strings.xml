@@ -7,7 +7,7 @@
     <string name="mark_as_completed">Mark Completed</string>
     <string name="mark_as_uncompleted">Mark Uncompleted</string>
     <string name="star_task">Star task</string>
-    <string name="delete_task">Are you sure you want to delete this item?</string>>
+    <string name="delete_task">Are you sure you want to delete this task?</string>>
 
     <string name="developer_signature">© 2023 Oladayo.rgb</string>
     <string name="save">Save</string>
@@ -17,6 +17,7 @@
     <string name="title">Title</string>
     <string name="add_task">Add Task</string>
     <string name="delete">Delete</string>
+    <string name="sure_response">Yes, I\'m sure</string>
     <string name="navigation_drawer_open">open</string>
     <string name="navigation_drawer_close">close</string>
     <string name="password_hint">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</string>
@@ -70,6 +71,9 @@
     <string name="a_z">A-Z</string>
     <string name="z_a">Z-A</string>
     <string name="type_title">Type title</string>
+    <string name="delete_selected_tasks">Delete Selected Tasks?</string>
+    <string name="delete_selected_tasks_body">Are you sure you want to delete these selected tasks?</string>
+    <string name="multiple_tasks_to_category">Add multiple tasks to category</string>
 
     <plurals name="tasks_left">
         <item quantity="one">%d Task left</item>
@@ -85,6 +89,30 @@
         <item quantity="one">%d Task Selected</item>
         <item quantity="other">%d Tasks Selected</item>
     </plurals>
+
+    <plurals name="multiple_tasks_to_category">
+        <item quantity="one">Add %d task to a category</item>
+        <item quantity="other">Add %d tasks to a category</item>
+    </plurals>
+
+    <plurals name="multiple_tasks_to_category_success">
+        <item quantity="one">Task added to category successfully</item>
+        <item quantity="other">%d tasks added to category successfully</item>
+    </plurals>
+
+    <plurals name="multiple_tasks_remove">
+        <item quantity="one">Are you sure you want to remove %d task from %s category</item>
+        <item quantity="other">Are you sure you want to remove %d tasks from %s category</item>
+    </plurals>
+
+    <plurals name="multiple_tasks_delete">
+        <item quantity="one">Are you sure you want to delete this task?</item>
+        <item quantity="other">Are you sure you want to remove these %d tasks </item>
+    </plurals>
+
+
+
+
 
 
 </resources>

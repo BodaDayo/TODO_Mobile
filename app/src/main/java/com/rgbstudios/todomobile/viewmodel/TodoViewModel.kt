@@ -309,6 +309,22 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         }
     }
 
+    fun saveMultipleTask(
+        taskEntityList: List<TaskEntity>,
+        callback: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                repository.batchSaveTaskToDatabase(taskEntityList)
+
+                callback(true)
+            } catch (e: Exception) {
+                firebase.recordCaughtException(e)
+                callback(false)
+            }
+        }
+    }
+
     fun updateTask(
         taskId: String,
         title: String,
@@ -345,6 +361,19 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         viewModelScope.launch {
             try {
                 repository.deleteTaskFromDatabase(taskId)
+
+                callback(true)
+            } catch (e: Exception) {
+                firebase.recordCaughtException(e)
+                callback(false)
+            }
+        }
+    }
+
+    fun batchDeleteTask(taskIdList: List<String>, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            try {
+                repository.deleteMultipleTasksFromDatabase(taskIdList)
 
                 callback(true)
             } catch (e: Exception) {
@@ -556,6 +585,14 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         val isInSelectMode = currentList.isNotEmpty()
 
         setIsSelectionModeOn(isInSelectMode)
+    }
+
+    fun fillSelection(tasks: List<TaskEntity>) {
+        _highlightedTaskList.value = tasks
+    }
+
+    fun clearSelection() {
+        _highlightedTaskList.value = emptyList()
     }
 
     /**

@@ -7,13 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PorterDuff
 import android.os.Build
-import android.os.FileObserver.CREATE
 import android.os.Handler
 import android.os.Looper
 import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
@@ -23,7 +20,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.data.entity.CategoryEntity
-import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.databinding.DialogCategorySelectionBinding
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
@@ -38,7 +34,6 @@ import com.rgbstudios.todomobile.ui.adapters.CategoryAdapter
 import com.rgbstudios.todomobile.ui.adapters.CategoryColorAdapter
 import com.rgbstudios.todomobile.ui.adapters.CategoryIconAdapter
 import com.rgbstudios.todomobile.ui.adapters.EmojiAdapter
-import com.rgbstudios.todomobile.ui.fragments.HomeFragment
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -83,27 +78,69 @@ class DialogManager {
 
                                 // Handle the category click event with the CategoryEntity parameter
                                 if (category.categoryId != CREATE) {
-                                    if (tag == HOME) {
-                                        viewModel.filterTasks(
-                                            category.categoryId,
-                                            CATEGORY
-                                        ) {
-                                            if (it) callback(true)
+
+                                    when (tag) {
+                                        HOME -> {
+                                            viewModel.filterTasks(
+                                                category.categoryId,
+                                                CATEGORY
+                                            ) {
+                                                if (it) callback(true)
+                                            }
                                         }
-                                    } else {
-                                        viewModel.addTaskToCategory(category) { isSuccessful ->
-                                            if (isSuccessful) {
-                                                // Handle success
-                                                toastManager.showShortToast(
-                                                    context,
-                                                    "${category.categoryName} tag added to task"
-                                                )
-                                            } else {
-                                                // Handle failure
-                                                toastManager.showShortToast(
-                                                    context,
-                                                    "Failed to add ${category.categoryName} tag to task"
-                                                )
+
+                                        BATCHADD -> {
+                                            val taskList = viewModel.highlightedTaskList.value
+                                            val categoryId = category.categoryId
+
+                                            // Add category tags to all selected tasks
+                                            val updatedTaskList = taskList?.map { taskEntity ->
+                                                val updatedCategoryIds =
+                                                    taskEntity.categoryIds + categoryId
+                                                taskEntity.copy(categoryIds = updatedCategoryIds)
+                                            }
+
+                                            // Save updated tasks to database
+                                            viewModel.saveMultipleTask(
+                                                updatedTaskList ?: emptyList()
+                                            ) { success ->
+                                                if (success) {
+                                                    callback(true)
+                                                    val successString = taskList?.let {
+                                                        fragment.resources.getQuantityString(
+                                                            R.plurals.multiple_tasks_to_category_success,
+                                                            it.size,
+                                                            it.size
+                                                        )
+                                                    }
+                                                    toastManager.showShortToast(
+                                                        context,
+                                                        successString!!
+                                                    )
+                                                } else {
+                                                    toastManager.showShortToast(
+                                                        context,
+                                                        "Failed to add tasks to category"
+                                                    )
+                                                }
+                                            }
+                                        }
+
+                                        else -> {
+                                            viewModel.addTaskToCategory(category) { isSuccessful ->
+                                                if (isSuccessful) {
+                                                    // Handle success
+                                                    toastManager.showShortToast(
+                                                        context,
+                                                        "${category.categoryName} tag added to task"
+                                                    )
+                                                } else {
+                                                    // Handle failure
+                                                    toastManager.showShortToast(
+                                                        context,
+                                                        "Failed to add ${category.categoryName} tag to task"
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -121,6 +158,9 @@ class DialogManager {
                                 dialog: Dialog,
                                 dialogBinding: DialogCategorySelectionBinding
                             ) {
+                                if (tag == BATCHADD || category.categoryId == CREATE) {
+                                    return
+                                }
                                 dialogBinding.apply {
                                     editIcon.visibility = View.VISIBLE
                                     deleteIcon.visibility = View.VISIBLE
@@ -190,19 +230,40 @@ class DialogManager {
                 categoryRecyclerView.layoutManager = GridLayoutManager(context, 3) // 3 columns
                 categoryRecyclerView.adapter = adapter
 
-                viewModel.categories.observe(fragment.viewLifecycleOwner) { list ->
-                    // Add a "create new" category to the categories list
-                    val createNewCategory = categoryManager.newCategory
-
-                    val updatedCategories = if (tag == HOME) {
-                        list.toMutableList()
-                    } else {
-                        val taskCategoryIds = selectedTaskCategories!!.map { it.categoryId }.toSet()
-                        list.filterNot { it.categoryId in taskCategoryIds }.toMutableList()
+                // Set dialog title if adding multiple tasks to category
+                if (tag == BATCHADD) {
+                    val taskList = viewModel.highlightedTaskList.value
+                    // Update showCategoryTitle tasks text with string plurals template
+                    if (taskList != null) {
+                        showCategoryTitle.text = fragment.resources.getQuantityString(
+                            R.plurals.multiple_tasks_to_category,
+                            taskList.size,
+                            taskList.size
+                        )
                     }
 
-                    updatedCategories.add(createNewCategory)
-                    adapter.updateCategoryList(updatedCategories)
+                    val categories = viewModel.categories.value
+                    if (categories != null) {
+                        adapter.updateCategoryList(categories)
+                    }
+
+                } else {
+
+                    viewModel.categories.observe(fragment.viewLifecycleOwner) { list ->
+                        // Add a "create new" category to the categories list
+                        val createNewCategory = categoryManager.newCategory
+
+                        val updatedCategories = if (tag == HOME) {
+                            list.toMutableList()
+                        } else {
+                            val taskCategoryIds =
+                                selectedTaskCategories!!.map { it.categoryId }.toSet()
+                            list.filterNot { it.categoryId in taskCategoryIds }.toMutableList()
+                        }
+
+                        updatedCategories.add(createNewCategory)
+                        adapter.updateCategoryList(updatedCategories)
+                    }
                 }
             }
             dialog.show()
@@ -303,7 +364,9 @@ class DialogManager {
                         return@setOnClickListener
                     }
 
-                    if (categoryName == COMPLETED || categoryName == UNCOMPLETED) {
+                    val exemptionList = categoryManager.specialCategoryNames
+
+                    if (exemptionList.contains(categoryName)) {
                         toastManager.showShortToast(
                             context,
                             "This category name is not allowed!"
@@ -474,7 +537,6 @@ class DialogManager {
     }
 
     fun showTaskDeleteConfirmationDialog(
-        Id: String,
         fragment: Fragment,
         viewModel: TodoViewModel,
         callback: (Boolean) -> Unit
@@ -502,55 +564,58 @@ class DialogManager {
                 // Store a reference to the deleted task before deleting it
                 val deletedTask = viewModel.selectedTaskData.value
 
+                val taskId = deletedTask?.taskId
+
                 // Call the ViewModel's deleteTask method
-                viewModel.deleteTask(Id) { isSuccessful ->
-                    if (isSuccessful) {
+                if (taskId != null) {
+                    viewModel.deleteTask(taskId) { isSuccessful ->
+                        if (isSuccessful) {
 
-                        // Dismiss the dialog
-                        dialog.dismiss()
+                            // Dismiss the dialog
+                            dialog.dismiss()
 
-                        val snackBar = fragment.view?.let {
-                            Snackbar.make(
-                                it,
-                                "Task deleted successfully!",
-                                Snackbar.LENGTH_LONG
-                            )
-                        }
-                        snackBar?.setAction("Undo") {
-                            // Restore the deleted task
-                            deletedTask?.let {
-                                viewModel.saveTask(
-                                    it.title,
-                                    it.description,
-                                    it.starred,
-                                    it.dueDateTime
-                                ) { isSuccessful ->
-                                    if (isSuccessful) {
-                                        // Handle success
-                                        toastManager.showShortToast(
-                                            context,
-                                            "Task Restored!"
-                                        )
-                                    } else {
-                                        // Handle failure
-                                        toastManager.showShortToast(
-                                            context,
-                                            "Failed to restore task"
-                                        )
+                            val snackBar = fragment.view?.let {
+                                Snackbar.make(
+                                    it,
+                                    "Task deleted successfully!",
+                                    Snackbar.LENGTH_LONG
+                                )
+                            }
+                            snackBar?.setAction("Undo") {
+                                // Restore the deleted task
+                                deletedTask.let {
+                                    viewModel.saveTask(
+                                        it.title,
+                                        it.description,
+                                        it.starred,
+                                        it.dueDateTime
+                                    ) { isSuccessful ->
+                                        if (isSuccessful) {
+                                            // Handle success
+                                            toastManager.showShortToast(
+                                                context,
+                                                "Task Restored!"
+                                            )
+                                        } else {
+                                            // Handle failure
+                                            toastManager.showShortToast(
+                                                context,
+                                                "Failed to restore task"
+                                            )
+                                        }
                                     }
                                 }
                             }
-                        }
-                        // Show the snackBar
-                        snackBar?.show()
+                            // Show the snackBar
+                            snackBar?.show()
 
-                        callback(true)
-                    } else {
-                        toastManager.showShortToast(
-                            context,
-                            "Failed to delete task"
-                        )
-                        callback(false)
+                            callback(true)
+                        } else {
+                            toastManager.showShortToast(
+                                context,
+                                "Failed to delete task"
+                            )
+                        }
                     }
                 }
             }
@@ -562,6 +627,141 @@ class DialogManager {
             dialog.show()
         }
     }
+
+    fun showBatchDeleteConfirmationDialog(
+        fragment: Fragment,
+        viewModel: TodoViewModel,
+        callback: (Boolean) -> Unit
+    ) {
+        val context = fragment.context ?: return
+        val layoutInflater = fragment.layoutInflater
+        val dialogBinding = DialogRemoveConfirmationBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
+
+        val deletedTaskList = viewModel.highlightedTaskList.value
+
+        dialogBinding.apply {
+            val taskCount = deletedTaskList?.size ?: 0
+            removeBody.text = fragment.resources.getQuantityString(
+                R.plurals.multiple_tasks_delete,
+                taskCount,
+                taskCount
+            )
+
+            val errorColor = ContextCompat.getColor(context, R.color.poor)
+            btnConfirm.setTextColor(errorColor)
+            btnConfirm.text = fragment.getString(R.string.delete)
+
+            btnConfirm.setOnClickListener {
+                val taskIdList = deletedTaskList?.map { it.taskId }
+
+                taskIdList?.let { ids ->
+                    // Call the ViewModel's deleteTask method
+                    viewModel.batchDeleteTask(ids) { isSuccessful ->
+                        if (isSuccessful) {
+                            dialog.dismiss()
+                            callback(true)
+
+                            val snackBar = fragment.view?.let {
+                                Snackbar.make(
+                                    it,
+                                    "Tasks deleted successfully!",
+                                    Snackbar.LENGTH_LONG
+                                ).setAction("Undo") {
+                                    // Restore the deleted tasks
+                                    viewModel.saveMultipleTask(deletedTaskList) { isRestored ->
+                                        if (isRestored) {
+                                            toastManager.showShortToast(
+                                                context,
+                                                "Deleted tasks Restored!"
+                                            )
+                                        } else {
+                                            toastManager.showShortToast(
+                                                context,
+                                                "Failed to restore tasks"
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                            snackBar?.show()
+                        } else {
+                            toastManager.showShortToast(context, "Failed to delete tasks")
+                        }
+                    }
+                }
+            }
+
+            btnCancel.setOnClickListener {
+                dialog.dismiss()
+            }
+        }
+        dialog.show()
+    }
+
+
+    fun showBatchRemoveTagConfirmationDialog(
+        fragment: Fragment,
+        viewModel: TodoViewModel,
+        callback: (Boolean) -> Unit
+    ) {
+        val context = fragment.context ?: return
+        val layoutInflater = fragment.layoutInflater
+        val dialogBinding = DialogRemoveConfirmationBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
+
+        val categoryName = viewModel.highlightedListName.value
+        val removeTaskList = viewModel.highlightedTaskList.value
+        val categoryList = viewModel.categories.value
+        val categoryId = categoryList?.find { it.categoryName == categoryName }?.categoryId
+
+        val pluralString = fragment.resources.getQuantityString(
+            R.plurals.multiple_tasks_remove,
+            removeTaskList?.size ?: 0,
+            removeTaskList?.size ?: 0,
+            categoryName
+        )
+
+        dialogBinding.apply {
+            removeBody.text = String.format(pluralString, removeTaskList?.size ?: 0, categoryName)
+            btnConfirm.text = fragment.getString(R.string.sure_response)
+
+            btnConfirm.setOnClickListener {
+                categoryId?.let { catId ->
+                    // Remove category tag from all selected tasks
+                    val updatedTaskList = removeTaskList?.map { taskEntity ->
+                        val updatedCategoryIds = taskEntity.categoryIds.filter { it != catId }
+                        taskEntity.copy(categoryIds = updatedCategoryIds)
+                    }
+
+                    // Save updated tasks to database
+                    viewModel.saveMultipleTask(updatedTaskList ?: emptyList()) { success ->
+                        if (success) {
+                            callback(true)
+                            toastManager.showShortToast(context, "Tasks removal successful!")
+                        } else {
+                            toastManager.showShortToast(
+                                context,
+                                "Failed to remove tasks from category"
+                            )
+                        }
+                    }
+                }
+                dialog.dismiss()
+            }
+
+            btnCancel.setOnClickListener {
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
+    }
+
 
     fun showDiscardDialog(
         fragment: Fragment,
@@ -772,7 +972,7 @@ class DialogManager {
                         // Create a new Handler for delayed navigation
                         delayedFeedbackHandler = Handler(Looper.myLooper()!!)
 
-                        delayedFeedbackHandler?.postDelayed(Runnable {
+                        delayedFeedbackHandler?.postDelayed({
 
                             val packageManager = context.packageManager
                             val packageName = context.packageName
@@ -990,15 +1190,15 @@ class DialogManager {
     }
 
     fun showTaskRenameDialog(
-        task: TaskEntity,
         fragment: Fragment,
         viewModel: TodoViewModel,
         callback: (Boolean) -> Unit
     ) {
         val context = fragment.context
         val layoutInflater = fragment.layoutInflater
+        val task = viewModel.highlightedTaskList.value?.first()
 
-        if (context != null) {
+        if (context != null && task != null) {
 
             val dialogBinding = DialogRenameTaskBinding.inflate(layoutInflater)
 
@@ -1026,7 +1226,7 @@ class DialogManager {
 
                     // Check if the title is empty before proceeding
                     if (newTitle.isBlank()) {
-                        toastManager.showShortToast(context,"Title cannot be empty!")
+                        toastManager.showShortToast(context, "Title cannot be empty!")
                         return@setOnClickListener
                     }
                     setTaskData(
@@ -1039,9 +1239,12 @@ class DialogManager {
                         task.categoryIds,
                         context,
                         viewModel
-                    )
-                    dialog.dismiss()
-                    callback(true)
+                    ) {
+                        if (it) {
+                            dialog.dismiss()
+                            callback(true)
+                        }
+                    }
                 }
             }
             dialog.show()
@@ -1120,7 +1323,10 @@ class DialogManager {
     ) {
         val radioTextMap = mapOf(
             TITLE to Pair(context.getString(R.string.a_z), context.getString(R.string.z_a)),
-            DATE to Pair(context.getString(R.string.oldest_first), context.getString(R.string.newest_first)),
+            DATE to Pair(
+                context.getString(R.string.oldest_first),
+                context.getString(R.string.newest_first)
+            ),
         )
 
         val (ascendingText, descendingText) = radioTextMap[condition] ?: Pair("", "")
@@ -1142,7 +1348,8 @@ class DialogManager {
         dueDateTime: Calendar?,
         categoryIds: List<String>,
         context: Context,
-        viewModel: TodoViewModel
+        viewModel: TodoViewModel,
+        callback: (Boolean) -> Unit
     ) {
         // Call the ViewModel's method to update the task
         viewModel.updateTask(
@@ -1157,6 +1364,7 @@ class DialogManager {
             if (isSuccessful) {
                 // Handle success
                 toastManager.showShortToast(context, "Task updated successfully!")
+                callback(true)
             } else {
                 // Handle failure
                 toastManager.showShortToast(context, "Failed to update task")
@@ -1177,5 +1385,9 @@ class DialogManager {
         private const val TITLE = "title"
         private const val COMPLETED = "completed"
         private const val UNCOMPLETED = "uncompleted"
+        private const val STAR = "Favorites"
+        private const val SEARCH = "Search Results"
+        private const val BATCHADD = "BatchAdd"
+        private const val BATCHREMOVE = "BatchRemove"
     }
 }

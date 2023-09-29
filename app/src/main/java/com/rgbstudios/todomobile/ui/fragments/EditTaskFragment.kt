@@ -254,12 +254,10 @@ class EditTaskFragment : Fragment() {
 
                 deleteIcon.setOnClickListener {
                     dialogManager.showTaskDeleteConfirmationDialog(
-                        taskId,
                         thisFragment,
                         sharedViewModel,
                     ) { isSuccessful ->
                         if (isSuccessful) {
-
                             // Remove the current fragment
                             activity?.supportFragmentManager?.popBackStack()
                         }

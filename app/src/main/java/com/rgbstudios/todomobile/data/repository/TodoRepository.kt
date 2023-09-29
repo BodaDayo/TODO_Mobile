@@ -276,6 +276,14 @@ class TodoRepository(
         }
     }
 
+    suspend fun batchSaveTaskToDatabase(taskEntityList: List<TaskEntity>) {
+        try {
+            taskDao.insertAllTasks(taskEntityList)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
     suspend fun updateTaskInDatabase(taskEntity: TaskEntity) {
         try {
             taskDao.updateTask(taskEntity)
@@ -287,6 +295,14 @@ class TodoRepository(
     suspend fun deleteTaskFromDatabase(taskId: String) {
         try {
             taskDao.deleteTask(taskId)
+        } catch (e: Exception) {
+            throw e
+        }
+    }
+
+    suspend fun deleteMultipleTasksFromDatabase(taskIdList: List<String>) {
+        try {
+            taskDao.deleteTasksByIds(taskIdList)
         } catch (e: Exception) {
             throw e
         }

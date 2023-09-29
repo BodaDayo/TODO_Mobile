@@ -17,6 +17,7 @@
         android:paddingHorizontal="8sp">
 
         <TextView
+            android:id="@+id/showCategoryTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
