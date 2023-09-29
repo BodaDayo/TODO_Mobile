@@ -12,17 +12,24 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.firebase.auth.FirebaseAuth
 import com.rgbstudios.todomobile.R
+import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.utils.ToastManager
+import com.rgbstudios.todomobile.viewmodel.TodoViewModel
+import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
 
 
 class SplashFragment : Fragment() {
 
+    private val sharedViewModel: TodoViewModel by activityViewModels {
+        TodoViewModelFactory(activity?.application as TodoMobileApplication)
+    }
+
     private lateinit var auth: FirebaseAuth
-    private lateinit var sharedPreferences: SharedPreferences
     private var delayedNavigationHandler: Handler? = null
     private val toastManager = ToastManager()
 
@@ -38,7 +45,6 @@ class SplashFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         val firebase = FirebaseAccess()
         auth = firebase.auth
-        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
 
         // Call the function to handle delayed navigation
         handleDelayedNavigation()
@@ -60,7 +66,8 @@ class SplashFragment : Fragment() {
 
         delayedNavigationHandler?.postDelayed(Runnable {
             // Check if it's the first launch
-            val isFirstLaunch = sharedPreferences.getBoolean("is_first_launch", true)
+            val isFirstLaunch = sharedViewModel.isFirstLaunch.value ?: true
+
             if (isFirstLaunch) {
                 // check connection status
                 checkNetworkConnectivity()
@@ -68,11 +75,6 @@ class SplashFragment : Fragment() {
                 // If it's the first launch, navigate to OnboardingFragmentOne
                 findNavController().navigate(R.id.action_splashFragment_to_onboardingFragment)
 
-                // Mark that the app has been launched before
-                with(sharedPreferences.edit()) {
-                    putBoolean("is_first_launch", false)
-                    apply()
-                }
             } else {
                 // If it's not the first launch, check if the user is logged in
                 if (auth.currentUser != null) {

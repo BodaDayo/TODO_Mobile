@@ -7,10 +7,13 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PorterDuff
 import android.os.Build
+import android.os.FileObserver.CREATE
 import android.os.Handler
 import android.os.Looper
 import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
@@ -20,6 +23,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.data.entity.CategoryEntity
+import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.databinding.DialogCategorySelectionBinding
 import com.rgbstudios.todomobile.databinding.DialogDiscardTaskBinding
@@ -27,14 +31,18 @@ import com.rgbstudios.todomobile.databinding.DialogFeedbackBinding
 import com.rgbstudios.todomobile.databinding.DialogForgotPasswordBinding
 import com.rgbstudios.todomobile.databinding.DialogNewCategoryBinding
 import com.rgbstudios.todomobile.databinding.DialogRemoveConfirmationBinding
+import com.rgbstudios.todomobile.databinding.DialogRenameTaskBinding
 import com.rgbstudios.todomobile.databinding.DialogSortingBinding
 import com.rgbstudios.todomobile.model.TaskList
 import com.rgbstudios.todomobile.ui.adapters.CategoryAdapter
 import com.rgbstudios.todomobile.ui.adapters.CategoryColorAdapter
 import com.rgbstudios.todomobile.ui.adapters.CategoryIconAdapter
 import com.rgbstudios.todomobile.ui.adapters.EmojiAdapter
+import com.rgbstudios.todomobile.ui.fragments.HomeFragment
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 class DialogManager {
 
@@ -49,7 +57,8 @@ class DialogManager {
         fragment: Fragment,
         viewModel: TodoViewModel,
         tag: String,
-        selectedTaskCategories: List<CategoryEntity>?
+        selectedTaskCategories: List<CategoryEntity>?,
+        callback: (Boolean) -> Unit
     ) {
         val context = fragment.context
         val layoutInflater = fragment.layoutInflater
@@ -78,7 +87,9 @@ class DialogManager {
                                         viewModel.filterTasks(
                                             category.categoryId,
                                             CATEGORY
-                                        )
+                                        ) {
+                                            if (it) callback(true)
+                                        }
                                     } else {
                                         viewModel.addTaskToCategory(category) { isSuccessful ->
                                             if (isSuccessful) {
@@ -292,6 +303,14 @@ class DialogManager {
                         return@setOnClickListener
                     }
 
+                    if (categoryName == COMPLETED || categoryName == UNCOMPLETED) {
+                        toastManager.showShortToast(
+                            context,
+                            "This category name is not allowed!"
+                        )
+                        return@setOnClickListener
+                    }
+
                     val categoryIconIdentifier = selectedCategoryIcon ?: defaultIcon
 
                     val categoryColorIdentifier = selectedCategoryColor ?: defaultColor
@@ -315,7 +334,6 @@ class DialogManager {
             }
             dialog.show()
         }
-
     }
 
     fun showEditCategoryDialog(
@@ -764,6 +782,14 @@ class DialogManager {
                             val packageInfo = packageManager.getPackageInfo(packageName, 0)
                             val appVersion = packageInfo.versionName
 
+                            // Get the current date and time
+                            val currentTime = Calendar.getInstance()
+                            val dateFormat = SimpleDateFormat(
+                                "EEE, MMM dd, yyyy 'At' hh:mm a",
+                                Locale.getDefault()
+                            )
+                            val formattedTime = dateFormat.format(currentTime.time)
+
                             // Create a StringBuilder to build the feedback message
                             val feedbackMessage = StringBuilder()
                             feedbackMessage.append("User Rating: $userRating\n")
@@ -771,7 +797,7 @@ class DialogManager {
                             feedbackMessage.append("Device Model: $deviceModel\n")
                             feedbackMessage.append("Android Version: $androidVersion\n")
                             feedbackMessage.append("App Version: $appVersion\n\n")
-                            feedbackMessage.append("User: $userEmail")
+                            feedbackMessage.append("Feedback sent by: $userEmail on: $formattedTime")
 
                             // Create an Intent to send feedback
                             val emailIntent = Intent(Intent.ACTION_SEND)
@@ -821,60 +847,56 @@ class DialogManager {
         viewModel: TodoViewModel,
         allTaskList: List<TaskList>?
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val layoutInflater = fragment.layoutInflater
+        val dialogBinding = DialogSortingBinding.inflate(layoutInflater)
 
-        if (context != null) {
-            val dialogBinding = DialogSortingBinding.inflate(layoutInflater)
+        val sortingCondition = viewModel.sortingCondition.value ?: Pair(DATE, true)
+        var (condition, order) = sortingCondition
 
-            // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
-            val dialog = MaterialAlertDialogBuilder(context)
-                .setView(dialogBinding.root)
-                .create()
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
 
-            // Variable to store the sorting details
-            var sortingCondition: Pair<String, Boolean>
-            var condition = DATE
-            var order = true
+        dialogBinding.apply {
+            radioTitle.isChecked = condition == TITLE
+            radioDate.isChecked = condition == DATE
 
-            dialogBinding.apply {
-                // Set the default checked options
-                radioDate.isChecked = true
-                radioAscending.isChecked = true
-
-                // Set the radio group listeners to capture user selections
-                radioSortBy.setOnCheckedChangeListener { _, checkedId ->
-                    when (checkedId) {
-                        R.id.radioTitle -> condition = TITLE
-                        R.id.radioDate -> condition = DATE
-                    }
-                }
-
-                radioSortOrder.setOnCheckedChangeListener { _, checkedId ->
-                    when (checkedId) {
-                        R.id.radioAscending -> order = true
-                        R.id.radioDescending -> order = false
-                    }
-                }
-
-                btnConfirm.setOnClickListener {
-                    sortingCondition = Pair(condition, order)
-                    if (allTaskList != null) {
-                        viewModel.sortAllTasksList(allTaskList, sortingCondition)
-                    } else {
-                        toastManager.showShortToast(context, "No tasks to sort")
-                    }
-                    dialog.dismiss()
-                }
-
-                btnCancel.setOnClickListener {
-                    dialog.dismiss()
-                }
+            radioAscending.text = if (radioDate.isChecked) {
+                context.getString(R.string.oldest_first)
+            } else {
+                context.getString(R.string.a_z)
             }
-            dialog.show()
-        }
-    }
 
+            radioDescending.text = if (radioDate.isChecked) {
+                context.getString(R.string.newest_first)
+            } else {
+                context.getString(R.string.z_a)
+            }
+
+            radioSortBy.setOnCheckedChangeListener { _, checkedId ->
+                condition = if (checkedId == R.id.radioTitle) TITLE else DATE
+                updateRadioSortOrder(context, dialogBinding, condition, order)
+            }
+
+            radioSortOrder.setOnCheckedChangeListener { _, checkedId ->
+                order = checkedId == R.id.radioAscending
+            }
+
+            btnConfirm.setOnClickListener {
+                if (allTaskList != null) {
+                    viewModel.sortAllTasksList(allTaskList, Pair(condition, order))
+                }
+                dialog.dismiss()
+            }
+
+            btnCancel.setOnClickListener {
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
+    }
 
     fun showDatePickerDialog(
         fragment: Fragment,
@@ -967,9 +989,69 @@ class DialogManager {
         }
     }
 
+    fun showTaskRenameDialog(
+        task: TaskEntity,
+        fragment: Fragment,
+        viewModel: TodoViewModel,
+        callback: (Boolean) -> Unit
+    ) {
+        val context = fragment.context
+        val layoutInflater = fragment.layoutInflater
+
+        if (context != null) {
+
+            val dialogBinding = DialogRenameTaskBinding.inflate(layoutInflater)
+
+            // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
+            val dialog = MaterialAlertDialogBuilder(context)
+                .setView(dialogBinding.root)
+                .create()
+
+            dialogBinding.apply {
+                // Update the UI with the selected task data
+                renameTitleEt.text =
+                    Editable.Factory.getInstance().newEditable(task.title)
+
+                renameDescriptionEt.text =
+                    Editable.Factory.getInstance().newEditable(task.description)
+
+                openDescriptionBtn.setOnClickListener {
+                    renameDescriptionLayout.visibility = View.VISIBLE
+                    renameDescriptionEt.requestFocus()
+                }
+
+                saveRename.setOnClickListener {
+                    val newTitle = renameTitleEt.text.toString()
+                    val newDescription = renameDescriptionEt.text.toString()
+
+                    // Check if the title is empty before proceeding
+                    if (newTitle.isBlank()) {
+                        toastManager.showShortToast(context,"Title cannot be empty!")
+                        return@setOnClickListener
+                    }
+                    setTaskData(
+                        task.taskId,
+                        newTitle,
+                        newDescription,
+                        task.taskCompleted,
+                        task.starred,
+                        task.dueDateTime,
+                        task.categoryIds,
+                        context,
+                        viewModel
+                    )
+                    dialog.dismiss()
+                    callback(true)
+                }
+            }
+            dialog.show()
+        }
+    }
+
     /**
      *-----------------------------------------------------------------------------------------------
      */
+
     private fun onSaveCategory(
         categoryName: String,
         categoryIconIdentifier: String,
@@ -1030,6 +1112,58 @@ class DialogManager {
 
     }
 
+    private fun updateRadioSortOrder(
+        context: Context,
+        binding: DialogSortingBinding,
+        condition: String,
+        order: Boolean
+    ) {
+        val radioTextMap = mapOf(
+            TITLE to Pair(context.getString(R.string.a_z), context.getString(R.string.z_a)),
+            DATE to Pair(context.getString(R.string.oldest_first), context.getString(R.string.newest_first)),
+        )
+
+        val (ascendingText, descendingText) = radioTextMap[condition] ?: Pair("", "")
+
+        binding.apply {
+            radioAscending.text = ascendingText
+            radioDescending.text = descendingText
+            radioAscending.isChecked = order == true
+            radioDescending.isChecked = order == false
+        }
+    }
+
+    private fun setTaskData(
+        id: String,
+        title: String,
+        description: String,
+        completed: Boolean,
+        starred: Boolean,
+        dueDateTime: Calendar?,
+        categoryIds: List<String>,
+        context: Context,
+        viewModel: TodoViewModel
+    ) {
+        // Call the ViewModel's method to update the task
+        viewModel.updateTask(
+            id,
+            title,
+            description,
+            completed,
+            starred,
+            dueDateTime,
+            categoryIds
+        ) { isSuccessful ->
+            if (isSuccessful) {
+                // Handle success
+                toastManager.showShortToast(context, "Task updated successfully!")
+            } else {
+                // Handle failure
+                toastManager.showShortToast(context, "Failed to update task")
+            }
+        }
+    }
+
     /**
      *-----------------------------------------------------------------------------------------------
      */
@@ -1041,5 +1175,7 @@ class DialogManager {
         private const val CATEGORY = "category"
         private const val DATE = "date"
         private const val TITLE = "title"
+        private const val COMPLETED = "completed"
+        private const val UNCOMPLETED = "uncompleted"
     }
 }

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
@@ -12,10 +11,7 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.bumptech.glide.Glide
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.GenericTypeIndicator
-import com.google.firebase.database.ValueEventListener
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.rgbstudios.todomobile.data.entity.CategoryEntity
@@ -31,11 +27,10 @@ import com.rgbstudios.todomobile.worker.UploadAvatarWorker
 import com.rgbstudios.todomobile.worker.UploadCategoriesWorker
 import com.rgbstudios.todomobile.worker.UploadTasksWorker
 import com.rgbstudios.todomobile.worker.UploadUserDetailsWorker
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
@@ -43,8 +38,6 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.Calendar
-import java.util.UUID
 
 class TodoRepository(
     private val taskDao: TaskDao,
@@ -111,8 +104,11 @@ class TodoRepository(
                     avatarFilePath = userAvatarData
                 )
 
+                // Create default categories
+                val defaultCategories = defaultCategories.getDefaultCategories()
+
                 // Check if user is re-signing in
-                if (sender == "SignInFragment" && (currentUserId == null || newUser.userId != currentUserId)) {
+                if (sender == SIGNIN && (currentUserId == null || newUser.userId != currentUserId)) {
                     userSetupMutex.withLock {
                         // Delete existing user and tasks
                         deleteUserDetailsFromDatabase()
@@ -140,14 +136,13 @@ class TodoRepository(
                             return@withContext Pair(newUser, deserializedCategories)
                         } else {
                             // Add Default categories to local database
-                            val defaultCategories = defaultCategories.getDefaultCategories()
                             categoryDao.insertAllCategories(defaultCategories)
 
                             return@withContext Pair(newUser, defaultCategories)
                         }
 
                     }
-                } else {
+                } else if (sender == SIGNUP) {
 
                     userSetupMutex.withLock {
                         // Delete existing user and tasks
@@ -157,10 +152,18 @@ class TodoRepository(
                         userDao.insertUser(newUser)
 
                         // Add Default categories to local database
-                        val defaultCategories = defaultCategories.getDefaultCategories()
                         categoryDao.insertAllCategories(defaultCategories)
 
                         return@withContext Pair(newUser, defaultCategories)
+                    }
+                } else {
+                    userSetupMutex.withLock {
+                        var currentCategories: List<CategoryEntity>? = null
+                        categoryDao.getCategories().collect { currentCategories = it }
+
+                        val categories =
+                            if (currentCategories != null) currentCategories!! else defaultCategories
+                        return@withContext Pair(newUser, categories)
                     }
                 }
 
@@ -222,7 +225,8 @@ class TodoRepository(
 
                 val deferred = async {
                     val snapshot = tasksListRef.get().await()
-                    val tasksHashMap = snapshot.getValue(object : GenericTypeIndicator<HashMap<String, Any>>() {})
+                    val tasksHashMap =
+                        snapshot.getValue(object : GenericTypeIndicator<HashMap<String, Any>>() {})
 
                     if (tasksHashMap != null) {
                         val taskList = mutableListOf<TaskEntity>()
@@ -304,7 +308,7 @@ class TodoRepository(
         context: Context,
         resources: Resources
     ): String? {
-        val avatarBitmap: Bitmap = if (sender == "SignUpFragment") {
+        val avatarBitmap: Bitmap = if (sender == SIGNUP) {
             // Get the drawable resource ID of a random avatar
             val avatarResource = avatars.defaultAvatar
 
@@ -461,7 +465,7 @@ class TodoRepository(
         }
     }
 
-    fun saveCurrentUserId(userId: String) {
+    fun storeCurrentUserIdReference(userId: String) {
         currentUserId = userId
     }
 
@@ -501,6 +505,8 @@ class TodoRepository(
 
     companion object {
         private const val TAG = "TodoRepository"
+        private const val SIGNUP = "SignUpFragment"
+        private const val SIGNIN = "SignInFragment"
     }
 
 }

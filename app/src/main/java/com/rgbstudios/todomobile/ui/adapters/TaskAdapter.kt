@@ -2,7 +2,7 @@ package com.rgbstudios.todomobile.ui.adapters
 
 import android.content.Context
 import android.graphics.Paint
-import android.text.format.DateUtils.formatDateTime
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +10,6 @@ import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.rgbstudios.todomobile.R
-import com.rgbstudios.todomobile.data.entity.CategoryEntity
 import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.databinding.ItemTaskBinding
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
@@ -20,9 +19,21 @@ import java.util.Locale
 
 class TaskAdapter(
     private val context: Context,
+    private val name: String,
     private val tasks: List<TaskEntity>,
     private val viewModel: TodoViewModel
 ) : RecyclerView.Adapter<TaskAdapter.TaskViewHolder>() {
+
+    private var highlightedListName: String = "" // Keep track of list currently being selected from
+    private val selectedItems = mutableListOf<Int>() // Keep track of selected items
+    private var isInSelectMode = false // Keep track of select mode
+
+    init {
+        // Update highlightedListName from its storage in the viewModel
+        viewModel.highlightedListName.observeForever {
+            highlightedListName = it
+        }
+    }
 
     inner class TaskViewHolder(val binding: ItemTaskBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -33,8 +44,7 @@ class TaskAdapter(
 
     override fun onBindViewHolder(holder: TaskViewHolder, position: Int) {
         val task = tasks[position]
-        holder.binding.taskTitleTextView.text = task.title
-        holder.binding.taskDescriptionTextView.text = task.description
+        val isSelected = isItemSelected(position)
 
         var newTaskCompleted = task.taskCompleted
         var newStarred = task.starred
@@ -42,6 +52,76 @@ class TaskAdapter(
         val taskCategories = task.categoryIds
 
         holder.binding.apply {
+
+            taskLayout.setOnLongClickListener {
+                if (!isInSelectMode && highlightedListName == "") {
+                    toggleSelection(position, task, name)
+                }
+                true // Consume the long-click event
+            }
+
+            taskDetailsLayout.setOnClickListener {
+                if (isInSelectMode) {
+                    // If in select mode, toggle selection on click
+                    toggleSelection(position, task, name)
+                } else if (highlightedListName == "") {
+
+                    // Set the selected task data in the ViewModel
+                    viewModel.setSelectedTaskData(task)
+
+                    // Navigate to the EditTaskFragment using the Navigation Component
+                    root.findNavController()
+                        .navigate(R.id.action_homeFragment_to_editTaskFragment)
+                }
+            }
+
+            star.setOnClickListener {
+                if (isInSelectMode) {
+                    // If in select mode, toggle selection on click
+                    toggleSelection(position, task, name)
+                } else if (highlightedListName == "") {
+
+                    newStarred = !newStarred
+
+                    updateTaskData(
+                        task.taskId,
+                        task.title,
+                        task.description,
+                        newTaskCompleted,
+                        newStarred,
+                        dueDateTime,
+                        taskCategories
+                    )
+                }
+            }
+
+            markCompletedImageView.setOnClickListener {
+                if (isInSelectMode) {
+                    // If in select mode, toggle selection on click
+                    toggleSelection(position, task, name)
+                } else if (highlightedListName == "") {
+
+                    newTaskCompleted = !newTaskCompleted
+                    if (newTaskCompleted) {
+                        dueDateTime = null
+                    }
+
+                    // TODO markCompleted animation or not
+
+                    updateTaskData(
+                        task.taskId,
+                        task.title,
+                        task.description,
+                        newTaskCompleted,
+                        newStarred,
+                        dueDateTime,
+                        taskCategories
+                    )
+                }
+            }
+
+            taskTitleTextView.text = task.title
+            taskDescriptionTextView.text = task.description
 
             if (dueDateTime != null) {
                 val formattedDateTime = formatDateTime(dueDateTime!!)
@@ -55,7 +135,12 @@ class TaskAdapter(
                     taskDateTime.text = overdueTime
                 } else {
                     // Set the text color to the default color
-                    taskDateTime.setTextColor(ContextCompat.getColor(context, R.color.my_darker_grey))
+                    taskDateTime.setTextColor(
+                        ContextCompat.getColor(
+                            context,
+                            R.color.my_darker_grey
+                        )
+                    )
                     taskDateTime.text = formattedDateTime
                 }
                 taskDateTime.visibility = View.VISIBLE
@@ -100,49 +185,77 @@ class TaskAdapter(
                 taskDescriptionTextView.visibility = View.GONE
             }
 
-            taskDetailsLayout.setOnClickListener {
-                // Set the selected task data in the ViewModel
-                viewModel.setSelectedTaskData(task)
-
-                // Navigate to the EditTaskFragment using the Navigation Component
-                root.findNavController()
-                    .navigate(R.id.action_homeFragment_to_editTaskFragment)
-            }
-
-            star.setOnClickListener {
-                newStarred = !newStarred
-
-                updateTaskData(
-                    task.taskId,
-                    task.title,
-                    task.description,
-                    newTaskCompleted,
-                    newStarred,
-                    dueDateTime,
-                    taskCategories
-                )
-            }
-
-            markCompletedImageView.setOnClickListener {
-                newTaskCompleted = !newTaskCompleted
-                if (newTaskCompleted) {
-                    dueDateTime = null
-                }
-
-                // TODO markCompleted animation or not
-
-                updateTaskData(
-                    task.taskId,
-                    task.title,
-                    task.description,
-                    newTaskCompleted,
-                    newStarred,
-                    dueDateTime,
-                    taskCategories
-                )
+            // Update the UI based on selection state
+            if (isSelected) {
+                // Highlight the view
+                taskLayout.setBackgroundResource(R.drawable.highlight_rectangle_background)
+                selectTaskCheckView.visibility = View.VISIBLE
+                markCompletedImageView.visibility = View.GONE
+            } else {
+                // Deselect the view
+                taskLayout.setBackgroundResource(R.drawable.transparent_rectangle_background)
+                selectTaskCheckView.visibility = View.GONE
+                markCompletedImageView.visibility = View.VISIBLE
             }
         }
     }
+
+    // ---------------------------------------------------------------------
+
+    // Toggle selection of an item
+    private fun toggleSelection(position: Int, taskEntity: TaskEntity, currentHighLight: String) {
+
+        if (selectedItems.contains(position)) {
+            selectedItems.remove(position)
+        } else {
+            selectedItems.add(position)
+        }
+
+        viewModel.toggleSelection(taskEntity)
+
+        // Set select mode state and update UI accordingly
+        isInSelectMode = selectedItems.isNotEmpty()
+
+        val newName = if (isInSelectMode) currentHighLight else ""
+        viewModel.updateHighlightedListName(newName)
+
+        notifyDataSetChanged()
+    }
+
+    // Check if an item is selected
+    private fun isItemSelected(position: Int): Boolean {
+        return selectedItems.contains(position)
+    }
+
+    // Deselect all items
+    fun clearSelection() {
+        selectedItems.clear()
+
+        // Set select mode state and update UI accordingly
+        isInSelectMode = selectedItems.isNotEmpty()
+
+        val newName = ""
+        viewModel.updateHighlightedListName(newName)
+
+        viewModel.setIsSelectionModeOn(isInSelectMode)
+        notifyDataSetChanged()
+    }
+
+    fun fillSelection() {
+        selectedItems.clear()
+        val allItems = tasks.indices.toList()
+        selectedItems.addAll(allItems)
+
+        // Set select mode state and update UI accordingly
+        isInSelectMode = selectedItems.isNotEmpty()
+
+        val newName = if (isInSelectMode) highlightedListName else ""
+        viewModel.updateHighlightedListName(newName)
+
+        viewModel.setIsSelectionModeOn(isInSelectMode)
+        notifyDataSetChanged()
+    }
+    // -------------------------------------------------------------------------------
 
     override fun getItemCount(): Int {
         return tasks.size
@@ -196,5 +309,4 @@ class TaskAdapter(
 
         return sdf.format(dateTime.time)
     }
-
 }

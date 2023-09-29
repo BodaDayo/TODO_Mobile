@@ -16,6 +16,7 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
     RecyclerView.Adapter<ListAdapter.ListViewHolder>() {
 
     private var lists: List<TaskList> = emptyList()
+    private lateinit var taskAdapter: TaskAdapter
 
     fun updateTaskLists(newAllTasksList: List<TaskList>) {
         lists = newAllTasksList
@@ -31,14 +32,14 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
     override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
         val list = lists[position]
 
-        val tasks = list.list.reversed()
-        val taskAdapter = TaskAdapter(context, tasks, viewModel)
-
-        if (list.name == "completed") {
+        val name = list.name
+        val tasks = list.list
+        taskAdapter = TaskAdapter(context, name, tasks, viewModel)
+        if (name == "completed") {
 
             if (list.list.isNotEmpty()) {
                 holder.binding.separator.visibility = View.VISIBLE
-                holder.binding.listName.text = list.name
+                holder.binding.listName.text = name
                 holder.binding.listNameLayout.visibility = View.VISIBLE
                 holder.binding.closeList.visibility = View.GONE
 
@@ -52,28 +53,31 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
                 holder.binding.listNameLayout.visibility = View.GONE
                 holder.binding.separator.visibility = View.GONE
             }
-        } else if (list.name != "uncompleted") {
-            holder.binding.listName.text = list.name
-            holder.binding.listName.setTextColor(ContextCompat.getColor(context, R.color.myPrimary))
+        } else if (name != "uncompleted") {
+                holder.binding.listName.text = name
+                holder.binding.listName.setTextColor(ContextCompat.getColor(context, R.color.myPrimary))
 
-            holder.binding.listNameLayout.visibility = View.VISIBLE
-            holder.binding.collapseList.visibility = View.GONE
+                holder.binding.listNameLayout.visibility = View.VISIBLE
+                holder.binding.collapseList.visibility = View.GONE
 
-            val errorColor = ContextCompat.getColor(
-                context, com.google.android.material.R.color.design_error
-            )
-            holder.binding.closeList.setColorFilter(errorColor)
-            holder.binding.closeList.visibility = View.VISIBLE
-        } else {
-            holder.binding.listNameLayout.visibility = View.GONE
-            holder.binding.separator.visibility = View.GONE
-        }
+                holder.binding.closeList.visibility = View.VISIBLE
+            } else {
+                holder.binding.listNameLayout.visibility = View.GONE
+                holder.binding.separator.visibility = View.GONE
+            }
 
         holder.binding.childRecyclerView.setHasFixedSize(true)
         holder.binding.childRecyclerView.layoutManager =
             LinearLayoutManager(holder.itemView.context)
         holder.binding.childRecyclerView.adapter = taskAdapter
 
+    }
+
+    fun setTaskSelection(isAddAll: Boolean) {
+        if (isAddAll) {
+            taskAdapter.fillSelection()
+        } else {
+            taskAdapter.clearSelection()}
     }
 
     override fun getItemCount(): Int {

@@ -31,7 +31,9 @@ class SettingsFragment : Fragment() {
     private val firebase = FirebaseAccess()
     private val thisFragment = this
     private val colorManager = ColorManager()
-    private val colorList = colorManager.getAllColors()
+    private val colors = colorManager.getAllColors()
+    private val colorList = mutableListOf(PRIMARY)
+
 
     // Variable to store the selected color
     var selectedThemeColor: String? = null
@@ -47,6 +49,9 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        // Add the list of colors to the default primary color
+        colorList.addAll(colors)
 
         binding.apply {
             val themeColorAdapter =
@@ -66,7 +71,7 @@ class SettingsFragment : Fragment() {
 
                             // Set the background tint for categoryColorView
                             themeColorView.backgroundTintList = ColorStateList.valueOf(
-                                ContextCompat.getColor(fragmentContext, colorPair.first))
+                                ContextCompat.getColor(fragmentContext, colorPair.second))
                         }
                     }
                 )
@@ -85,6 +90,6 @@ class SettingsFragment : Fragment() {
     }
 
     companion object {
-
+        private const val PRIMARY = "primary"
     }
 }

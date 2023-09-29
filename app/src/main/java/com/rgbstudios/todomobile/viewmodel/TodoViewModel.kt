@@ -3,16 +3,11 @@ package com.rgbstudios.todomobile.viewmodel
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
-import android.provider.MediaStore.Video.VideoColumns.CATEGORY
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Data
-import androidx.work.WorkManager
-import com.google.android.play.integrity.internal.c
-import com.google.android.recaptcha.RecaptchaAction.Companion.SIGNUP
-import com.google.firebase.analytics.FirebaseAnalytics.Event.SEARCH
 import com.google.gson.Gson
 import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.data.entity.CategoryEntity
@@ -23,17 +18,21 @@ import com.rgbstudios.todomobile.model.TaskList
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.UUID
-import kotlin.reflect.KTypeProjection.Companion.STAR
 
 class TodoViewModel(private val application: TodoMobileApplication) : ViewModel() {
 
     private val repository = application.repository
     private val firebase = FirebaseAccess()
 
+    // LiveData to hold the isFirstLaunch status
+    private val _isFirstLaunch = MutableLiveData<Boolean>()
+    val isFirstLaunch: LiveData<Boolean> = _isFirstLaunch
+
     // LiveData to hold userEntity
     private val _currentUser = MutableLiveData<UserEntity>()
     val currentUser: LiveData<UserEntity> = _currentUser
 
+    // All tasks
     private var allTaskEntities: List<TaskEntity> = listOf()
 
     // LiveData to hold allTasksList
@@ -48,6 +47,17 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     private val _selectedTaskData = MutableLiveData<TaskEntity>()
     val selectedTaskData: LiveData<TaskEntity> = _selectedTaskData
 
+    // LiveData to hold the selectionMode status
+    private val _isSelectionModeOn = MutableLiveData<Boolean>()
+    val isSelectionModeOn: LiveData<Boolean> = _isSelectionModeOn
+
+    // LiveData to hold highlighted tasks list
+    private val _highlightedTaskList = MutableLiveData<List<TaskEntity>>()
+    val highlightedTaskList: LiveData<List<TaskEntity>> = _highlightedTaskList
+
+    private val _highlightedListName = MutableLiveData<String>()
+    val highlightedListName: LiveData<String> = _highlightedListName
+
     // LiveData to hold the list of categories in the database
     private val _selectedTaskCategories = MutableLiveData<List<CategoryEntity>>()
     val selectedTaskCategories: LiveData<List<CategoryEntity>> = _selectedTaskCategories
@@ -56,9 +66,20 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     private val _categories = MutableLiveData<List<CategoryEntity>>()
     val categories: LiveData<List<CategoryEntity>> = _categories
 
+    // LiveData to hold the condition to sort the tasks
+    private val _sortingCondition = MutableLiveData<Pair<String, Boolean>>()
+    val sortingCondition: LiveData<Pair<String, Boolean>> = _sortingCondition
+
     init {
+        _isFirstLaunch.value = checkIfFirstLaunch()
+        setIsSelectionModeOn(false)
+        _highlightedListName.value = ""
         startDatabaseListeners()
     }
+
+    /**
+     *-----------------------------------------------------------------------------------------------
+     */
 
     fun startDatabaseListeners() {
         startUserListener()
@@ -86,9 +107,8 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 allTaskEntities = taskEntities
                 val sortedDatabaseList = sortDatabaseList(taskEntities)
 
-                val sortedTaskList = sortAllTasksList(sortedDatabaseList, Pair(DATE, true))
-
-                _allTasksList.postValue(sortedTaskList)
+                // Default tasks sorting by date
+                sortAllTasksList(sortedDatabaseList, Pair(DATE, true))
 
                 val newData = convertTasksToJson(taskEntities)
 
@@ -113,62 +133,9 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         }
     }
 
-    private fun sortDatabaseList(taskEntities: List<TaskEntity>): List<TaskList> {
-        val groupedTasks = taskEntities.groupBy { it.taskCompleted }
-
-        val completedList = groupedTasks[true] ?: emptyList()
-        val uncompletedList = groupedTasks[false] ?: emptyList()
-
-        val uncompletedTasksList = TaskList(UNCOMPLETED, uncompletedList)
-        val completedTasksList = TaskList(COMPLETED, completedList)
-
-        return listOf(uncompletedTasksList, completedTasksList)
-    }
-
-    fun sortAllTasksList(taskLists: List<TaskList>, sortingCondition: Pair<String, Boolean>): List<TaskList> {
-        val uncompletedTasksList = taskLists.first().list
-        val completedTasksList = taskLists.last().list
-
-        return sortTaskListsByCondition(uncompletedTasksList, completedTasksList, sortingCondition)
-    }
-
-    private fun sortTaskListsByCondition(
-        uncompletedList: List<TaskEntity>,
-        completedList: List<TaskEntity>,
-        sortingCondition: Pair<String, Boolean>
-    ): List<TaskList> {
-        val (sortBy, ascendingOrder) = sortingCondition
-
-        val uncompletedSorted = sortTaskEntities(uncompletedList, sortBy, ascendingOrder)
-        val completedSorted = sortTaskEntities(completedList, sortBy, ascendingOrder)
-
-        return listOf(
-            TaskList(UNCOMPLETED, uncompletedSorted),
-            TaskList(COMPLETED, completedSorted)
-        )
-    }
-
-    private fun sortTaskEntities(
-        taskEntities: List<TaskEntity>,
-        sortBy: String,
-        ascendingOrder: Boolean
-    ): List<TaskEntity> {
-        return when (sortBy) {
-            DATE -> {
-                // Sort by dueDateTime, and then by title if dueDateTime is equal
-                taskEntities.sortedWith(compareBy({ it.dueDateTime }, { it.title }))
-            }
-            TITLE -> {
-                // Sort by title
-                taskEntities.sortedBy { it.title }
-            }
-            else -> {
-                // Default sorting (no change)
-                taskEntities
-            }
-        }.let { if (ascendingOrder) it else it.reversed() }
-    }
-
+    /**
+     *-----------------------------------------------------------------------------------------------
+     */
 
     fun setUpNewUser(
         userId: String,
@@ -207,7 +174,112 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         }
     }
 
-    // Function to save a new task to the database
+    fun updateUserDetails(name: String, occupation: String, callback: (Boolean) -> Unit) {
+        viewModelScope.launch {
+            val currentUser = _currentUser.value
+
+            try {
+                if (currentUser != null) {
+                    val userEntity = UserEntity(
+                        userId = currentUser.userId,
+                        name = name,
+                        email = currentUser.email,
+                        occupation = occupation,
+                        avatarFilePath = currentUser.avatarFilePath,
+                    )
+                    repository.updateUserInDatabase(userEntity)
+                    callback(true)
+                } else {
+                    callback(false)
+                }
+
+            } catch (e: Exception) {
+                firebase.recordCaughtException(e)
+                callback(false)
+            }
+        }
+    }
+
+    /**
+     *-----------------------------------------------------------------------------------------------
+     */
+
+    private fun sortDatabaseList(taskEntities: List<TaskEntity>): List<TaskList> {
+        val groupedTasks = taskEntities.groupBy { it.taskCompleted }
+
+        val completedList = groupedTasks[true] ?: emptyList()
+        val uncompletedList = groupedTasks[false] ?: emptyList()
+
+        val uncompletedTasksList = TaskList(UNCOMPLETED, uncompletedList)
+        val completedTasksList = TaskList(COMPLETED, completedList)
+
+        return listOf(uncompletedTasksList, completedTasksList)
+    }
+
+    fun sortAllTasksList(taskLists: List<TaskList>, sortingCondition: Pair<String, Boolean>) {
+        val uncompletedTasksList = taskLists.first().list
+        val completedTasksList = taskLists.last().list
+
+        val sortedTaskList = sortTaskListsByCondition(uncompletedTasksList, completedTasksList, sortingCondition)
+
+        _allTasksList.postValue(sortedTaskList)
+        _sortingCondition.postValue(sortingCondition)
+    }
+
+    private fun sortTaskListsByCondition(
+        uncompletedList: List<TaskEntity>,
+        completedList: List<TaskEntity>,
+        sortingCondition: Pair<String, Boolean>
+    ): List<TaskList> {
+        val (sortBy, order) = sortingCondition
+
+        val uncompletedSorted = sortTaskEntities(uncompletedList, sortBy, order)
+        val completedSorted = sortTaskEntities(completedList, sortBy, order)
+
+        return listOf(
+            TaskList(UNCOMPLETED, uncompletedSorted),
+            TaskList(COMPLETED, completedSorted)
+        )
+    }
+
+    private fun sortTaskEntities(
+        taskEntities: List<TaskEntity>,
+        sortBy: String,
+        order: Boolean
+    ): List<TaskEntity> {
+        return when (sortBy) {
+            DATE -> {
+                taskEntities.partition { it.dueDateTime != null }
+                    .let { (datedList, unDatedList) ->
+                        if (order) {
+                            datedList.sortedWith(compareBy { it.dueDateTime }) + unDatedList.sortedBy { it.title }
+                        } else {
+                            val output = unDatedList.sortedByDescending { it.title } + datedList.sortedWith(compareBy { it.dueDateTime })
+                            output.reversed()
+                        }
+                    }
+            }
+            TITLE -> {
+                if (order) {
+                    // Sort by title chronologically
+                    taskEntities.sortedBy { it.title }
+                } else {
+                    // Sort by title in reverse chronological order
+                    taskEntities.sortedByDescending { it.title }
+                }
+            }
+            else -> {
+                // Default sorting (no change)
+                taskEntities
+            }
+        }
+    }
+
+
+    /**
+     *-----------------------------------------------------------------------------------------------
+     */
+
     fun saveTask(
         title: String,
         description: String,
@@ -237,7 +309,6 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         }
     }
 
-    // Function to update a task in the database
     fun updateTask(
         taskId: String,
         title: String,
@@ -270,7 +341,6 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         }
     }
 
-    // Function to delete a task from the database
     fun deleteTask(taskId: String, callback: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
@@ -307,154 +377,9 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
 
     }
 
-    // Function to cancel all scheduled work
-    fun cancelAllWork() {
-        val workManager = WorkManager.getInstance(application.applicationContext)
-        workManager.cancelAllWork()
-    }
-
-    fun logOut(callback: (Boolean, String?) -> Unit) {
-
-        firebase.logOut { logOutSuccessful, errorMessage ->
-            if (logOutSuccessful) {
-                firebase.addLog("sign out successful")
-
-                // Save the current user's Id before returning
-                currentUser.value?.userId?.let { repository.saveCurrentUserId(it) }
-                firebase.setUserId("")
-
-                callback(true, null)
-                resetLists()
-            } else {
-                firebase.addLog("sign out failed")
-                callback(false, errorMessage)
-            }
-        }
-    }
-
-    private fun resetLists() {
-        _filteredTaskList.value = emptyList()
-        _allTasksList.value = emptyList()
-    }
-
-    fun filterTasks(query: String?, condition: String) {
-        val allTasksList = _allTasksList.value ?: emptyList()
-
-        when (condition) {
-            SEARCH -> {
-                val filteredTaskEntities = allTasksList
-                    .flatMap { it.list }
-                    .filter { it.title.contains(query!!, ignoreCase = true) }
-
-                _filteredTaskList.value = groupFilteredTasks(condition, filteredTaskEntities)
-
-            }
-
-            STAR -> {
-                val starredTaskEntities = allTasksList
-                    .flatMap { it.list }
-                    .filter { it.starred }
-
-                _filteredTaskList.value = groupFilteredTasks(condition, starredTaskEntities)
-            }
-
-            CATEGORY -> {
-                val categoryEntities = allTasksList
-                    .flatMap { it.list }
-                    .filter { task ->
-                        // Check if the task's categoryIds contain the query
-                        task.categoryIds.any { it.contains(query!!, ignoreCase = true) }
-                    }
-                val categoryName =
-                    _categories.value?.find { it.categoryId == query }?.categoryName ?: CATEGORY
-
-                _filteredTaskList.value = groupFilteredTasks(categoryName, categoryEntities)
-            }
-        }
-    }
-
-    private fun groupFilteredTasks(filter: String, taskEntities: List<TaskEntity>): List<TaskList> {
-        val groupedTasks = taskEntities.groupBy { it.taskCompleted }
-        val completedList = groupedTasks[true] ?: emptyList()
-        val uncompletedList = groupedTasks[false] ?: emptyList()
-
-        val uncompletedTasksList = TaskList(filter, uncompletedList)
-        val completedTasksList = TaskList(COMPLETED, completedList)
-
-        return listOf(uncompletedTasksList, completedTasksList)
-    }
-
-    fun changeUserAvatar(
-        newAvatarBitmap: Bitmap,
-        context: Context,
-        callback: (Boolean) -> Unit
-    ) {
-        viewModelScope.launch {
-            val currentUser = _currentUser.value
-
-            try {
-                if (currentUser != null) {
-                    val userId = currentUser.userId
-
-                    // Set avatar to file and get the filepath
-                    val newAvatarFilePath =
-                        repository.saveAvatarBitmapToFile(userId, context, newAvatarBitmap)
-
-                    // Upload the avatar to firebase storage in the background
-                    uploadAvatarInBackground(userId, newAvatarFilePath ?: NULL)
-
-                    // Update the local database with the filepath
-                    if (newAvatarFilePath != null) {
-
-                        val userEntity = UserEntity(
-                            userId = currentUser.userId,
-                            name = currentUser.name,
-                            email = currentUser.email,
-                            occupation = currentUser.occupation,
-                            avatarFilePath = newAvatarFilePath,
-                        )
-                        repository.updateUserInDatabase(userEntity)
-
-                        callback(true)
-                    } else {
-                        callback(false)
-                    }
-                } else {
-                    callback(false)
-                }
-
-            } catch (e: Exception) {
-                firebase.recordCaughtException(e)
-                callback(false)
-            }
-        }
-    }
-
-    fun updateUserDetails(name: String, occupation: String, callback: (Boolean) -> Unit) {
-        viewModelScope.launch {
-            val currentUser = _currentUser.value
-
-            try {
-                if (currentUser != null) {
-                    val userEntity = UserEntity(
-                        userId = currentUser.userId,
-                        name = name,
-                        email = currentUser.email,
-                        occupation = occupation,
-                        avatarFilePath = currentUser.avatarFilePath,
-                    )
-                    repository.updateUserInDatabase(userEntity)
-                    callback(true)
-                } else {
-                    callback(false)
-                }
-
-            } catch (e: Exception) {
-                firebase.recordCaughtException(e)
-                callback(false)
-            }
-        }
-    }
+    /**
+     *-----------------------------------------------------------------------------------------------
+     */
 
     fun saveCategory(
         categoryName: String,
@@ -551,10 +476,142 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     }
 
     /**
-     * BackgroundTasks
+     *-----------------------------------------------------------------------------------------------
      */
 
-    // Function to set up work for uploading tasks
+    fun filterTasks(query: String?, condition: String, callback: (Boolean) -> Unit) {
+        val allTasksList = _allTasksList.value ?: emptyList()
+
+        when (condition) {
+            SEARCH -> {
+                val filteredTaskEntities = allTasksList
+                    .flatMap { it.list }
+                    .filter { it.title.contains(query!!, ignoreCase = true) }
+
+                _filteredTaskList.value = groupFilteredTasks(condition, filteredTaskEntities)
+                callback(true)
+            }
+
+            STAR -> {
+                val starredTaskEntities = allTasksList
+                    .flatMap { it.list }
+                    .filter { it.starred }
+
+                _filteredTaskList.value = groupFilteredTasks(condition, starredTaskEntities)
+                callback(true)
+            }
+
+            CATEGORY -> {
+                val categoryEntities = allTasksList
+                    .flatMap { it.list }
+                    .filter { task ->
+                        // Check if the task's categoryIds contain the query
+                        task.categoryIds.any { it.contains(query!!, ignoreCase = true) }
+                    }
+                val categoryName =
+                    _categories.value?.find { it.categoryId == query }?.categoryName ?: CATEGORY
+
+                _filteredTaskList.value = groupFilteredTasks(categoryName, categoryEntities)
+                callback(true)
+            }
+        }
+    }
+
+    private fun groupFilteredTasks(filter: String, taskEntities: List<TaskEntity>): List<TaskList> {
+        val groupedTasks = taskEntities.groupBy { it.taskCompleted }
+        val completedList = groupedTasks[true] ?: emptyList()
+        val uncompletedList = groupedTasks[false] ?: emptyList()
+
+        val uncompletedTasksList = TaskList(filter, uncompletedList)
+        val completedTasksList = TaskList(COMPLETED, completedList)
+
+        return listOf(uncompletedTasksList, completedTasksList)
+    }
+
+    fun setIsSelectionModeOn(isItemSelected: Boolean) {
+        _isSelectionModeOn.value = isItemSelected
+        if (!isItemSelected) {
+            _highlightedTaskList.value = emptyList()
+            startTasksListener()
+        }
+    }
+
+    fun updateHighlightedListName(name: String) {
+        _highlightedListName.value = name
+    }
+    fun toggleSelection(task: TaskEntity) {
+        val highlightedList = _highlightedTaskList.value ?: emptyList()
+        val currentList = mutableListOf<TaskEntity>()
+        if (highlightedList.isNotEmpty()) currentList.addAll(highlightedList)
+
+        if (currentList.contains(task)) {
+            currentList.remove(task)
+        } else {
+            currentList.add(task)
+        }
+
+        _highlightedTaskList.value = currentList
+
+        // Set select mode state and update UI accordingly
+        val isInSelectMode = currentList.isNotEmpty()
+
+        setIsSelectionModeOn(isInSelectMode)
+    }
+
+    /**
+     *-----------------------------------------------------------------------------------------------
+     */
+
+    fun changeUserAvatar(
+        newAvatarBitmap: Bitmap,
+        context: Context,
+        callback: (Boolean) -> Unit
+    ) {
+        viewModelScope.launch {
+            val currentUser = _currentUser.value
+
+            try {
+                if (currentUser != null) {
+                    val userId = currentUser.userId
+
+                    // Set avatar to file and get the filepath
+                    val newAvatarFilePath =
+                        repository.saveAvatarBitmapToFile(userId, context, newAvatarBitmap)
+
+                    // Upload the avatar to firebase storage in the background
+                    uploadAvatarInBackground(userId, newAvatarFilePath ?: NULL)
+
+                    // Update the local database with the filepath
+                    if (newAvatarFilePath != null) {
+
+                        val userEntity = UserEntity(
+                            userId = currentUser.userId,
+                            name = currentUser.name,
+                            email = currentUser.email,
+                            occupation = currentUser.occupation,
+                            avatarFilePath = newAvatarFilePath,
+                        )
+                        repository.updateUserInDatabase(userEntity)
+
+                        callback(true)
+                    } else {
+                        callback(false)
+                    }
+                } else {
+                    callback(false)
+                }
+
+            } catch (e: Exception) {
+                firebase.recordCaughtException(e)
+                callback(false)
+            }
+        }
+    }
+
+    /**
+     * BackgroundTasks ------------------------------------------------------------------------------
+     */
+
     private fun uploadTasksInBackground(user: UserEntity, newDataJson: String) {
         val data = Data.Builder()
             .putString(USERID, user.userId)
@@ -564,7 +621,6 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         repository.enqueueUploadTasksWork(data, application.applicationContext)
     }
 
-    // Function to set up work for uploading categories
     private fun uploadCategoriesInBackground(userId: String, newDataJson: String) {
         val data = Data.Builder()
             .putString(USERID, userId)
@@ -574,7 +630,6 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         repository.enqueueUploadCategoryWork(data, application.applicationContext)
     }
 
-    // Function to set up work for uploading avatar
     private fun uploadAvatarInBackground(userId: String, avatarFilePath: String) {
 
         if (avatarFilePath != NULL) {
@@ -587,7 +642,6 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         }
     }
 
-    // Function to set up work for uploading userDetails
     private fun uploadUserDetailsInBackground(user: UserEntity?) {
         if (user != null) {
             val data = Data.Builder()
@@ -601,7 +655,55 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         }
     }
 
-    // Function convert taskEntities to JSON for workManager
+
+    /**
+     *-----------------------------------------------------------------------------------------------
+     */
+    private fun checkIfFirstLaunch(): Boolean {
+        val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean("isFirstLaunch", true)
+    }
+
+    // Function to update the isFirstLaunch status
+    fun updateFirstLaunchStatus(isFirstLaunch: Boolean) {
+        _isFirstLaunch.value = isFirstLaunch
+
+        // Store the updated isFirstLaunch status in SharedPreferences
+        val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putBoolean("isFirstLaunch", isFirstLaunch).apply()
+    }
+
+    fun logOut(callback: (Boolean, String?) -> Unit) {
+
+        firebase.logOut { logOutSuccessful, errorMessage ->
+            if (logOutSuccessful) {
+                firebase.addLog("sign out successful")
+
+                // Store reference to the current user's Id before returning
+                currentUser.value?.userId?.let { repository.storeCurrentUserIdReference(it) }
+                firebase.setUserId("")
+
+                callback(true, null)
+                resetLists()
+            } else {
+                firebase.addLog("sign out failed")
+                callback(false, errorMessage)
+            }
+        }
+    }
+
+    private fun resetLists() {
+        setIsSelectionModeOn(false)
+        _isSelectionModeOn.value = false
+        _highlightedListName.value = ""
+        _highlightedTaskList.value = emptyList()
+        _selectedTaskCategories.value = emptyList()
+    }
+
+    /**
+     *-----------------------------------------------------------------------------------------------
+     */
+
     private fun convertTasksToJson(tasks: List<TaskEntity>): String {
         val gson = Gson()
         return gson.toJson(tasks)
@@ -612,8 +714,11 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         return gson.toJson(categories)
     }
 
+    /**
+     *-----------------------------------------------------------------------------------------------
+     */
+
     companion object {
-        private const val TAG = "TodoViewModel"
         private const val STAR = "Favorites"
         private const val SEARCH = "Search Results"
         private const val USERID = "userId"

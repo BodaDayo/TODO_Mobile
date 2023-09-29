@@ -1,7 +1,8 @@
 package com.rgbstudios.todomobile.ui.fragments
 
+import android.app.UiModeManager
 import android.content.Context
-import android.content.SharedPreferences
+import android.graphics.PorterDuff
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -10,6 +11,8 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -21,6 +24,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
+import com.google.firebase.analytics.FirebaseAnalytics.Event.SEARCH
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.databinding.FragmentHomeBinding
@@ -33,6 +37,7 @@ import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
 import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt
 import java.io.File
 import java.util.Calendar
+import kotlin.reflect.KTypeProjection.Companion.STAR
 
 
 class HomeFragment : Fragment(),
@@ -43,18 +48,19 @@ class HomeFragment : Fragment(),
     }
 
     private lateinit var binding: FragmentHomeBinding
-    private lateinit var bottomSheetFragment: BottomSheetFragment
-    private val listener = this as OnNavigationItemSelectedListener
     private lateinit var taskListAdapter: ListAdapter
+    private lateinit var bottomSheetFragment: BottomSheetFragment
     private lateinit var refreshLayout: SwipeRefreshLayout
     private lateinit var navDrawerLayout: DrawerLayout
-    private lateinit var sharedPreferences: SharedPreferences
     private lateinit var fragmentContext: Context
+    private lateinit var callback: OnBackPressedCallback
+    private val listener = this as OnNavigationItemSelectedListener
     private val dialogManager = DialogManager()
     private val toastManager = ToastManager()
     private var isSearchResultsShowing = false
     private var userEmail: String? = null
-    private var allTasks: List<TaskList>? = null
+    private var currentTasks: List<TaskList>? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -68,11 +74,8 @@ class HomeFragment : Fragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Initialize SharedPreferences
-        sharedPreferences = requireActivity().getPreferences(Context.MODE_PRIVATE)
-
         // Check if it's the first launch
-        val isFirstLaunch = sharedPreferences.getBoolean("first_launch", true)
+        val isFirstLaunch = sharedViewModel.isFirstLaunch.value ?: true
 
         if (isFirstLaunch) {
             // Show onboarding prompts
@@ -86,21 +89,75 @@ class HomeFragment : Fragment(),
 
     private fun init() {
 
-        // Set up the adapter
-        taskListAdapter = ListAdapter(fragmentContext, sharedViewModel)
-
         binding.apply {
+
+            // Set up the adapter
+            taskListAdapter = ListAdapter(fragmentContext, sharedViewModel)
+
+            // Set up BottomSheetFragment
+            bottomSheetFragment = BottomSheetFragment()
+            bottomSheetFragment.setListener(
+                object : BottomSheetFragment.AddTaskBtnClickListener {
+                    override fun onSaveTask(
+                        title: String,
+                        description: String,
+                        starred: Boolean,
+                        dateTimeValue: Calendar?
+                    ) {
+                        // Call the ViewModel's method to save the task
+                        sharedViewModel.saveTask(
+                            title,
+                            description,
+                            starred,
+                            dateTimeValue
+                        ) { isSuccessful ->
+                            if (isSuccessful) {
+                                // Handle success
+                                toastManager.showShortToast(
+                                    fragmentContext,
+                                    "Task saved successfully!"
+                                )
+                                emptinessLayout.visibility = View.INVISIBLE
+                            } else {
+                                // Handle failure
+                                toastManager.showShortToast(
+                                    fragmentContext,
+                                    "Failed to save task"
+                                )
+                            }
+
+                            bottomSheetFragment.dismiss()
+
+                            // Set focus to the recyclerview to prevent the searchView from triggering the keyboard
+                            fab.requestFocus()
+                        }
+                    }
+
+                }
+            )
+
+            // Set up refreshLayout
+            refreshLayout = swipeRefreshLayout
+
+            // Set up the nav drawer
+            navDrawerLayout = drawerLayout
+
+            //Set up back pressed call back
+            callback =
+                requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+                    taskListAdapter.setTaskSelection(false)
+                }
+            callback.isEnabled = false
 
             // Set up the recyclerView
             parentRecyclerView.setHasFixedSize(true)
             parentRecyclerView.layoutManager = LinearLayoutManager(context)
             parentRecyclerView.adapter = taskListAdapter
 
-            // Set up the nav drawer
-            navDrawerLayout = drawerLayout
+
+            // Set up listeners
             navigationView.setNavigationItemSelectedListener(listener)
 
-            refreshLayout = swipeRefreshLayout
             swipeRefreshLayout.setOnRefreshListener {
                 // Update data from database when the user performs the pull-to-refresh action
                 updateFromDatabase()
@@ -119,20 +176,26 @@ class HomeFragment : Fragment(),
                         false
                     } else {
 
-                        sharedViewModel.filterTasks(query, SEARCH)
+                        sharedViewModel.filterTasks(query, SEARCH) {
+                            if (it) upDateAdapterWithFilteredTasks()
+                        }
                         true
                     }
                     return true
                 }
             })
 
-            // Observe LiveData
+            // Set up LiveData Observers
             observeLiveData()
         }
     }
 
     private fun observeLiveData() {
         binding.apply {
+
+            val uiModeManager =
+                requireContext().getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+            val isNightMode = uiModeManager.nightMode == UiModeManager.MODE_NIGHT_YES
 
             val navigationDrawerView = navigationView
             // Get the header view from NavigationView
@@ -142,7 +205,8 @@ class HomeFragment : Fragment(),
             val nameNavDrw = headerView.findViewById<TextView>(R.id.userNameTxt)
             val emailNavDrw = headerView.findViewById<TextView>(R.id.emailTxt)
             val occupationNavDrw = headerView.findViewById<TextView>(R.id.occupationTxt)
-            val uncompletedTasks = headerView.findViewById<TextView>(R.id.unCompletedTasksNumber)
+            val uncompletedTasks =
+                headerView.findViewById<TextView>(R.id.unCompletedTasksNumber)
             val completedTasks = headerView.findViewById<TextView>(R.id.completedTasksNumber)
             val progressBarNavDrw = headerView.findViewById<View>(R.id.progressBar)
             val progressBackNavDrw = headerView.findViewById<View>(R.id.progressBackground)
@@ -153,11 +217,46 @@ class HomeFragment : Fragment(),
                 findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
             }
 
+            // ItemCountLayout Views
+
+            selectAllTasks.setOnClickListener {
+                taskListAdapter.setTaskSelection(true)
+            }
+
+            closeSelection.setOnClickListener {
+                taskListAdapter.setTaskSelection(false)
+            }
+
+            // RefactorTaskLayout views
+
+            deleteSelected.setOnClickListener {
+                toastManager.showShortToast(fragmentContext, "Let's go")
+            }
+
+            renameSelected.setOnClickListener {
+                val task = sharedViewModel.highlightedTaskList.value?.first()
+                if (task != null) {
+                    dialogManager.showTaskRenameDialog(task, this@HomeFragment, sharedViewModel) {
+                        if (it) taskListAdapter.setTaskSelection(false)
+                    }
+                }
+            }
+
+            addToCategory.setOnClickListener {
+                toastManager.showShortToast(fragmentContext, "Let's go")
+                // TODO the dialog should show remove from category if we an in a category list
+            }
+
+            editDateTime.setOnClickListener {
+                toastManager.showShortToast(fragmentContext, "Let's go")
+            }
+
+
             // Observe current user data
             sharedViewModel.currentUser.observe(viewLifecycleOwner) { user ->
                 if (user != null) {
 
-                    // Set the user Email for feeback use
+                    // Set the user Email for feedback use
                     userEmail = user.email
 
                     // Set the nav drawer and home avatar imageViews
@@ -165,7 +264,8 @@ class HomeFragment : Fragment(),
                         val avatarImageViews =
                             arrayOf(avatarHome, avatarNavDrw)
 
-                        val imageLoad = Glide.with(fragmentContext).load(File(user.avatarFilePath))
+                        val imageLoad =
+                            Glide.with(fragmentContext).load(File(user.avatarFilePath))
 
                         for (imageView in avatarImageViews) {
                             imageLoad.circleCrop().into(imageView)
@@ -194,13 +294,14 @@ class HomeFragment : Fragment(),
                     3 -> onEmptyLayout(3)
                 }
 
-                allTasks = allTasksList
+                currentTasks = allTasksList
 
                 taskListAdapter.updateTaskLists(allTasksList)
 
                 val uncompletedNumber =
                     allTasksList.find { it.name == UNCOMPLETED }?.list?.size ?: 0
-                val completedNumber = allTasksList.find { it.name == COMPLETED }?.list?.size ?: 0
+                val completedNumber =
+                    allTasksList.find { it.name == COMPLETED }?.list?.size ?: 0
 
                 // Update uncompleted tasks text with string plurals template
                 uncompletedTasks.text = resources.getQuantityString(
@@ -248,14 +349,68 @@ class HomeFragment : Fragment(),
                 isSearchResultsShowing = false
             }
 
-            sharedViewModel.filteredTaskList.observe(viewLifecycleOwner) { filteredTaskList ->
-                if (checkTaskLists(filteredTaskList) == 1) {
-                    onEmptyLayout(4)
+            // Observe task selection mode
+            sharedViewModel.isSelectionModeOn.observe(viewLifecycleOwner) { isSelectionModeOn ->
+                callback.isEnabled = isSelectionModeOn
+
+                if (isSelectionModeOn) {
+                    refactorTaskLayout.visibility = View.VISIBLE
+                    itemCountLayout.visibility = View.VISIBLE
+                    separator.visibility = View.VISIBLE
                 } else {
-                    onEmptyLayout(3)
+                    refactorTaskLayout.visibility = View.GONE
+                    itemCountLayout.visibility = View.GONE
+                    separator.visibility = View.GONE
                 }
-                taskListAdapter.updateTaskLists(filteredTaskList)
             }
+
+            // Observe highlighted tasks list
+            sharedViewModel.highlightedTaskList.observe(viewLifecycleOwner) { highlightedTaskList ->
+
+                if (highlightedTaskList.isNotEmpty()) {
+
+                    val size = highlightedTaskList.size
+
+                    // Update itemCounter tasks text with string plurals template
+                    itemCounter.text = resources.getQuantityString(
+                        R.plurals.tasks_selected,
+                        size,
+                        size
+                    )
+
+                    // Get the stroke color
+                    val colorResourceId = if (isNightMode) {
+                        R.color.myOnSurfaceNight // Use night mode color resource
+                    } else {
+                        R.color.myOnSurfaceDay // Use regular color resource
+                    }
+
+                    if (size > 1) {
+                        renameSelected.isEnabled = false
+                        editDateTime.isEnabled = false
+                        renameSelected.setColorFilter(
+                            ContextCompat.getColor(fragmentContext, R.color.my_darker_grey),
+                            PorterDuff.Mode.SRC_IN
+                        )
+                        editDateTime.setColorFilter(
+                            ContextCompat.getColor(fragmentContext, R.color.my_darker_grey),
+                            PorterDuff.Mode.SRC_IN
+                        )
+                    } else {
+                        renameSelected.isEnabled = true
+                        editDateTime.isEnabled = true
+                        renameSelected.setColorFilter(
+                            ContextCompat.getColor(fragmentContext, colorResourceId),
+                            PorterDuff.Mode.SRC_IN
+                        )
+                        editDateTime.setColorFilter(
+                            ContextCompat.getColor(fragmentContext, colorResourceId),
+                            PorterDuff.Mode.SRC_IN
+                        )
+                    }
+                }
+            }
+
         }
     }
 
@@ -268,46 +423,6 @@ class HomeFragment : Fragment(),
             }
 
             fab.setOnClickListener {
-                bottomSheetFragment = BottomSheetFragment()
-                bottomSheetFragment.setListener(
-                    object : BottomSheetFragment.AddTaskBtnClickListener {
-                        override fun onSaveTask(
-                            title: String,
-                            description: String,
-                            starred: Boolean,
-                            dateTimeValue: Calendar?
-                        ) {
-                            // Call the ViewModel's method to save the task
-                            sharedViewModel.saveTask(
-                                title,
-                                description,
-                                starred,
-                                dateTimeValue
-                            ) { isSuccessful ->
-                                if (isSuccessful) {
-                                    // Handle success
-                                    toastManager.showShortToast(
-                                        fragmentContext,
-                                        "Task saved successfully!"
-                                    )
-                                    emptinessLayout.visibility = View.INVISIBLE
-                                } else {
-                                    // Handle failure
-                                    toastManager.showShortToast(
-                                        fragmentContext,
-                                        "Failed to save task"
-                                    )
-                                }
-
-                                bottomSheetFragment.dismiss()
-
-                                // Set focus to the recyclerview to prevent the searchView from triggering the keyboard
-                                parentRecyclerView.requestFocus()
-                            }
-                        }
-
-                    }
-                )
                 bottomSheetFragment.show(parentFragmentManager, bottomSheetFragment.tag)
             }
 
@@ -315,6 +430,22 @@ class HomeFragment : Fragment(),
                 showOverflowMenu(view)
             }
         }
+    }
+
+    fun upDateAdapterWithFilteredTasks() {
+
+        val filteredTaskList = sharedViewModel.filteredTaskList.value ?: emptyList()
+
+            if (checkTaskLists(filteredTaskList) == 1) {
+                onEmptyLayout(4)
+            } else {
+                onEmptyLayout(3)
+            }
+
+            currentTasks = filteredTaskList
+
+            taskListAdapter.updateTaskLists(filteredTaskList)
+
     }
 
     private fun updateFromDatabase() {
@@ -390,6 +521,7 @@ class HomeFragment : Fragment(),
         if (navDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             navDrawerLayout.closeDrawer(GravityCompat.START)
         } else {
+            navDrawerLayout.requestFocus()
             navDrawerLayout.openDrawer(GravityCompat.START)
         }
     }
@@ -398,10 +530,12 @@ class HomeFragment : Fragment(),
 
         when (item.itemId) {
             R.id.settings -> {
+                navDrawerLayout.closeDrawer(GravityCompat.START)
                 findNavController().navigate(R.id.action_homeFragment_to_settingsFragment)
             }
 
             R.id.account -> {
+                navDrawerLayout.closeDrawer(GravityCompat.START)
                 findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
             }
 
@@ -420,7 +554,10 @@ class HomeFragment : Fragment(),
                 navDrawerLayout.closeDrawer(GravityCompat.START)
 
                 // Show confirm dialog
-                dialogManager.showLogoutConfirmationDialog(this, sharedViewModel) { isSuccessful ->
+                dialogManager.showLogoutConfirmationDialog(
+                    this,
+                    sharedViewModel
+                ) { isSuccessful ->
                     if (isSuccessful) {
                         // Navigate to SignInFragment
                         findNavController().navigate(R.id.action_homeFragment_to_signInFragment)
@@ -432,11 +569,9 @@ class HomeFragment : Fragment(),
     }
 
     private fun getStarredList() {
-        sharedViewModel.filterTasks(null, STAR)
-    }
-
-    private fun sortCurrentList() {
-        //TODO
+        sharedViewModel.filterTasks(null, STAR) {
+            if (it) upDateAdapterWithFilteredTasks()
+        }
     }
 
     private fun showOverflowMenu(view: View) {
@@ -465,7 +600,7 @@ class HomeFragment : Fragment(),
                     dialogManager.showSortingDialog(
                         this,
                         sharedViewModel,
-                        allTasks
+                        currentTasks
                     )
                     true
                 }
@@ -476,7 +611,9 @@ class HomeFragment : Fragment(),
                         sharedViewModel,
                         TAG,
                         null
-                    )
+                    ) {
+                        if (it) upDateAdapterWithFilteredTasks()
+                    }
                     true
                 }
 
@@ -550,11 +687,8 @@ class HomeFragment : Fragment(),
                     swipeRefreshLayoutOverlay.visibility = View.GONE
                     fabOverlay.visibility = View.GONE
 
-                    // Mark that onboarding has been completed
-                    with(sharedPreferences.edit()) {
-                        putBoolean("first_launch", false)
-                        apply()
-                    }
+                    // Update the firstLaunchStatus in the viewModel
+                    sharedViewModel.updateFirstLaunchStatus(false)
                 }
             }
         }
@@ -569,7 +703,8 @@ class HomeFragment : Fragment(),
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
         // Restore the state of flags
-        isSearchResultsShowing = savedInstanceState?.getBoolean("isSearchResultsShowing") ?: false
+        isSearchResultsShowing =
+            savedInstanceState?.getBoolean("isSearchResultsShowing") ?: false
     }
 
     companion object {

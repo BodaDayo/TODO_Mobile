@@ -19,8 +19,8 @@
             android:id="@+id/popBack"
             android:layout_width="24sp"
             android:layout_height="24sp"
-            android:src="@drawable/back"
-            android:contentDescription="@string/back_button" />
+            android:contentDescription="@string/back_button"
+            android:src="@drawable/back" />
 
         <Space
             android:layout_width="0dp"
@@ -32,9 +32,9 @@
             android:layout_width="24sp"
             android:layout_height="24sp"
             android:layout_marginBottom="16dp"
+            android:contentDescription="@string/delete_task"
             android:src="@drawable/trash3"
-            app:tint="?attr/colorPrimary"
-            android:contentDescription="@string/delete_task" />
+            app:tint="?attr/colorPrimary" />
     </LinearLayout>
 
     <LinearLayout
@@ -49,15 +49,16 @@
             android:id="@+id/titleTV"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/task" />
+            android:text="@string/title" />
 
         <EditText
             android:id="@+id/editTitleEt"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-            android:textSize="18sp"
-            android:importantForAutofill="no" />
+            android:hint="@string/type_title"
+            android:importantForAutofill="no"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/descriptionTV"
@@ -72,8 +73,8 @@
             android:background="@android:color/transparent"
             android:gravity="start"
             android:hint="@string/type_description"
-            android:maxLines="3"
-            android:importantForAutofill="no" />
+            android:importantForAutofill="no"
+            android:maxLines="3" />
 
     </LinearLayout>
 
@@ -90,8 +91,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/timer"
-            android:contentDescription="@null" />
+            android:contentDescription="@null"
+            android:src="@drawable/timer" />
 
         <TextView
             android:layout_width="0dp"
@@ -105,8 +106,8 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:padding="8sp"
-            tools:text="Today At 18:00"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            tools:text="Today At 18:00" />
     </LinearLayout>
 
     <LinearLayout
@@ -122,8 +123,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/tag"
-            android:contentDescription="@null" />
+            android:contentDescription="@null"
+            android:src="@drawable/tag" />
 
         <TextView
             android:layout_width="0dp"
@@ -149,8 +150,8 @@
                     android:layout_width="16sp"
                     android:layout_height="16sp"
                     android:layout_margin="8sp"
-                    android:src="@drawable/add"
-                    android:contentDescription="@null" />
+                    android:contentDescription="@null"
+                    android:src="@drawable/add" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -185,8 +186,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/star"
-            android:contentDescription="@null" />
+            android:contentDescription="@null"
+            android:src="@drawable/star" />
 
         <TextView
             android:id="@+id/addToFavoritesTV"
@@ -211,8 +212,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:src="@drawable/check"
-            android:contentDescription="@null" />
+            android:contentDescription="@null"
+            android:src="@drawable/check" />
 
         <TextView
             android:id="@+id/taskCompletedTV"

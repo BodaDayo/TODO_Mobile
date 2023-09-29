@@ -4,17 +4,12 @@ package com.rgbstudios.todomobile.ui.fragments
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.text.format.DateUtils.formatDateTime
-import android.util.Log
 import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.content.ContextCompat
-import com.canhub.cropper.CropImage.CancelledResult.isSuccessful
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import com.google.android.material.textfield.TextInputEditText
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.databinding.FragmentBottomSheetBinding
 import com.rgbstudios.todomobile.utils.DialogManager
@@ -28,6 +23,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentBottomSheetBinding
     private lateinit var listener: AddTaskBtnClickListener
     private val dialogManager = DialogManager()
+    private val toastManager = ToastManager()
     private var selectedDateTimeValue: Calendar? = null
 
     fun setListener(listener: AddTaskBtnClickListener) {
@@ -122,9 +118,9 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                 // Check if the title is empty before proceeding
                 if (titleEditText.isBlank()) {
                     // Show a toast or perform any other appropriate action to notify the user
-                    Toast.makeText(requireContext(), "Title cannot be empty!", Toast.LENGTH_SHORT)
-                        .show()
+                    toastManager.showShortToast(requireContext(), "Title cannot be empty!")
                     return@setOnClickListener
+
                 }
 
                 val descriptionEditText = taskDescriptionEt.text.toString()
@@ -153,7 +149,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                     if (selectedDateTimeValue != null) {
                         val formattedDateTime = formatDateTime(selectedDateTimeValue!!)
                         binding.taskDateTimeTVB.text = formattedDateTime
-                        binding.taskDateTimeTVB.visibility =View.VISIBLE
+                        binding.taskDateTimeTVB.visibility = View.VISIBLE
                     }
                 }
             }
@@ -173,7 +169,8 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
             val tomorrow = Calendar.getInstance()
             tomorrow.add(Calendar.DAY_OF_YEAR, 1)
             if (tomorrow.get(Calendar.YEAR) == dateTime.get(Calendar.YEAR) &&
-                tomorrow.get(Calendar.DAY_OF_YEAR) == dateTime.get(Calendar.DAY_OF_YEAR)) {
+                tomorrow.get(Calendar.DAY_OF_YEAR) == dateTime.get(Calendar.DAY_OF_YEAR)
+            ) {
                 sdf.applyPattern("'Tomorrow At' hh:mm a")
             }
         }

@@ -10,6 +10,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -209,6 +210,13 @@ class EditTaskFragment : Fragment() {
                     val newTitle = editTitleEt.text.toString()
                     val newDescription = editDescriptionEt.text.toString()
 
+                    // Check if the title is empty before proceeding
+                    if (newTitle.isBlank()) {
+                        // Show a toast or perform any other appropriate action to notify the user
+                        toastManager.showShortToast(requireContext(),"Title cannot be empty!")
+                        return@setOnClickListener
+                    }
+
                     setTaskData(
                         taskId,
                         newTitle,
@@ -265,7 +273,7 @@ class EditTaskFragment : Fragment() {
                         sharedViewModel,
                         TAG,
                         newSelectedTaskCategories
-                    )
+                    ) { }
                 }
 
                 editTaskDateLayout.setOnClickListener {
