@@ -43,70 +43,79 @@ class SignUpFragment : Fragment() {
 
     private fun registerEvents() {
 
-        binding.signInTv.setOnClickListener {
-            findNavController().navigate(R.id.action_signUpFragment_to_signInFragment)
-        }
-        binding.SignUpButton.setOnClickListener {
-            val email = binding.emailEt.text.toString().trim()
-            val pass = binding.passEt.text.toString().trim()
-            val confirmPass = binding.confirmPassEt.text.toString().trim()
+        binding.apply {
 
-            if (email.isNotEmpty() && pass.isNotEmpty() && confirmPass.isNotEmpty()) {
-                if (pass == confirmPass) {
+            signInTv.setOnClickListener {
+                findNavController().navigate(R.id.action_signUpFragment_to_signInFragment)
+            }
+            SignUpButton.setOnClickListener {
+                val email = emailEt.text.toString().trim()
+                val pass = passEt.text.toString().trim()
+                val confirmPass = confirmPassEt.text.toString().trim()
 
-                    // Define a regex pattern for a strong password
-                    val passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@#\$%^&+=])(?=\\S+\$).{8,}\$"
+                if (email.isNotEmpty() && pass.isNotEmpty() && confirmPass.isNotEmpty()) {
+                    if (pass == confirmPass) {
 
+                        // Define a regex pattern for a strong password
+                        val passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$"
 
-                    if (pass.matches(Regex(passwordPattern))) {
-                        binding.progressBar.visibility = View.VISIBLE
-                        firebase.signUp(email, pass) { signUpSuccessful, errorMessage ->
-                            if (signUpSuccessful) {
-                                // Get the user ID from Firebase Auth
-                                val userId = auth.currentUser?.uid ?: ""
+                        if (pass.matches(Regex(passwordPattern))) {
+                            progressBar.visibility = View.VISIBLE
+                            firebase.signUp(email, pass) { signUpSuccessful, errorMessage ->
+                                if (signUpSuccessful) {
+                                    // Get the user ID from Firebase Auth
+                                    val userId = auth.currentUser?.uid ?: ""
 
-                                // Send new user to repository
-                                sharedViewModel.setUpNewUser(userId, email, requireContext(), resources, TAG) { isSuccessful ->
-                                    if (isSuccessful) {
-                                        findNavController().navigate(R.id.action_signUpFragment_to_homeFragment)
-                                        Toast.makeText(
-                                            context,
-                                            "Set up complete!, Let's get things done! \uD83D\uDE80",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    } else {
-                                        Log.d("SignUpFragment", "UserEntity initiation failed")
+                                    // Send new user to repository
+                                    sharedViewModel.setUpNewUser(
+                                        userId,
+                                        email,
+                                        requireContext(),
+                                        resources,
+                                        TAG
+                                    ) { isSuccessful ->
+                                        if (isSuccessful) {
+                                            findNavController().navigate(R.id.action_signUpFragment_to_homeFragment)
+                                            Toast.makeText(
+                                                context,
+                                                "Set up complete!, Let's get things done! \uD83D\uDE80",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        } else {
+                                            Log.d("SignUpFragment", "UserEntity initiation failed")
+                                        }
                                     }
+                                } else {
+                                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                                 }
-                            } else {
-                                Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                                progressBar.visibility = View.GONE
                             }
-                            binding.progressBar.visibility = View.GONE
+                        } else {
+                            Toast.makeText(
+                                context,
+                                "Password must be at least 8 characters long, containing uppercase, lowercase, and numbers.",
+                                Toast.LENGTH_LONG
+                            ).show()
                         }
                     } else {
                         Toast.makeText(
                             context,
-                            "Password must be at least 8 characters long, containing uppercase, lowercase, numbers, and special characters.",
-                            Toast.LENGTH_LONG
+                            "Passwords do not match. Please try again.",
+                            Toast.LENGTH_SHORT
                         ).show()
                     }
                 } else {
-                    Toast.makeText(
-                        context,
-                        "Passwords do not match. Please try again.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(context, "Empty fields are not allowed !!", Toast.LENGTH_SHORT)
+                        .show()
                 }
-            } else {
-                Toast.makeText(context, "Empty fields are not allowed !!", Toast.LENGTH_SHORT)
-                    .show()
+            }
+
+            googleLoginButton.setOnClickListener {
+                Toast.makeText(requireContext(), "Coming soon!", Toast.LENGTH_SHORT).show()
             }
         }
-
-        binding.googleLoginButton.setOnClickListener {
-            Toast.makeText(requireContext(), "Coming soon!", Toast.LENGTH_SHORT).show()
-        }
     }
+
     companion object {
         private const val TAG = "SignUpFragment"
     }

@@ -1,5 +1,6 @@
 package com.rgbstudios.todomobile.ui.adapters
 
+import android.app.UiModeManager
 import android.content.Context
 import android.graphics.Paint
 import android.util.Log
@@ -51,9 +52,34 @@ class TaskAdapter(
         var dueDateTime = task.dueDateTime
         val taskCategories = task.categoryIds
 
+        val uiModeManager =
+            holder.itemView.context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        val isNightMode = uiModeManager.nightMode == UiModeManager.MODE_NIGHT_YES
+
         holder.binding.apply {
 
             taskLayout.setOnLongClickListener {
+                if (!isInSelectMode && highlightedListName == "") {
+                    toggleSelection(position, task)
+                }
+                true // Consume the long-click event
+            }
+
+            markCompletedImageView.setOnLongClickListener {
+                if (!isInSelectMode && highlightedListName == "") {
+                    toggleSelection(position, task)
+                }
+                true // Consume the long-click event
+            }
+
+            taskDetailsLayout.setOnLongClickListener {
+                if (!isInSelectMode && highlightedListName == "") {
+                    toggleSelection(position, task)
+                }
+                true // Consume the long-click event
+            }
+
+            star.setOnLongClickListener {
                 if (!isInSelectMode && highlightedListName == "") {
                     toggleSelection(position, task)
                 }
@@ -185,17 +211,36 @@ class TaskAdapter(
                 taskDescriptionTextView.visibility = View.GONE
             }
 
+            // Get the background
+            val drawableResourceId = if (isNightMode) {
+                R.drawable.highlight_rectangle_background_night // Use night mode color resource
+            } else {
+                R.drawable.highlight_rectangle_background // Use regular color resource
+            }
+
+            // Get the taskDateTime color
+            val colorResourceId = if (isNightMode) {
+                R.color.myOnSurfaceNight // Use night mode color resource
+            } else {
+                R.color.myOnSurfaceDay // Use regular color resource
+            }
+
+            val textColorSelected = ContextCompat.getColor(holder.itemView.context, colorResourceId)
+            val textColorDefault = ContextCompat.getColor(holder.itemView.context, R.color.my_darker_grey)
+
             // Update the UI based on selection state
             if (isSelected) {
                 // Highlight the view
-                taskLayout.setBackgroundResource(R.drawable.highlight_rectangle_background)
+                taskLayout.setBackgroundResource(drawableResourceId)
                 selectTaskCheckView.visibility = View.VISIBLE
                 markCompletedImageView.visibility = View.GONE
+                taskDateTime.setTextColor(textColorSelected)
             } else {
                 // Deselect the view
                 taskLayout.setBackgroundResource(R.drawable.transparent_rectangle_background)
                 selectTaskCheckView.visibility = View.GONE
                 markCompletedImageView.visibility = View.VISIBLE
+                taskDateTime.setTextColor(textColorDefault)
             }
         }
     }

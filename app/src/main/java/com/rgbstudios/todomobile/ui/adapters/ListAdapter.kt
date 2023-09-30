@@ -19,7 +19,7 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
 
     private var lists: List<TaskList> = emptyList()
     private lateinit var taskAdapter: TaskAdapter
-    private lateinit var binAdapter: BinAdapter
+    private lateinit var binAdapter: TaskAdapter
 
     fun updateTaskLists(newAllTasksList: List<TaskList>) {
         lists = newAllTasksList
@@ -39,7 +39,7 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
 
         if (name == COMPLETED) {
             // Create and set the BinAdapter for the "completed" list
-            binAdapter = BinAdapter(context, name, tasks, viewModel)
+            binAdapter = TaskAdapter(context, name, tasks, viewModel)
             setListData(holder, name, tasks, binAdapter)
         } else {
             // Create and set the TaskAdapter for other lists

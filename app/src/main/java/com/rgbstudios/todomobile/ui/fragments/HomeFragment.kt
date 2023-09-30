@@ -128,8 +128,6 @@ class HomeFragment : Fragment(),
 
                             bottomSheetFragment.dismiss()
 
-                            // Set focus to the fab to prevent the searchView from triggering the keyboard
-                            fab.requestFocus()
                         }
                     }
 
@@ -165,7 +163,7 @@ class HomeFragment : Fragment(),
             swipeRefreshLayout.setOnRefreshListener {
                 // Update data from database when the user performs the pull-to-refresh action
                 updateFromDatabase()
-                sharedViewModel.setIsSelectionModeOn(false)
+                exitSelectionMode()
             }
 
             // Set up SearchView's query text listener
@@ -262,13 +260,13 @@ class HomeFragment : Fragment(),
                     this@HomeFragment,
                     sharedViewModel
                 ) {
-                    if (it) sharedViewModel.setIsSelectionModeOn(false)
+                    if (it) exitSelectionMode()
                 }
             }
 
             renameSelected.setOnClickListener {
                 dialogManager.showTaskRenameDialog(this@HomeFragment, sharedViewModel) {
-                    if (it) sharedViewModel.setIsSelectionModeOn(false)
+                    if (it) exitSelectionMode()
                 }
             }
 
@@ -284,14 +282,14 @@ class HomeFragment : Fragment(),
                         BATCHADD,
                         null
                     ) {
-                        if (it) sharedViewModel.setIsSelectionModeOn(false)
+                        if (it) exitSelectionMode()
                     }
                 } else {
                     dialogManager.showBatchRemoveTagConfirmationDialog(
                         this@HomeFragment,
                         sharedViewModel
                     ) {
-                        if (it) sharedViewModel.setIsSelectionModeOn(false)
+                        if (it) exitSelectionMode()
                     }
                 }
             }
@@ -328,7 +326,7 @@ class HomeFragment : Fragment(),
                                                 fragmentContext,
                                                 "Task updated successfully!"
                                             )
-                                            sharedViewModel.setIsSelectionModeOn(false)
+                                            exitSelectionMode()
                                         } else {
                                             // Handle failure
                                             toastManager.showShortToast(
@@ -397,6 +395,7 @@ class HomeFragment : Fragment(),
                 currentTasks = allTasksList
 
                 taskListAdapter.updateTaskLists(allTasksList)
+                parentRecyclerView.requestFocus()
 
                 val uncompletedNumber =
                     allTasksList.find { it.name == UNCOMPLETED }?.list?.size ?: 0
@@ -663,6 +662,11 @@ class HomeFragment : Fragment(),
         sharedViewModel.filterTasks(null, STAR) {
             if (it) upDateAdapterWithFilteredTasks()
         }
+    }
+
+    private fun exitSelectionMode() {
+        sharedViewModel.setIsSelectionModeOn(false)
+        sharedViewModel.updateHighlightedListName("")
     }
 
     private fun showOverflowMenu(view: View) {

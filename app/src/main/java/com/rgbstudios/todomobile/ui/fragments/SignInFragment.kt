@@ -44,51 +44,59 @@ class SignInFragment : Fragment() {
 
     private fun registerEvents() {
 
-        binding.signUpTv.setOnClickListener {
-            findNavController().navigate(R.id.action_signInFragment_to_signUpFragment)
-        }
-        binding.loginButton.setOnClickListener {
-            val email = binding.emailEt.text.toString().trim()
-            val pass = binding.passEt.text.toString().trim()
-
-            if (email.isNotEmpty() && pass.isNotEmpty()) {
-
-                binding.progressBar.visibility = View.VISIBLE
-                firebase.signIn(email, pass) { signInSuccessful, errorMessage ->
-                    if (signInSuccessful) {
-                        // Get the user ID from Firebase Auth
-                        val userId = auth.currentUser?.uid ?: ""
-
-                        // Send new user details to repository
-                        sharedViewModel.setUpNewUser(userId, email, requireContext(), resources, TAG) { isSuccessful ->
-                            if (isSuccessful) {
-                                findNavController().navigate(R.id.action_signInFragment_to_homeFragment)
-                                Toast.makeText(
-                                    context,
-                                    "Set up complete!, Let's get things done! \uD83D\uDE80",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                Log.d("SignUpFragment", "UserEntity initiation failed")
-                            }
-                        }
-                    } else {
-                        Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
-                    }
-                    binding.progressBar.visibility = View.GONE
-                }
-            } else {
-                Toast.makeText(context, "Empty fields are not allowed!", Toast.LENGTH_SHORT)
-                    .show()
+        binding.apply {
+            signUpTv.setOnClickListener {
+                findNavController().navigate(R.id.action_signInFragment_to_signUpFragment)
             }
-        }
+            loginButton.setOnClickListener {
+                val email = emailEt.text.toString().trim()
+                val pass = passEt.text.toString().trim()
 
-        binding.forgotPasswordTV.setOnClickListener {
-            showForgotPasswordDialog()
-        }
+                if (email.isNotEmpty() && pass.isNotEmpty()) {
 
-        binding.googleLoginButton.setOnClickListener {
-            Toast.makeText(requireContext(), "Coming soon!", Toast.LENGTH_SHORT).show()
+                    progressBar.visibility = View.VISIBLE
+                    firebase.signIn(email, pass) { signInSuccessful, errorMessage ->
+                        if (signInSuccessful) {
+                            // Get the user ID from Firebase Auth
+                            val userId = auth.currentUser?.uid ?: ""
+
+                            // Send new user details to repository
+                            sharedViewModel.setUpNewUser(
+                                userId,
+                                email,
+                                requireContext(),
+                                resources,
+                                TAG
+                            ) { isSuccessful ->
+                                if (isSuccessful) {
+                                    findNavController().navigate(R.id.action_signInFragment_to_homeFragment)
+                                    Toast.makeText(
+                                        context,
+                                        "Set up complete!, Let's get things done! \uD83D\uDE80",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    Log.d("SignUpFragment", "UserEntity initiation failed")
+                                }
+                            }
+                        } else {
+                            Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                        }
+                        progressBar.visibility = View.GONE
+                    }
+                } else {
+                    Toast.makeText(context, "Empty fields are not allowed!", Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+
+            forgotPasswordTV.setOnClickListener {
+                showForgotPasswordDialog()
+            }
+
+            googleLoginButton.setOnClickListener {
+                Toast.makeText(requireContext(), "Coming soon!", Toast.LENGTH_SHORT).show()
+            }
         }
 
     }
