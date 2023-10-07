@@ -110,7 +110,8 @@ class DialogManager {
                                                         fragment.resources.getQuantityString(
                                                             R.plurals.multiple_tasks_to_category_success,
                                                             it.size,
-                                                            it.size
+                                                            it.size,
+                                                            category.categoryName
                                                         )
                                                     }
                                                     toastManager.showShortToast(

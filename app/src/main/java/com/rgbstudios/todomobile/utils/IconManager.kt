@@ -13,9 +13,36 @@ class IconManager {
         "health" to R.drawable.health,
         "music" to R.drawable.music,
         "social" to R.drawable.social,
-        "grocery" to R.drawable.grocery,
+        "grocery" to R.drawable.shopping_cart,
         "movies" to R.drawable.movies,
+        "finance" to R.drawable.cash,
         "travel" to R.drawable.travel,
+        "gaming" to R.drawable.gamepad,
+        "albums" to R.drawable.album,
+        "airplane" to R.drawable.airplane,
+        "alarm" to R.drawable.alarm_clock,
+        "art" to R.drawable.artist,
+        "bicycle" to R.drawable.bicycle,
+        "book" to R.drawable.book,
+        "cake" to R.drawable.cake,
+        "basketball" to R.drawable.basketball,
+        "car" to R.drawable.car,
+        "film" to R.drawable.film,
+        "coffee" to R.drawable.coffee,
+        "world" to R.drawable.globe,
+        "key" to R.drawable.key,
+        "laptop" to R.drawable.laptop,
+        "food" to R.drawable.bread,
+        "light" to R.drawable.lightbulb,
+        "explore" to R.drawable.map,
+        "phone" to R.drawable.phone,
+        "event" to R.drawable.calendar,
+        "cook" to R.drawable.cook,
+        "puzzle" to R.drawable.puzzle_piece,
+        "rocket" to R.drawable.rocket,
+        "luggage" to R.drawable.suitcase,
+        "environment" to R.drawable.tree,
+        "trophy" to R.drawable.trophy
     )
 
     fun getDefaultIcons(): List<String> {
@@ -25,7 +52,10 @@ class IconManager {
         iconsList.remove("add_new")
         iconsList.remove("default")
 
-        return iconsList.keys.toList()
+        // Get the first 9 keys
+        val defaultKeys = iconsList.keys.take(9)
+
+        return defaultKeys.toList()
     }
 
     fun getAllIcons(): List<String> {

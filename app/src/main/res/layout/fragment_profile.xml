@@ -75,8 +75,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/colorSurface"
-        android:visibility="gone"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imageSampleView"
@@ -96,13 +96,13 @@
             app:layout_constraintTop_toBottomOf="@id/imageSampleView" />
 
         <TextView
+            android:id="@+id/pickAvatar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/separator"
-            android:id="@+id/pickAvatar"
-            android:text="Pick from default"
+            android:layout_margin="8sp"
             android:gravity="center"
-            android:layout_margin="8sp"/>
+            android:text="Pick from default"
+            app:layout_constraintTop_toBottomOf="@id/separator" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/defaultAvatarRecyclerView"
@@ -112,14 +112,14 @@
             android:paddingHorizontal="32sp"
             android:paddingBottom="8dp"
             android:scrollbars="none"
-            app:layout_constraintTop_toBottomOf="@id/pickAvatar"/>
+            app:layout_constraintTop_toBottomOf="@id/pickAvatar" />
 
         <ImageView
             android:id="@+id/editAvatar"
             android:layout_width="24sp"
             android:layout_height="24sp"
             android:layout_margin="16sp"
-            android:src="@drawable/edit"
+            android:src="@drawable/camera"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -129,9 +129,9 @@
             android:layout_height="24sp"
             android:layout_margin="16sp"
             android:src="@drawable/back"
-            app:tint="?attr/colorOnSurface"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="?attr/colorOnSurface" />
 
         <TextView
             android:id="@+id/saveAvatarButton"
@@ -151,8 +151,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@color/black"
-            android:visibility="gone"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
 
             <ImageView
                 android:id="@+id/closeExpandedImage"
@@ -168,8 +168,7 @@
                 android:id="@+id/expandedImageView"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:src="@drawable/asset_1"
-                />
+                android:src="@drawable/asset_1" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -209,6 +208,7 @@
                 android:textColor="?attr/colorPrimary"
                 android:textSize="16sp" />
         </LinearLayout>
+
         <!-- Profile Picture -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/avatarLayout"
@@ -272,8 +272,7 @@
             android:layout_marginHorizontal="16sp"
             android:layout_marginTop="16dp"
             android:gravity="center"
-            android:text="email@todo.com"
-            android:visibility="gone" />
+            tools:text="email@todo.com" />
 
 
         <LinearLayout

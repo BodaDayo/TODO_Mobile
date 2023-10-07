@@ -1,7 +1,6 @@
 package com.rgbstudios.todomobile.ui.adapters
 
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -48,49 +47,57 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
         }
     }
 
-    private fun setListData(holder: ListViewHolder, name: String, tasks: List<TaskEntity>, adapter: RecyclerView.Adapter<*>) {
+    private fun setListData(
+        holder: ListViewHolder,
+        name: String,
+        tasks: List<TaskEntity>,
+        adapter: RecyclerView.Adapter<*>
+    ) {
+        holder.binding.apply {
+            if (name == COMPLETED) {
+                if (tasks.isNotEmpty()) {
+                    separator.visibility = View.VISIBLE
+                    listName.text = name
+                    listNameLayout.visibility = View.VISIBLE
+                    closeList.visibility = View.GONE
 
-        if (name == COMPLETED) {
-            if (tasks.isNotEmpty()) {
-                holder.binding.separator.visibility = View.VISIBLE
-                holder.binding.listName.text = name
-                holder.binding.listNameLayout.visibility = View.VISIBLE
-                holder.binding.closeList.visibility = View.GONE
-
-                // Set the icon based on visibility of the layout
-                if (holder.binding.childRecyclerView.visibility == View.VISIBLE) {
-                    holder.binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_up_24)
+                    // Set the icon based on visibility of the layout
+                    if (childRecyclerView.visibility == View.VISIBLE) {
+                        collapseList.setImageResource(R.drawable.arrow_up)
+                    } else {
+                        collapseList.setImageResource(R.drawable.arrow_down)
+                    }
+                    listName.isEnabled = true
                 } else {
-                    holder.binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
+                    listNameLayout.visibility = View.GONE
+                    separator.visibility = View.GONE
                 }
             } else {
-                holder.binding.listNameLayout.visibility = View.GONE
-                holder.binding.separator.visibility = View.GONE
-            }
-        } else {
-            if (name != UNCOMPLETED) {
-                holder.binding.listName.text = name
-                holder.binding.listName.setTextColor(
-                    ContextCompat.getColor(
-                        context,
-                        R.color.myPrimary
+                if (name != UNCOMPLETED) {
+                    listName.text = name
+                    listName.setTextColor(
+                        ContextCompat.getColor(
+                            context,
+                            R.color.myPrimary
+                        )
                     )
-                )
 
-                holder.binding.listNameLayout.visibility = View.VISIBLE
-                holder.binding.collapseList.visibility = View.GONE
+                    listNameLayout.visibility = View.VISIBLE
+                    collapseList.visibility = View.GONE
 
-                holder.binding.closeList.visibility = View.VISIBLE
-            } else {
-                holder.binding.listNameLayout.visibility = View.GONE
-                holder.binding.separator.visibility = View.GONE
+                    closeList.visibility = View.VISIBLE
+                } else {
+                    listNameLayout.visibility = View.GONE
+                    separator.visibility = View.GONE
+                }
+                listName.isEnabled = false
             }
-        }
 
-        holder.binding.childRecyclerView.setHasFixedSize(true)
-        holder.binding.childRecyclerView.layoutManager =
-            LinearLayoutManager(holder.itemView.context)
-        holder.binding.childRecyclerView.adapter = adapter
+            childRecyclerView.setHasFixedSize(true)
+            childRecyclerView.layoutManager =
+                LinearLayoutManager(holder.itemView.context)
+            childRecyclerView.adapter = adapter
+        }
     }
 
 
@@ -117,6 +124,10 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
     inner class ListViewHolder(val binding: ItemTaskParentBinding) :
         RecyclerView.ViewHolder(binding.root) {
         init {
+            binding.listName.setOnClickListener {
+                val isExpanded = binding.childRecyclerView.visibility == View.VISIBLE
+                toggleListExpansion(isExpanded, binding)
+            }
             binding.collapseList.setOnClickListener {
                 val isExpanded = binding.childRecyclerView.visibility == View.VISIBLE
                 toggleListExpansion(isExpanded, binding)
@@ -129,15 +140,16 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
         private fun toggleListExpansion(isExpanded: Boolean, binding: ItemTaskParentBinding) {
             if (isExpanded) {
                 binding.childRecyclerView.visibility = View.GONE
-                binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
+                binding.collapseList.setImageResource(R.drawable.arrow_down)
             } else {
                 binding.childRecyclerView.visibility = View.VISIBLE
-                binding.collapseList.setImageResource(R.drawable.baseline_keyboard_arrow_up_24)
+                binding.collapseList.setImageResource(R.drawable.arrow_up)
             }
             // Notify the adapter about the data set change
             notifyDataSetChanged()
         }
     }
+
     companion object {
         private const val UNCOMPLETED = "uncompleted"
         private const val COMPLETED = "completed"

@@ -2,6 +2,7 @@ package com.rgbstudios.todomobile.ui.fragments
 
 import android.app.UiModeManager
 import android.content.Context
+import android.content.Intent
 import android.graphics.PorterDuff
 import android.os.Bundle
 import android.util.Log
@@ -12,6 +13,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.widget.SearchView
@@ -37,7 +39,9 @@ import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
 import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt
 import java.io.File
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 
 class HomeFragment : Fragment(),
@@ -270,30 +274,6 @@ class HomeFragment : Fragment(),
                 }
             }
 
-            addToCategory.setOnClickListener {
-
-                val taskListName = sharedViewModel.highlightedListName.value
-                val exemptionList = categoryManager.specialCategoryNames
-
-                if (exemptionList.contains(taskListName)) {
-                    dialogManager.showCategoriesDialog(
-                        this@HomeFragment,
-                        sharedViewModel,
-                        BATCHADD,
-                        null
-                    ) {
-                        if (it) exitSelectionMode()
-                    }
-                } else {
-                    dialogManager.showBatchRemoveTagConfirmationDialog(
-                        this@HomeFragment,
-                        sharedViewModel
-                    ) {
-                        if (it) exitSelectionMode()
-                    }
-                }
-            }
-
             editDateTime.setOnClickListener {
                 val task = sharedViewModel.highlightedTaskList.value?.first()
                 val taskDueDateTime = task?.dueDateTime
@@ -340,6 +320,34 @@ class HomeFragment : Fragment(),
                         }
                     }
                 }
+            }
+
+            addToCategory.setOnClickListener {
+
+                val taskListName = sharedViewModel.highlightedListName.value
+                val exemptionList = categoryManager.specialCategoryNames
+
+                if (exemptionList.contains(taskListName)) {
+                    dialogManager.showCategoriesDialog(
+                        this@HomeFragment,
+                        sharedViewModel,
+                        BATCHADD,
+                        null
+                    ) { tasksAddedToCategory ->
+                        if (tasksAddedToCategory) exitSelectionMode()
+                    }
+                } else {
+                    dialogManager.showBatchRemoveTagConfirmationDialog(
+                        this@HomeFragment,
+                        sharedViewModel
+                    ) {
+                        if (it) exitSelectionMode()
+                    }
+                }
+            }
+
+            shareTasks.setOnClickListener {
+                createShareTasksIntent()
             }
 
             // Observe current user data
@@ -451,13 +459,18 @@ class HomeFragment : Fragment(),
                 callback.isEnabled = isSelectionModeOn
 
                 if (isSelectionModeOn) {
-                    refactorTaskLayout.visibility = View.VISIBLE
+                    searchViewLayout.visibility = View.GONE
                     itemCountLayout.visibility = View.VISIBLE
                     separator.visibility = View.VISIBLE
+                    fab.visibility = View.GONE
+                    refactorTaskLayout.visibility = View.VISIBLE
+
                 } else {
-                    refactorTaskLayout.visibility = View.GONE
+                    searchViewLayout.visibility = View.VISIBLE
                     itemCountLayout.visibility = View.GONE
                     separator.visibility = View.GONE
+                    fab.visibility = View.VISIBLE
+                    refactorTaskLayout.visibility = View.GONE
                 }
             }
 
@@ -508,6 +521,64 @@ class HomeFragment : Fragment(),
                 }
             }
 
+        }
+    }
+    private fun createShareTasksIntent() {
+        val taskList = sharedViewModel.highlightedTaskList.value
+        val categoryList = sharedViewModel.categories.value
+        val categoryMap = categoryList?.associateBy { it.categoryId }
+
+        // Check if the taskList is not null and not empty
+        if (!taskList.isNullOrEmpty()) {
+            val dateFormat = SimpleDateFormat(
+                "EEE, MMM dd, yyyy 'At' hh:mm a",
+                Locale.getDefault()
+            )
+
+            val sharedText = buildString {
+                append("My Tasks:\n\n")
+
+                taskList.withIndex().forEach { (index, task) ->
+                    append("${index + 1}. Title: ${task.title}\n")
+                    if (task.description.isNotEmpty()) {
+                        append("   Description: ${task.description}\n")
+                    } else {
+                        append("   Description: Not set\n")
+                    }
+                    append("   Completed: ${if (task.taskCompleted) "Yes" else "No"}\n")
+                    append("   Starred: ${if (task.starred) "Yes" else "No"}\n")
+                    if (task.dueDateTime != null) {
+                        val formattedTime = task.dueDateTime.time.let { it1 ->
+                            dateFormat.format(
+                                it1
+                            )
+                        }
+                        append("   Due Date & Time: $formattedTime\n")
+                    } else {
+                        append("   Due Date & Time: Not Set\n")
+                    }
+
+                    if (task.categoryIds.isNotEmpty()) {
+                        val categoryNames = task.categoryIds.map { categoryId ->
+                            categoryMap?.get(categoryId)?.categoryName ?: "None"
+                        }
+                        append("   Task Categories: ${categoryNames.joinToString(", ")}\n")
+                    }
+                    append("\n")
+                }
+            }
+
+            // Now, you can use the `sharedText` to share the tasks using an Intent
+            val sendIntent = Intent().apply {
+                action = Intent.ACTION_SEND
+                type = "text/plain"
+                putExtra(Intent.EXTRA_TEXT, sharedText)
+            }
+
+            startActivity(Intent.createChooser(sendIntent, "Share via"))
+        } else {
+            // Handle the case when the taskList is empty or null
+            toastManager.showShortToast(requireContext(), "No tasks to share")
         }
     }
 

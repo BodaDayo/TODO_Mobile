@@ -3,7 +3,6 @@ package com.rgbstudios.todomobile.ui.adapters
 import android.app.UiModeManager
 import android.content.Context
 import android.graphics.Paint
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -189,7 +188,7 @@ class TaskAdapter(
                 )
                 taskDateTime.visibility = View.GONE
                 taskDescriptionTextView.visibility = View.GONE
-                markCompletedImageView.setImageResource(R.drawable.checkboxd)
+                markCompletedImageView.setImageResource(R.drawable.check_checked)
                 markCompletedImageView.setColorFilter(
                     ContextCompat.getColor(
                         root.context,

@@ -13,6 +13,7 @@ import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
@@ -29,7 +30,6 @@ import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
 import java.io.ByteArrayOutputStream
 import java.io.File
-
 
 class ProfileFragment : Fragment() {
 
@@ -51,7 +51,6 @@ class ProfileFragment : Fragment() {
     private val dialogManager = DialogManager()
     private val avatarManager = AvatarManager()
     private lateinit var avatarAdapter: AvatarAdapter
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -164,7 +163,10 @@ class ProfileFragment : Fragment() {
                 if (changesMade) {
                     sharedViewModel.updateUserDetails(name, occupation) { isSuccessful ->
                         if (isSuccessful) {
-                            toastManager.showShortToast(fragmentContext, "Changes saved Successfully!")
+                            toastManager.showShortToast(
+                                fragmentContext,
+                                "Changes saved Successfully!"
+                            )
 
                             activity?.supportFragmentManager?.popBackStack()
                         } else {
@@ -190,7 +192,7 @@ class ProfileFragment : Fragment() {
                 }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    changesMade = true
+                    changesMade = userDetailsSetFromViewModel
                 }
 
                 override fun afterTextChanged(s: Editable?) {}
@@ -206,7 +208,12 @@ class ProfileFragment : Fragment() {
                 }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                    changesMade = true
+                    if (!userDetailsSetFromViewModel) {
+                        userDetailsSetFromViewModel = true
+                        changesMade = false
+                    } else {
+                        changesMade = true
+                    }
                 }
 
                 override fun afterTextChanged(s: Editable?) {}
@@ -273,17 +280,15 @@ class ProfileFragment : Fragment() {
 
                     // Set user email
                     emailText.text = user.email
-                    emailText.visibility = View.VISIBLE
 
                     // Set user details
-                    if (!userDetailsSetFromViewModel && user.name != null && user.occupation != null) {
-                        nameEditText.text =
-                            Editable.Factory.getInstance().newEditable(user.name)
-                        occupationText.text =
-                            Editable.Factory.getInstance().newEditable(user.occupation)
-                        userDetailsSetFromViewModel = true
-                        changesMade = false
-                    }
+
+                    // Set the name EditText
+                    if (!user.name.isNullOrEmpty()) nameEditText.text =
+                        Editable.Factory.getInstance().newEditable(user.name)
+                    // Set the occupation EditText
+                    if (!user.occupation.isNullOrEmpty()) occupationText.text =
+                        Editable.Factory.getInstance().newEditable(user.occupation)
                 }
             }
 
@@ -338,7 +343,10 @@ class ProfileFragment : Fragment() {
                 requireContext()
             ) { isSuccessful ->
                 if (isSuccessful) {
-                    toastManager.showShortToast(fragmentContext, "Profile image changed Successfully!")
+                    toastManager.showShortToast(
+                        fragmentContext,
+                        "Profile image changed Successfully!"
+                    )
                 } else {
                     toastManager.showShortToast(
                         fragmentContext,
@@ -411,7 +419,7 @@ class ProfileFragment : Fragment() {
         changesMade =
             savedInstanceState?.getBoolean("changesMade") ?: false
         userDetailsSetFromViewModel =
-            savedInstanceState?.getBoolean("userDetailsSetFromViewModel") ?: true
+            savedInstanceState?.getBoolean("userDetailsSetFromViewModel") ?: false
         defaultChanges =
             savedInstanceState?.getBoolean("defaultChanges", defaultChanges) ?: false
 

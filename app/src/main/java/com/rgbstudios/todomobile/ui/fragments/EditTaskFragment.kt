@@ -5,12 +5,9 @@ import android.content.Context
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.text.format.DateUtils.formatDateTime
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.addCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -140,7 +137,7 @@ class EditTaskFragment : Fragment() {
 
                 // Check if the task is completed, change icon if true
                 if (selectedTaskData.taskCompleted) {
-                    markCompletedIcon.setImageResource(R.drawable.checkboxd)
+                    markCompletedIcon.setImageResource(R.drawable.check_checked)
                     markCompletedIcon.setColorFilter(
                         ContextCompat.getColor(
                             fragmentContext,

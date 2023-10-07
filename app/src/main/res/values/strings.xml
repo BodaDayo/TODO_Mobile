@@ -96,8 +96,8 @@
     </plurals>
 
     <plurals name="multiple_tasks_to_category_success">
-        <item quantity="one">Task added to category successfully</item>
-        <item quantity="other">%d tasks added to category successfully</item>
+        <item quantity="one">Task added to %s category successfully</item>
+        <item quantity="other">%d tasks added to %s category successfully</item>
     </plurals>
 
     <plurals name="multiple_tasks_remove">
