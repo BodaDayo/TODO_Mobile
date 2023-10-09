@@ -6,6 +6,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
+import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
+import androidx.biometric.BiometricPrompt
+import androidx.biometric.BiometricPrompt.PromptInfo
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -19,6 +24,7 @@ import com.rgbstudios.todomobile.utils.ColorManager
 import com.rgbstudios.todomobile.utils.DialogManager
 import com.rgbstudios.todomobile.utils.ToastManager
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
+import java.util.concurrent.Executor
 
 
 class SettingsFragment : Fragment() {
@@ -33,6 +39,9 @@ class SettingsFragment : Fragment() {
     private val colorManager = ColorManager()
     private val colors = colorManager.getAllColors()
     private val colorList = mutableListOf(PRIMARY)
+    private lateinit var executor: Executor
+    private lateinit var biometricPrompt: BiometricPrompt
+    private lateinit var promptInfo: PromptInfo
 
 
     // Variable to store the selected color
@@ -54,6 +63,11 @@ class SettingsFragment : Fragment() {
         colorList.addAll(colors)
 
         binding.apply {
+            // Check if biometric authentication is enabled
+            val isBiometricEnabled = sharedViewModel.isBiometricEnabled.value ?: false
+
+            fingerprintSwitch.isChecked = isBiometricEnabled
+
             val themeColorAdapter =
                 CategoryColorAdapter(
                     colorList,
@@ -81,12 +95,80 @@ class SettingsFragment : Fragment() {
             // Set the adapter for the colorRecyclerView
             appThemeColorRecyclerView.adapter = themeColorAdapter
 
+            // Set an OnCheckedChangeListener to handle switch events
+            fingerprintSwitch.setOnCheckedChangeListener { _, isChecked ->
+                // Handle the switch state change (isChecked)
+                if (isChecked) {
+                    checkDeviceHasBiometric()
+                } else {
+                    toastManager.showShortToast(requireContext(), "Biometric authentication disabled.")
+
+                    // Update the isBiometricEnabled in the viewModel
+                    sharedViewModel.updateIsBiometricEnabled(false)
+                }
+            }
 
             changeAppThemeLayout.setOnClickListener {
                 appThemeColorLayout.visibility = View.VISIBLE
             }
         }
 
+    }
+
+    private fun checkDeviceHasBiometric() {
+        val biometricManager = BiometricManager.from(requireContext())
+        when (biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)) {
+            BiometricManager.BIOMETRIC_SUCCESS -> {
+                createBiometricListener()
+                createPromptInfo()
+                biometricPrompt.authenticate(promptInfo)
+            }
+            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE -> {
+                toastManager.showShortToast(requireContext(), "Your device does not support biometric authentication.")
+            }
+            BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
+                toastManager.showShortToast(requireContext(), "Biometric features are currently unavailable.")
+            }
+            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
+                toastManager.showShortToast(requireContext(), "Biometric feature is not set up on your device.")
+            }
+            else -> {
+                toastManager.showShortToast(requireContext(), "An error occurred while checking biometric availability.")
+            }
+        }
+    }
+
+    private fun createBiometricListener() {
+        executor = ContextCompat.getMainExecutor(requireContext())
+        biometricPrompt = BiometricPrompt(thisFragment, executor, object : BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                super.onAuthenticationError(errorCode, errString)
+                if (errString != "Cancel") {
+                    toastManager.showShortToast(requireContext(), "Biometric authentication set up error: $errString")
+                }
+            }
+
+            override fun onAuthenticationFailed() {
+                super.onAuthenticationFailed()
+                toastManager.showShortToast(requireContext(), "Biometric authentication set up failed. Please try again.")
+            }
+
+            override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                super.onAuthenticationSucceeded(result)
+                toastManager.showShortToast(requireContext(), "Biometric authentication enabled.")
+
+                // Update the isBiometricEnabled in the viewModel
+                sharedViewModel.updateIsBiometricEnabled(true)
+            }
+        })
+    }
+
+    private fun createPromptInfo() {
+        promptInfo = PromptInfo.Builder()
+            .setTitle("Verify Fingerprint")
+            .setSubtitle("")
+            .setNegativeButtonText("Cancel")
+            .build()
     }
 
     companion object {

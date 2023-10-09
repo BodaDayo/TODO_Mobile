@@ -155,9 +155,9 @@ class TaskAdapter(
                 val currentTime = Calendar.getInstance()
                 if (dueDateTime!!.before(currentTime)) {
                     // Set the text color to R.color.poor
-                    taskDateTime.setTextColor(ContextCompat.getColor(context, R.color.poor))
                     val overdueTime = formattedDateTime + context.getString(R.string.overdue_task)
                     taskDateTime.text = overdueTime
+                    taskDateTime.setTextColor(ContextCompat.getColor(context, R.color.poor))
                 } else {
                     // Set the text color to the default color
                     taskDateTime.setTextColor(
@@ -225,7 +225,6 @@ class TaskAdapter(
             }
 
             val textColorSelected = ContextCompat.getColor(holder.itemView.context, colorResourceId)
-            val textColorDefault = ContextCompat.getColor(holder.itemView.context, R.color.my_darker_grey)
 
             // Update the UI based on selection state
             if (isSelected) {
@@ -239,7 +238,6 @@ class TaskAdapter(
                 taskLayout.setBackgroundResource(R.drawable.transparent_rectangle_background)
                 selectTaskCheckView.visibility = View.GONE
                 markCompletedImageView.visibility = View.VISIBLE
-                taskDateTime.setTextColor(textColorDefault)
             }
         }
     }

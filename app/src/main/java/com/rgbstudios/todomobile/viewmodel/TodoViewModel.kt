@@ -28,6 +28,10 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     private val _isFirstLaunch = MutableLiveData<Boolean>()
     val isFirstLaunch: LiveData<Boolean> = _isFirstLaunch
 
+    // LiveData to hold the isBiometricEnabled status
+    private val _isBiometricEnabled = MutableLiveData<Boolean>()
+    val isBiometricEnabled: LiveData<Boolean> = _isBiometricEnabled
+
     // LiveData to hold userEntity
     private val _currentUser = MutableLiveData<UserEntity>()
     val currentUser: LiveData<UserEntity> = _currentUser
@@ -72,6 +76,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
 
     init {
         _isFirstLaunch.value = checkIfFirstLaunch()
+        _isBiometricEnabled.value = checkCheckBiometricAuthStatus()
         setIsSelectionModeOn(false)
         _highlightedListName.value = ""
         startDatabaseListeners()
@@ -140,6 +145,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     fun setUpNewUser(
         userId: String,
         email: String,
+        pass: String,
         context: Context,
         resources: Resources,
         sender: String,
@@ -167,6 +173,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 firebase.addLog("sign in successful")
             }
 
+            updateAuthenticationData(email, pass)
             callback(true)
         } catch (e: Exception) {
             firebase.recordCaughtException(e)
@@ -700,6 +707,10 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean("isFirstLaunch", true)
     }
+    private fun checkCheckBiometricAuthStatus(): Boolean {
+        val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean("isBiometricEnabled", false)
+    }
 
     // Function to update the isFirstLaunch status
     fun updateFirstLaunchStatus(isFirstLaunch: Boolean) {
@@ -708,6 +719,21 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         // Store the updated isFirstLaunch status in SharedPreferences
         val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().putBoolean("isFirstLaunch", isFirstLaunch).apply()
+    }
+
+    fun updateIsBiometricEnabled(isBiometricEnabled: Boolean) {
+        _isBiometricEnabled.value = isBiometricEnabled
+
+        // Store the updated isBiometricEnabled status in SharedPreferences
+        val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putBoolean("isBiometricEnabled", isBiometricEnabled).apply()
+    }
+
+    private fun updateAuthenticationData(email: String, pass: String) {
+        // Store the updated authentication data in SharedPreferences
+        val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("email", email).apply()
+        sharedPreferences.edit().putString("pass", pass).apply()
     }
 
     fun logOut(callback: (Boolean, String?) -> Unit) {

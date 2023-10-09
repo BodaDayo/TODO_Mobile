@@ -15,13 +15,13 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.3">
+        app:layout_constraintVertical_bias="0.25">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="24sp"
-            android:layout_marginTop="32sp"
+            android:layout_marginTop="24sp"
             android:gravity="center"
             android:text="@string/welcome_to_todo_mobile"
             android:textSize="24sp" />
@@ -30,7 +30,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="40sp"
-            android:layout_marginTop="32sp"
+            android:layout_marginTop="24sp"
             android:gravity="center"
             android:text="@string/please_login_to_your_account_or_create_new_account_to_continue"
             android:textSize="16sp" />

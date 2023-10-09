@@ -5,15 +5,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.google.firebase.auth.FirebaseAuth
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.databinding.FragmentSignUpBinding
+import com.rgbstudios.todomobile.utils.ToastManager
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import com.rgbstudios.todomobile.viewmodel.TodoViewModelFactory
 
@@ -27,6 +26,7 @@ class SignUpFragment : Fragment() {
     private val firebase = FirebaseAccess()
     private val auth = firebase.auth
     private lateinit var binding: FragmentSignUpBinding
+    private val toastManager = ToastManager()
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -48,7 +48,9 @@ class SignUpFragment : Fragment() {
             signInTv.setOnClickListener {
                 findNavController().navigate(R.id.action_signUpFragment_to_signInFragment)
             }
-            SignUpButton.setOnClickListener {
+
+            signUpButton.text = getString(R.string.register)
+            signUpButton.setOnClickListener {
                 val email = emailEt.text.toString().trim()
                 val pass = passEt.text.toString().trim()
                 val confirmPass = confirmPassEt.text.toString().trim()
@@ -60,7 +62,9 @@ class SignUpFragment : Fragment() {
                         val passwordPattern = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$"
 
                         if (pass.matches(Regex(passwordPattern))) {
+
                             progressBar.visibility = View.VISIBLE
+                            signUpButton.text = ""
                             firebase.signUp(email, pass) { signUpSuccessful, errorMessage ->
                                 if (signUpSuccessful) {
                                     // Get the user ID from Firebase Auth
@@ -70,48 +74,55 @@ class SignUpFragment : Fragment() {
                                     sharedViewModel.setUpNewUser(
                                         userId,
                                         email,
+                                        pass,
                                         requireContext(),
                                         resources,
                                         TAG
                                     ) { isSuccessful ->
                                         if (isSuccessful) {
                                             findNavController().navigate(R.id.action_signUpFragment_to_homeFragment)
-                                            Toast.makeText(
-                                                context,
+                                            toastManager.showShortToast(
+                                                requireContext(),
                                                 "Set up complete!, Let's get things done! \uD83D\uDE80",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
+                                            )
                                         } else {
                                             Log.d("SignUpFragment", "UserEntity initiation failed")
                                         }
                                     }
                                 } else {
-                                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                                    toastManager.showShortToast(
+                                        requireContext(),
+                                        errorMessage
+                                    )
                                 }
                                 progressBar.visibility = View.GONE
+                                signUpButton.text = getString(R.string.register)
                             }
                         } else {
-                            Toast.makeText(
-                                context,
+                            toastManager.showLongToast(
+                                requireContext(),
                                 "Password must be at least 8 characters long, containing uppercase, lowercase, and numbers.",
-                                Toast.LENGTH_LONG
-                            ).show()
+                            )
                         }
                     } else {
-                        Toast.makeText(
-                            context,
+                        toastManager.showShortToast(
+                            requireContext(),
                             "Passwords do not match. Please try again.",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        )
                     }
                 } else {
-                    Toast.makeText(context, "Empty fields are not allowed !!", Toast.LENGTH_SHORT)
-                        .show()
+                    toastManager.showShortToast(
+                        requireContext(),
+                        "Empty fields are not allowed !!"
+                    )
                 }
             }
 
             googleLoginButton.setOnClickListener {
-                Toast.makeText(requireContext(), "Coming soon!", Toast.LENGTH_SHORT).show()
+                toastManager.showShortToast(
+                    requireContext(),
+                    "Coming soon!"
+                )
             }
         }
     }

@@ -74,6 +74,22 @@
     <string name="delete_selected_tasks">Delete Selected Tasks?</string>
     <string name="delete_selected_tasks_body">Are you sure you want to delete these selected tasks?</string>
     <string name="multiple_tasks_to_category">Add multiple tasks to category</string>
+    <string name="or_continue_with">or continue with</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="register">Register</string>
+    <string name="don_t_have_an_account">Don’t have an account?</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="already_have_an_account">Already have an account?</string>
+    <string name="enter_your_email">Enter your Email</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="google_login">Google Login</string>
+    <string name="facebook_login">Facebook Login</string>
+    <string name="github_login">GitHub Login</string>
+    <string name="log_in_with_fingerprint">Log in with fingerprint</string>
+    <string name="deactivate_account">Deactivate Account</string>
+    <string name="general_settings">General Settings</string>
+    <string name="change_your_password">Change your password</string>
 
     <plurals name="tasks_left">
         <item quantity="one">%d Task left</item>
@@ -109,10 +125,5 @@
         <item quantity="one">Are you sure you want to delete this task?</item>
         <item quantity="other">Are you sure you want to remove these %d tasks </item>
     </plurals>
-
-
-
-
-
 
 </resources>
