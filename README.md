@@ -39,11 +39,10 @@ Contact
 - Email: rgb.mobile.studios@gmail.com
 - LinkedIn: [Oladayo Babalola](https://linkedin.com/in/oladayo-babalola-spt/)
 - GitHub: [This Profile](https://github.com/cooncudee/)
-- 
 
 Happy task management with the Awesome Todo App! 🚀
 
-
+with ❤️ from RGBStudios 🎨
 
 ![Artboard 1](https://github.com/cooncudee/TODO_Mobile/assets/66222345/70ba8906-10e1-499d-a445-7c080d1f6d84) 
 
