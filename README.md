@@ -15,7 +15,7 @@ Whether you're a student, professional, or just someone looking to keep track of
 ## Installation
 You can download the app from the Google Play Store or install it manually by following these steps:
 
-1. Download the APK from the repository's releases.
+1. [Download the APK](/app/release/TodoMobile1.3.2.apk) from the repository's releases.
 1. Enable installation from unknown sources on your Android device.
 1. Install the app by opening the APK file.
 
@@ -26,8 +26,8 @@ You can download the app from the Google Play Store or install it manually by fo
 - Personalize your profile with a custom avatar.
 
 ## Feedback and Contributions
-If you encounter any issues, have suggestions, or would like to report a bug, please open an issue.
-Feel free to contribute to the development by submitting a pull request.
+If you encounter any issues, have suggestions, or would like to report a bug, please open an [issue](/issues).
+Feel free to contribute to the development by submitting a [pull request](/pulls).
 
 License
 This project is licensed under the MIT License - see the [LICENSE](/LICENSE.md) file for details.
@@ -36,11 +36,13 @@ This project is licensed under the MIT License - see the [LICENSE](/LICENSE.md) 
 Shoutout to the open-source community for the incredible resources and support, JetBrains from the free resources, and everyone that's contributed to the building of the app. :+1: :+1:
 
 Contact
-Email: rgb.mobile.studios@gmail.com
-LinkedIn: [Oladayo Babalola](https://linkedin.com/in/oladayo-babalola-spt/)
-GitHub: [This Profile](https://github.com/cooncudee/)
+- Email: rgb.mobile.studios@gmail.com
+- LinkedIn: [Oladayo Babalola](https://linkedin.com/in/oladayo-babalola-spt/)
+- GitHub: [This Profile](https://github.com/cooncudee/)
+- 
 
 Happy task management with the Awesome Todo App! 🚀
+
 
 
 ![Artboard 1](https://github.com/cooncudee/TODO_Mobile/assets/66222345/70ba8906-10e1-499d-a445-7c080d1f6d84) 
