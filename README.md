@@ -15,7 +15,7 @@ Whether you're a student, professional, or just someone looking to keep track of
 ## Installation
 You can download the app from the Google Play Store or install it manually by following these steps:
 
-1. [Download the APK](/app/release/TodoMobile1.3.2.apk) from the repository's releases.
+1. [Download the APK](/raw/master/app/release/TodoMobile1.3.2.apk) from the repository's releases.
 1. Enable installation from unknown sources on your Android device.
 1. Install the app by opening the APK file.
 
@@ -42,8 +42,6 @@ Contact
 
 Happy task management with the Awesome Todo App! 🚀
 
-with ❤️ from RGBStudios 🎨
-
 ![Artboard 1](https://github.com/cooncudee/TODO_Mobile/assets/66222345/70ba8906-10e1-499d-a445-7c080d1f6d84) 
 
 ![Artboard 4](https://github.com/cooncudee/TODO_Mobile/assets/66222345/fbee0b0c-438b-4b42-a248-8e84314f2062) 
@@ -52,3 +50,4 @@ with ❤️ from RGBStudios 🎨
 
 ![Artboard 8](https://github.com/cooncudee/TODO_Mobile/assets/66222345/4b712ad5-893d-49dc-b0d7-519761586be5)
 
+With ❤️ from RGBStudios 🎨
