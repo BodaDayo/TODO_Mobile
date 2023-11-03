@@ -1,8 +1,7 @@
 # The TodoMobile App
-Welcome to the TodoMobile App repository! This Android app is designed to help you stay organized and manage your tasks efficiently. Whether you're a student, professional, or just someone looking to keep track of their daily tasks, this app has got you covered.
-
-![Artboard 1](https://github.com/cooncudee/TODO_Mobile/assets/66222345/70ba8906-10e1-499d-a445-7c080d1f6d84) ![Artboard 4](https://github.com/cooncudee/TODO_Mobile/assets/66222345/fbee0b0c-438b-4b42-a248-8e84314f2062) ![Artboard 6](https://github.com/cooncudee/TODO_Mobile/assets/66222345/a32cfddc-44ac-494f-80e7-1e69449c2ca5) ![Artboard 8](https://github.com/cooncudee/TODO_Mobile/assets/66222345/4b712ad5-893d-49dc-b0d7-519761586be5)
-
+Welcome to the TodoMobile App repository! 
+This Android app is designed to help you stay organized and manage your tasks efficiently. 
+Whether you're a student, professional, or just someone looking to keep track of their daily tasks, this app has got you covered.
 
 ## Features
 - **Task Management:** Create, update, and manage your tasks with ease.
@@ -31,7 +30,7 @@ If you encounter any issues, have suggestions, or would like to report a bug, pl
 Feel free to contribute to the development by submitting a pull request.
 
 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](/LICENSE.md) file for details.
 
 ## Acknowledgments
 Shoutout to the open-source community for the incredible resources and support, JetBrains from the free resources, and everyone that's contributed to the building of the app. :+1: :+1:
@@ -42,3 +41,13 @@ LinkedIn: [Oladayo Babalola](https://linkedin.com/in/oladayo-babalola-spt/)
 GitHub: [This Profile](https://github.com/cooncudee/)
 
 Happy task management with the Awesome Todo App! 🚀
+
+
+![Artboard 1](https://github.com/cooncudee/TODO_Mobile/assets/66222345/70ba8906-10e1-499d-a445-7c080d1f6d84) 
+
+![Artboard 4](https://github.com/cooncudee/TODO_Mobile/assets/66222345/fbee0b0c-438b-4b42-a248-8e84314f2062) 
+
+![Artboard 6](https://github.com/cooncudee/TODO_Mobile/assets/66222345/a32cfddc-44ac-494f-80e7-1e69449c2ca5) 
+
+![Artboard 8](https://github.com/cooncudee/TODO_Mobile/assets/66222345/4b712ad5-893d-49dc-b0d7-519761586be5)
+
