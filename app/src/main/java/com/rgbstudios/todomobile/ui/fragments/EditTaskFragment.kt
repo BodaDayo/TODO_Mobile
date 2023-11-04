@@ -366,7 +366,7 @@ class EditTaskFragment : Fragment() {
 
         if (taskDateTime.before(currentTime)) {
             // Set the date
-            val overdueTime = formattedDateTime + getString(R.string.overdue_task)
+            val overdueTime = formattedDateTime + "\n" + getString(R.string.overdue_task)
             binding.taskDateTimeView.text = overdueTime
 
             // Set the text color to R.color.poor

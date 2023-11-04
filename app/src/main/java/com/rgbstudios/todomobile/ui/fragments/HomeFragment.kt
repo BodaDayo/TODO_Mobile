@@ -95,6 +95,11 @@ class HomeFragment : Fragment(),
 
         binding.apply {
 
+            // display avatar progress bar while waiting to load image
+            avatarProgressBar.visibility = View.VISIBLE
+            overlayView.visibility = View.VISIBLE
+            tasksProgressBar.visibility = View.VISIBLE
+
             // Set up the adapter
             taskListAdapter = ListAdapter(fragmentContext, sharedViewModel)
 
@@ -366,7 +371,7 @@ class HomeFragment : Fragment(),
                             Glide.with(fragmentContext).load(File(user.avatarFilePath))
 
                         for (imageView in avatarImageViews) {
-                            imageLoad.circleCrop().into(imageView)
+                            imageLoad.into(imageView)
                         }
                     }
 
@@ -381,6 +386,10 @@ class HomeFragment : Fragment(),
                     // Set the nav drawer occupation
                     if (!user.occupation.isNullOrEmpty())
                         occupationNavDrw.text = user.occupation
+
+                    // stop loading animation
+                    overlayView.visibility = View.GONE
+                    avatarProgressBar.visibility = View.GONE
                 }
             }
 
@@ -452,6 +461,9 @@ class HomeFragment : Fragment(),
                         )
                     )
                 }
+
+                // stop loading animation
+                tasksProgressBar.visibility = View.GONE
             }
 
             // Observe task selection mode

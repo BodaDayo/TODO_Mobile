@@ -8,6 +8,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.Data
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.gson.Gson
 import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.data.entity.CategoryEntity
@@ -15,6 +17,7 @@ import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.data.entity.UserEntity
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.model.TaskList
+import com.rgbstudios.todomobile.utils.SharedPreferencesManager
 import kotlinx.coroutines.launch
 import java.util.Calendar
 import java.util.UUID
@@ -23,6 +26,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
 
     private val repository = application.repository
     private val firebase = FirebaseAccess()
+    private val sharedPreferences = SharedPreferencesManager(application)
 
     // LiveData to hold the isFirstLaunch status
     private val _isFirstLaunch = MutableLiveData<Boolean>()
@@ -31,6 +35,18 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     // LiveData to hold the isBiometricEnabled status
     private val _isBiometricEnabled = MutableLiveData<Boolean>()
     val isBiometricEnabled: LiveData<Boolean> = _isBiometricEnabled
+
+    // LiveData to hold the isBiometricEnabled status
+    private val _isGoogleConnected = MutableLiveData<Boolean>()
+    val isGoogleConnected: LiveData<Boolean> = _isGoogleConnected
+
+    // LiveData to hold the isBiometricEnabled status
+    private val _isFacebookConnected = MutableLiveData<Boolean>()
+    val isFacebookConnected: LiveData<Boolean> = _isFacebookConnected
+
+    // LiveData to hold the isBiometricEnabled status
+    private val _isTwitterConnected = MutableLiveData<Boolean>()
+    val isTwitterConnected: LiveData<Boolean> = _isTwitterConnected
 
     // LiveData to hold userEntity
     private val _currentUser = MutableLiveData<UserEntity>()
@@ -74,11 +90,22 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     private val _sortingCondition = MutableLiveData<Pair<String, Boolean>>()
     val sortingCondition: LiveData<Pair<String, Boolean>> = _sortingCondition
 
+    // LiveData to hold the condition to sort the tasks
+    private val _settingsItemSelected = MutableLiveData<String>()
+    val settingsItemSelected: LiveData<String> = _settingsItemSelected
+
+    // LiveData to hold the isBiometricEnabled status
+    private val _closeSlider = MutableLiveData<Boolean>()
+    val closeSlider: LiveData<Boolean> = _closeSlider
+
     init {
         _isFirstLaunch.value = checkIfFirstLaunch()
         _isBiometricEnabled.value = checkCheckBiometricAuthStatus()
+        checkConnectedAccounts()
         setIsSelectionModeOn(false)
-        _highlightedListName.value = ""
+        updateHighlightedListName("")
+        setSettingsItem("")
+        toggleSlider(false)
         startDatabaseListeners()
     }
 
@@ -174,6 +201,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
             }
 
             updateAuthenticationData(email, pass)
+            fetchProviders()
             callback(true)
         } catch (e: Exception) {
             firebase.recordCaughtException(e)
@@ -227,7 +255,8 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         val uncompletedTasksList = taskLists.first().list
         val completedTasksList = taskLists.last().list
 
-        val sortedTaskList = sortTaskListsByCondition(uncompletedTasksList, completedTasksList, sortingCondition)
+        val sortedTaskList =
+            sortTaskListsByCondition(uncompletedTasksList, completedTasksList, sortingCondition)
 
         _allTasksList.postValue(sortedTaskList)
         _sortingCondition.postValue(sortingCondition)
@@ -261,11 +290,14 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                         if (order) {
                             datedList.sortedWith(compareBy { it.dueDateTime }) + unDatedList.sortedBy { it.title }
                         } else {
-                            val output = unDatedList.sortedByDescending { it.title } + datedList.sortedWith(compareBy { it.dueDateTime })
+                            val output =
+                                unDatedList.sortedByDescending { it.title } + datedList.sortedWith(
+                                    compareBy { it.dueDateTime })
                             output.reversed()
                         }
                     }
             }
+
             TITLE -> {
                 if (order) {
                     // Sort by title chronologically
@@ -275,6 +307,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                     taskEntities.sortedByDescending { it.title }
                 }
             }
+
             else -> {
                 // Default sorting (no change)
                 taskEntities
@@ -567,7 +600,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     fun setIsSelectionModeOn(isItemSelected: Boolean) {
         _isSelectionModeOn.value = isItemSelected
         if (!isItemSelected) {
-            _highlightedTaskList.value = emptyList()
+            fillSelection(emptyList())
             startTasksListener()
         }
     }
@@ -575,6 +608,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     fun updateHighlightedListName(name: String) {
         _highlightedListName.value = name
     }
+
     fun toggleSelection(task: TaskEntity) {
         val highlightedList = _highlightedTaskList.value ?: emptyList()
         val currentList = mutableListOf<TaskEntity>()
@@ -586,7 +620,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
             currentList.add(task)
         }
 
-        _highlightedTaskList.value = currentList
+        fillSelection(currentList)
 
         // Set select mode state and update UI accordingly
         val isInSelectMode = currentList.isNotEmpty()
@@ -599,7 +633,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     }
 
     fun clearSelection() {
-        _highlightedTaskList.value = emptyList()
+        fillSelection(emptyList())
     }
 
     /**
@@ -704,12 +738,17 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
      *-----------------------------------------------------------------------------------------------
      */
     private fun checkIfFirstLaunch(): Boolean {
-        val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean("isFirstLaunch", true)
     }
+
     private fun checkCheckBiometricAuthStatus(): Boolean {
-        val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
         return sharedPreferences.getBoolean("isBiometricEnabled", false)
+    }
+
+    private fun checkConnectedAccounts() {
+        _isGoogleConnected.value = sharedPreferences.getBoolean("isGoogleConnected", false)
+        _isFacebookConnected.value = sharedPreferences.getBoolean("isFacebookConnected", false)
+        _isTwitterConnected.value = sharedPreferences.getBoolean("isTwitterConnected", false)
     }
 
     // Function to update the isFirstLaunch status
@@ -717,29 +756,66 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         _isFirstLaunch.value = isFirstLaunch
 
         // Store the updated isFirstLaunch status in SharedPreferences
-        val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putBoolean("isFirstLaunch", isFirstLaunch).apply()
+        sharedPreferences.putBoolean("isFirstLaunch", isFirstLaunch)
     }
 
     fun updateIsBiometricEnabled(isBiometricEnabled: Boolean) {
         _isBiometricEnabled.value = isBiometricEnabled
 
         // Store the updated isBiometricEnabled status in SharedPreferences
-        val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putBoolean("isBiometricEnabled", isBiometricEnabled).apply()
+        sharedPreferences.putBoolean("isBiometricEnabled", isBiometricEnabled)
     }
 
     private fun updateAuthenticationData(email: String, pass: String) {
         // Store the updated authentication data in SharedPreferences
-        val sharedPreferences = application.getSharedPreferences("TODOMobilePrefs", Context.MODE_PRIVATE)
-        sharedPreferences.edit().putString("email", email).apply()
-        sharedPreferences.edit().putString("pass", pass).apply()
+        sharedPreferences.putString("email", email)
+        sharedPreferences.putString("pass", pass)
+    }
+
+    fun upDateConnectedAccount(account: Int, isConnected: Boolean) {
+
+        when (account) {
+            1 -> {
+                sharedPreferences.putBoolean("isGoogleConnected", isConnected)
+            }
+
+            2 -> {
+                sharedPreferences.putBoolean("isFacebookConnected", isConnected)
+            }
+
+            3 -> {
+                sharedPreferences.putBoolean("isTwitterConnected", isConnected)
+            }
+        }
+        checkConnectedAccounts()
+    }
+
+    fun updateWebClientId(webClientId: String) {
+        sharedPreferences.putString("webClientId", webClientId)
+    }
+
+    private fun fetchProviders() {
+        firebase.fetchSignInMethodsForUser { providersList ->
+            if (providersList != null) {
+                sharedPreferences.putBoolean("isGoogleConnected", providersList.contains("google"))
+                sharedPreferences.putBoolean(
+                    "isFacebookConnected",
+                    providersList.contains("facebook")
+                )
+                sharedPreferences.putBoolean(
+                    "isTwitterConnected",
+                    providersList.contains("twitter")
+                )
+            }
+            checkConnectedAccounts()
+        }
     }
 
     fun logOut(callback: (Boolean, String?) -> Unit) {
 
         firebase.logOut { logOutSuccessful, errorMessage ->
             if (logOutSuccessful) {
+                disconnectProviders()
                 firebase.addLog("sign out successful")
 
                 // Store reference to the current user's Id before returning
@@ -755,11 +831,31 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         }
     }
 
+    private fun disconnectProviders() {
+        val webClientId = sharedPreferences.getString("webClientId", "")
+
+        if (webClientId != "") {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(webClientId)
+                .requestEmail()
+                .build()
+
+            val googleSignInClient = GoogleSignIn.getClient(application.applicationContext, gso)
+            googleSignInClient.signOut()
+        }
+    }
+
+    fun setSettingsItem(item: String) {
+        _settingsItemSelected.value = item
+    }
+
     private fun resetLists() {
         setIsSelectionModeOn(false)
-        _isSelectionModeOn.value = false
-        _highlightedListName.value = ""
-        _highlightedTaskList.value = emptyList()
+        setIsSelectionModeOn(false)
+        updateHighlightedListName("")
+        setSettingsItem("")
+        toggleSlider(false)
+        fillSelection(emptyList())
         _selectedTaskCategories.value = emptyList()
     }
 
@@ -777,6 +873,10 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         return gson.toJson(categories)
     }
 
+    fun toggleSlider(toClose: Boolean) {
+        _closeSlider.value = toClose
+    }
+
     /**
      *-----------------------------------------------------------------------------------------------
      */
@@ -789,6 +889,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         private const val UNCOMPLETED = "uncompleted"
         private const val NEWDATAJSON = "newDataJson"
         private const val SIGNUP = "SignUpFragment"
+        private const val SIGNIN = "SignInFragment"
         private const val NULL = "null"
         private const val NAME = "name"
         private const val OCCUPATION = "occupation"

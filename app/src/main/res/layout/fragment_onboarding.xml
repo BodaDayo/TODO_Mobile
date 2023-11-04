@@ -63,28 +63,91 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <ImageView
-                android:id="@+id/circle1"
-                android:layout_width="12dp"
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="wrap_content"
                 android:layout_height="12dp"
-                android:layout_marginEnd="8dp"
-                android:src="@drawable/pager_circle"
-                app:tint="?attr/colorSurfaceVariant" />
+                android:layout_marginEnd="8dp">
 
-            <ImageView
-                android:id="@+id/circle2"
-                android:layout_width="12dp"
-                android:layout_height="12dp"
-                android:layout_marginEnd="8dp"
-                android:src="@drawable/pager_circle"
-                app:tint="?attr/colorSurfaceVariant" />
+                <View
+                    android:id="@+id/circle1b"
+                    android:layout_width="24dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/pager_stroke"
+                    app:tint="?attr/colorPrimary"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
 
-            <ImageView
-                android:id="@+id/circle3"
-                android:layout_width="12dp"
+                <ImageView
+                    android:id="@+id/circle1"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/pager_circle"
+                    app:tint="?attr/colorSurfaceVariant"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="wrap_content"
                 android:layout_height="12dp"
-                android:src="@drawable/pager_circle"
-                app:tint="?attr/colorPrimary" />
+                android:layout_marginEnd="8dp">
+
+                <ImageView
+                    android:id="@+id/circle2b"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/pager_circle"
+                    app:tint="?attr/colorPrimary"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <ImageView
+                    android:id="@+id/circle2"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/pager_circle"
+                    app:tint="?attr/colorSurfaceVariant"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="wrap_content"
+                android:layout_gravity="start"
+                android:layout_height="12dp">
+
+                <View
+                    android:id="@+id/circle3b"
+                    android:layout_width="24dp"
+                    android:layout_height="8dp"
+                    android:background="@drawable/pager_stroke"
+                    app:tint="?attr/colorPrimary"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+
+                <ImageView
+                    android:id="@+id/circle3"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/pager_circle"
+                    app:tint="?attr/colorSurfaceVariant"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
     </LinearLayout>
 

@@ -20,7 +20,7 @@
     <string name="sure_response">Yes, I\'m sure</string>
     <string name="navigation_drawer_open">open</string>
     <string name="navigation_drawer_close">close</string>
-    <string name="password_hint">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</string>
+    <string name="password_hint">&#8226; &#8226; &#8226; &#8226; &#8226; &#8226; &#8226; &#8226;</string>
     <string name="discard_changes">Discard Changes</string>
     <string name="tasks_completed">All tasks completed</string>
     <string name="well_done">Well done!</string>
@@ -57,7 +57,7 @@
     <string name="categories">Categories</string>
     <string name="add_multiple_tasks">Add Multiple Tasks</string>
     <string name="calender_view">Calender view</string>
-    <string name="back_button">Back button</string>
+    <string name="back_button">Pop back</string>
     <string name="task">Task</string>
     <string name="task_time">Task Time</string>
     <string name="task_category">Task Category</string>
@@ -90,6 +90,16 @@
     <string name="deactivate_account">Deactivate Account</string>
     <string name="general_settings">General Settings</string>
     <string name="change_your_password">Change your password</string>
+    <string name="remove">Remove</string>
+    <string name="connect">Connect</string>
+    <string name="complete_account_set_up">Complete Account Set Up</string>
+    <string name="enter_email">Enter email</string>
+    <string name="connected_accounts">Connected Accounts</string>
+    <string name="change_app_theme">Change App Theme</string>
+    <string name="change_your_email">Change your email</string>
+    <string name="current_password">Current password</string>
+    <string name="new_password">New password</string>
+    <string name="update_password">Update password</string>
 
     <plurals name="tasks_left">
         <item quantity="one">%d Task left</item>

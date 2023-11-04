@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:scrollbars="none"
     tools:context=".ui.fragments.SignUpFragment">
 
     <LinearLayout
@@ -257,18 +258,17 @@
 
             <!-- GitHub Login Button -->
             <ImageView
-                android:id="@+id/githubLoginButton"
+                android:id="@+id/twitterLoginButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
                 android:background="@drawable/circular_surface_background"
                 android:clickable="true"
-                android:contentDescription="@string/github_login"
                 android:elevation="@dimen/cardview_default_elevation"
                 android:focusable="true"
                 android:padding="16dp"
                 android:scaleType="center"
-                android:src="@drawable/github" />
+                android:src="@drawable/twitter" />
 
             <Space
                 android:layout_width="wrap_content"

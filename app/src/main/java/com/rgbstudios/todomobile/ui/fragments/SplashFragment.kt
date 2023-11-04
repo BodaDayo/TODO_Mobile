@@ -93,10 +93,6 @@ class SplashFragment : Fragment() {
     }
 
     private fun checkNetworkConnectivity() {
-        if (!isAdded) {
-            // Fragment is not attached to an activity, do nothing.
-            return
-        }
 
         // Get the ConnectivityManager instance
         val connectivityManager =
@@ -113,7 +109,7 @@ class SplashFragment : Fragment() {
             // There is no internet connection
             toastManager.showLongToast(
                 requireContext(),
-                "No connection.\nSome features might be unavailable"
+                "No internet connection.\nSome features might be unavailable"
             )
         }
     }

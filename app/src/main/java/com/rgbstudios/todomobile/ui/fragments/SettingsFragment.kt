@@ -2,10 +2,14 @@ package com.rgbstudios.todomobile.ui.fragments
 
 import android.content.Context
 import android.content.res.ColorStateList
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
@@ -15,9 +19,9 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.slidingpanelayout.widget.SlidingPaneLayout
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
-import com.rgbstudios.todomobile.databinding.FragmentEditTaskBinding
 import com.rgbstudios.todomobile.databinding.FragmentSettingsBinding
 import com.rgbstudios.todomobile.ui.adapters.CategoryColorAdapter
 import com.rgbstudios.todomobile.utils.ColorManager
@@ -25,7 +29,6 @@ import com.rgbstudios.todomobile.utils.DialogManager
 import com.rgbstudios.todomobile.utils.ToastManager
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import java.util.concurrent.Executor
-
 
 class SettingsFragment : Fragment() {
 
@@ -36,16 +39,11 @@ class SettingsFragment : Fragment() {
     private val toastManager = ToastManager()
     private val firebase = FirebaseAccess()
     private val thisFragment = this
-    private val colorManager = ColorManager()
-    private val colors = colorManager.getAllColors()
-    private val colorList = mutableListOf(PRIMARY)
     private lateinit var executor: Executor
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var promptInfo: PromptInfo
+    private var isSlidingPaneLayoutOpen = false
 
-
-    // Variable to store the selected color
-    var selectedThemeColor: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -59,43 +57,40 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Add the list of colors to the default primary color
-        colorList.addAll(colors)
-
         binding.apply {
+
+            // Lock the SlidingPaneLayout
+            slider.lockMode = SlidingPaneLayout.LOCK_MODE_LOCKED
+
+            sharedViewModel.closeSlider.observe(viewLifecycleOwner) { toClose ->
+                if (toClose) {
+                    slider.closePane()
+                    isSlidingPaneLayoutOpen = false
+                }
+            }
+
             // Check if biometric authentication is enabled
             val isBiometricEnabled = sharedViewModel.isBiometricEnabled.value ?: false
 
             fingerprintSwitch.isChecked = isBiometricEnabled
 
-            val themeColorAdapter =
-                CategoryColorAdapter(
-                    colorList,
-                    colorManager,
-                    object : CategoryColorAdapter.ColorClickListener {
-                        override fun onColorClick(colorIdentifier: String) {
-                            // Handle the color click event and update the selected color
-                            selectedThemeColor = colorIdentifier
-                            appThemeColorLayout.visibility = View.GONE
+            completeSetUpLayout.setOnClickListener {
+                openDetailsPane("completeSetUp")
+            }
 
-                            // Set the background for categoryColorView
-                            themeColorView.setBackgroundResource(R.drawable.circular_primary_background)
+            changePassLayout.setOnClickListener {
+                openDetailsPane("changePass")
+            }
 
-                            val colorPair = colorManager.getColorMapping(colorIdentifier)
+            connectedAccLayout.setOnClickListener {
+                openDetailsPane("connectedAcc")
+            }
 
-                            // Set the background tint for categoryColorView
-                            themeColorView.backgroundTintList = ColorStateList.valueOf(
-                                ContextCompat.getColor(fragmentContext, colorPair.second))
-                        }
-                    }
-                )
-            appThemeColorRecyclerView.layoutManager =
-                LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+            changeEmailLayout.setOnClickListener {
+                toastManager.showShortToast(requireContext(), "Coming soon")
+                //Todo show dialog
+            }
 
-            // Set the adapter for the colorRecyclerView
-            appThemeColorRecyclerView.adapter = themeColorAdapter
-
-            // Set an OnCheckedChangeListener to handle switch events
             fingerprintSwitch.setOnCheckedChangeListener { _, isChecked ->
                 // Handle the switch state change (isChecked)
                 if (isChecked) {
@@ -108,11 +103,63 @@ class SettingsFragment : Fragment() {
                 }
             }
 
+            deleteAccLayout.setOnClickListener {
+                toastManager.showShortToast(requireContext(), "Coming soon")
+                // openDetailsPane("deleteAcc")
+            }
+
             changeAppThemeLayout.setOnClickListener {
-                appThemeColorLayout.visibility = View.VISIBLE
+                openDetailsPane("changeAppTheme")
+            }
+
+            timeFormatLayout.setOnClickListener {
+                toastManager.showShortToast(requireContext(), "Coming soon")
+                //Todo show dialog
+            }
+
+            defaultViewLayout.setOnClickListener {
+                toastManager.showShortToast(requireContext(), "Coming soon")
+                //Todo show dialog
+            }
+
+            keepTasksLayout.setOnClickListener {
+                toastManager.showShortToast(requireContext(), "Coming soon")
+                //Todo show dialog
+            }
+
+            popBack.setOnClickListener {
+                popBackStackManager()
+            }
+
+            requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
+                popBackStackManager()
             }
         }
 
+    }
+
+    private fun openDetailsPane(item: String) {
+        sharedViewModel.setSettingsItem(item)
+        sharedViewModel.toggleSlider(false)
+
+        // Replace the details pane with the details fragment
+        val detailsFragment = SettingsDetailsFragment()
+        childFragmentManager.beginTransaction()
+            .replace(R.id.settingsDetails, detailsFragment)
+            .commit()
+
+        // Open the details pane
+        binding.slider.openPane()
+        isSlidingPaneLayoutOpen = true
+    }
+
+    private fun popBackStackManager() {
+        if (isSlidingPaneLayoutOpen) {
+            sharedViewModel.toggleSlider(true)
+        } else {
+            // If no changes, simply pop back stack
+            activity?.supportFragmentManager?.popBackStack()
+        }
     }
 
     private fun checkDeviceHasBiometric() {
@@ -172,6 +219,6 @@ class SettingsFragment : Fragment() {
     }
 
     companion object {
-        private const val PRIMARY = "primary"
+        private const val TAG = "SettingsFragment"
     }
 }

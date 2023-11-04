@@ -57,6 +57,8 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:hint="@string/type_title"
+            android:inputType="text"
+            android:paddingVertical="12dp"
             android:importantForAutofill="no"
             android:textSize="18sp" />
 
@@ -72,6 +74,8 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:gravity="start"
+            android:inputType="textMultiLine"
+            android:paddingVertical="12dp"
             android:hint="@string/type_description"
             android:importantForAutofill="no"
             android:maxLines="3" />
@@ -104,7 +108,7 @@
             android:id="@+id/taskDateTimeView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:gravity="end"
             android:padding="8sp"
             android:textSize="12sp"
             tools:text="Today At 18:00" />
