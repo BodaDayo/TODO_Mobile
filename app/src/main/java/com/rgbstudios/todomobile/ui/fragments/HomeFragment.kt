@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.PorterDuff
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -13,7 +12,6 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
 import androidx.appcompat.widget.SearchView
@@ -42,7 +40,6 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-
 
 class HomeFragment : Fragment(),
     OnNavigationItemSelectedListener {
@@ -136,7 +133,6 @@ class HomeFragment : Fragment(),
                             }
 
                             bottomSheetFragment.dismiss()
-
                         }
                     }
 
@@ -199,6 +195,39 @@ class HomeFragment : Fragment(),
 
             // Set up LiveData Observers
             observeLiveData()
+
+// ----------------------------------------------------------------------------------------------------
+            // Set up notification badges
+
+            // Access the menu
+            val navigationView = binding.navigationView
+            val menu = navigationView.menu
+
+            // Find the menu item you want to add a badge to
+            val settingMenuItem = menu.findItem(R.id.settings)
+
+            // Inflate a custom layout for the action view (badge)
+            val badgeLayout = layoutInflater.inflate(R.layout.notification_badge, navigationView, false)
+
+            // Set the action view for the menu item
+            settingMenuItem.actionView = badgeLayout
+
+            // Reference the badge view within the action view
+            val notificationBadge = badgeLayout.findViewById<ImageView>(R.id.notification_badge)
+
+            // Update the visibility of settings badge based on authState
+            sharedViewModel.isEmailAuthSet.observe(viewLifecycleOwner) { emailAuthIsSet ->
+                if (emailAuthIsSet) {
+                    notificationBadge.visibility = View.GONE
+                    avatarHomeNB.visibility = View.GONE
+                } else {
+                    notificationBadge.visibility = View.VISIBLE
+                    avatarHomeNB.visibility = View.VISIBLE
+                }
+            }
+
+// ----------------------------------------------------------------------------------------------------
+
         }
     }
 
@@ -827,12 +856,14 @@ class HomeFragment : Fragment(),
                 .setPrimaryText("Welcome to TodoMobile!")
                 .setSecondaryText("Tap here to create a new task.")
                 .setAutoDismiss(false)
+                .setBackgroundColour(ContextCompat.getColor(requireContext(), R.color.myPrimary))
 
             val tapTarget2 = MaterialTapTargetPrompt.Builder(requireActivity())
                 .setTarget(avatarHomeOverlay)
                 .setPrimaryText("Profile Image")
                 .setSecondaryText("Tap here or swipe right from the edge of the screen to access the navigation drawer.")
                 .setAutoDismiss(false)
+                .setBackgroundColour(ContextCompat.getColor(requireContext(), R.color.myPrimary))
 
             val tapTarget3 = MaterialTapTargetPrompt.Builder(requireActivity())
                 .setTarget(moreOptionsOverlay)
@@ -840,6 +871,7 @@ class HomeFragment : Fragment(),
                 .setSecondaryText("Access more features here")
                 .setAutoDismiss(false)
                 .setAutoFinish(true)
+                .setBackgroundColour(ContextCompat.getColor(requireContext(), R.color.myPrimary))
 
             tapTarget1.setPromptStateChangeListener { _, state ->
                 if (state == MaterialTapTargetPrompt.STATE_FOCAL_PRESSED) {

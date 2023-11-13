@@ -1,15 +1,11 @@
 package com.rgbstudios.todomobile.ui.fragments
 
 import android.content.Context
-import android.content.res.ColorStateList
-import android.net.ConnectivityManager
-import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
@@ -18,14 +14,12 @@ import androidx.biometric.BiometricPrompt.PromptInfo
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.slidingpanelayout.widget.SlidingPaneLayout
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.databinding.FragmentSettingsBinding
-import com.rgbstudios.todomobile.ui.adapters.CategoryColorAdapter
-import com.rgbstudios.todomobile.utils.ColorManager
 import com.rgbstudios.todomobile.utils.DialogManager
+import com.rgbstudios.todomobile.utils.SharedPreferencesManager
 import com.rgbstudios.todomobile.utils.ToastManager
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import java.util.concurrent.Executor
@@ -44,7 +38,6 @@ class SettingsFragment : Fragment() {
     private lateinit var promptInfo: PromptInfo
     private var isSlidingPaneLayoutOpen = false
 
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -56,6 +49,10 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val sharedPreferences = SharedPreferencesManager(requireContext())
+
+        val storedPass = sharedPreferences.getString("pass", "")
 
         binding.apply {
 
@@ -73,6 +70,16 @@ class SettingsFragment : Fragment() {
             val isBiometricEnabled = sharedViewModel.isBiometricEnabled.value ?: false
 
             fingerprintSwitch.isChecked = isBiometricEnabled
+
+            sharedViewModel.isEmailAuthSet.observe(viewLifecycleOwner) { emailAuthIsSet ->
+                if (emailAuthIsSet) {
+                    completeSetUpLayout.visibility = View.GONE
+                    completeNB.visibility = View.GONE
+                } else {
+                    completeSetUpLayout.visibility = View.VISIBLE
+                    completeNB.visibility = View.VISIBLE
+                }
+            }
 
             completeSetUpLayout.setOnClickListener {
                 openDetailsPane("completeSetUp")
@@ -94,7 +101,12 @@ class SettingsFragment : Fragment() {
             fingerprintSwitch.setOnCheckedChangeListener { _, isChecked ->
                 // Handle the switch state change (isChecked)
                 if (isChecked) {
-                    checkDeviceHasBiometric()
+                    if (storedPass.isNotBlank()) {
+                        checkDeviceHasBiometric()
+                    } else {
+                        toastManager.showShortToast(requireContext(), "Sign in with email/password to enable Biometric Authentication!")
+                        fingerprintSwitch.isChecked = false
+                    }
                 } else {
                     toastManager.showShortToast(requireContext(), "Biometric authentication disabled.")
 
@@ -193,6 +205,7 @@ class SettingsFragment : Fragment() {
                 if (errString != "Cancel") {
                     toastManager.showShortToast(requireContext(), "Biometric authentication set up error: $errString")
                 }
+                binding.fingerprintSwitch.isChecked = false
             }
 
             override fun onAuthenticationFailed() {

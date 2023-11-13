@@ -1,19 +1,14 @@
 package com.rgbstudios.todomobile.data.remote
 
 
-import android.content.Context
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
-import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.crashlytics.ktx.crashlytics
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import com.rgbstudios.todomobile.R
 
 class FirebaseAccess {
 
@@ -62,7 +57,8 @@ class FirebaseAccess {
         val user = auth.currentUser
         val email = user?.email
 
-        if (email != null) {// Check if the email is associated with any user account
+        if (email != null) {
+            // Check if the email is associated with any user account
             auth.fetchSignInMethodsForEmail(email)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {

@@ -10,7 +10,7 @@
     android:paddingHorizontal="16dp"
     android:paddingTop="32sp">
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/avatarNavDrw"
         android:layout_width="72sp"
         android:layout_height="72sp"

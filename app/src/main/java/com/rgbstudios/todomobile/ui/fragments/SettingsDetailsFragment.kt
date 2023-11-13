@@ -2,7 +2,6 @@ package com.rgbstudios.todomobile.ui.fragments
 
 import android.app.Activity
 import android.content.Context
-import android.content.res.ColorStateList
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
@@ -15,17 +14,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.GoogleAuthProvider
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.databinding.FragmentSettingsDetailsBinding
 import com.rgbstudios.todomobile.ui.adapters.AppThemeAdapter
-import com.rgbstudios.todomobile.ui.adapters.CategoryColorAdapter
 import com.rgbstudios.todomobile.utils.ColorManager
 import com.rgbstudios.todomobile.utils.DialogManager
 import com.rgbstudios.todomobile.utils.ToastManager
@@ -185,10 +183,30 @@ class SettingsDetailsFragment() : Fragment() {
                     if (pass.matches(Regex(passwordPattern))) {
 
                         progressBar.visibility = View.VISIBLE
-                        // updateEmail(email)
-                        // link if successful
 
-                        toastManager.showShortToast(requireContext(), "$email: implementation coming soon")
+                        val user = firebase.auth.currentUser
+
+                        // Link email/password credentials with the Google signed-in user
+                        val credential = EmailAuthProvider.getCredential(email, pass)
+                        user?.linkWithCredential(credential)
+                            ?.addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    // User successfully set up email and password
+                                    toastManager.showShortToast(
+                                        requireContext(),
+                                        "Email and password setup successful!"
+                                    )
+
+                                    sharedViewModel.updateAuthProviderState(true)
+                                    sharedViewModel.toggleSlider(true)
+                                } else {
+                                    // Linking credentials fails
+                                    toastManager.showShortToast(
+                                        requireContext(),
+                                        "Failed to to set up email and password, ${task.exception?.message?.substringAfter(": ")}"
+                                    )
+                                }
+                            }
 
                         progressBar.visibility = View.GONE
                     } else {
@@ -209,9 +227,6 @@ class SettingsDetailsFragment() : Fragment() {
                     "Empty fields are not allowed !!"
                 )
             }
-
-            sharedViewModel.toggleSlider(true)
-            // Todo Here
         }
     }
 
@@ -261,7 +276,8 @@ class SettingsDetailsFragment() : Fragment() {
                 if (account != null) {
                     // Link the Google credential to the current Firebase user
                     val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                    firebase.auth.currentUser?.linkWithCredential(credential)
+                    val currentUser = firebase.auth.currentUser
+                    currentUser?.linkWithCredential(credential)
                         ?.addOnCompleteListener { task ->
                             if (task.isSuccessful) {
                                 // Linked successfully

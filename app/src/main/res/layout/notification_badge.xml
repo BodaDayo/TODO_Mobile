@@ -1,0 +1,8 @@
+<!-- notification_badge.xml -->
+<ImageView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/notification_badge"
+    android:layout_width="8dp"
+    android:layout_height="8dp"
+    android:background="@drawable/circular_primary_background"
+    android:backgroundTint="@color/myAccent"/>

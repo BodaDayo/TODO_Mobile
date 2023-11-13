@@ -74,15 +74,22 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="16dp"
                         android:contentDescription="@null"
-                        app:tint="?attr/colorPrimary"
                         android:src="@drawable/avatar" />
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:textColor="?attr/colorPrimary"
                         android:text="@string/complete_account_set_up" />
+
+                    <ImageView
+                        android:id="@+id/completeNB"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_gravity="top"
+                        android:background="@drawable/circular_primary_background"
+                        android:backgroundTint="@color/myAccent"
+                        android:visibility="gone"/>
 
                     <ImageView
                         android:id="@+id/completePaneToggle"
@@ -118,6 +125,15 @@
                         android:text="@string/change_your_password" />
 
                     <ImageView
+                        android:id="@+id/changeNB"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_gravity="top"
+                        android:background="@drawable/circular_primary_background"
+                        android:backgroundTint="@color/myAccent"
+                        android:visibility="gone"/>
+
+                    <ImageView
                         android:id="@+id/changePassPaneToggle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -149,6 +165,15 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/connected_accounts" />
+
+                    <ImageView
+                        android:id="@+id/connectedAccNB"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_gravity="top"
+                        android:background="@drawable/circular_primary_background"
+                        android:backgroundTint="@color/myAccent"
+                        android:visibility="gone"/>
 
                     <ImageView
                         android:id="@+id/connectedAccPaneToggle"
@@ -211,7 +236,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Log in with fingerprint" />
+                        android:text="@string/log_in_with_fingerprint" />
 
                     <com.google.android.material.switchmaterial.SwitchMaterial
                         android:id="@+id/fingerprintSwitch"
@@ -284,6 +309,15 @@
                         android:text="@string/change_app_theme" />
 
                     <ImageView
+                        android:id="@+id/appThemeNB"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:layout_gravity="top"
+                        android:background="@drawable/circular_primary_background"
+                        android:backgroundTint="@color/myAccent"
+                        android:visibility="gone"/>
+
+                    <ImageView
                         android:id="@+id/appThemeToggle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -320,12 +354,12 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Time format" />
+                            android:text="@string/time_format" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="12-hour"
+                            android:text="@string/_12_hour"
                             android:textColor="@color/my_darker_grey" />
 
                     </LinearLayout>
@@ -356,12 +390,12 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Default view on start" />
+                            android:text="@string/default_view_on_start" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Task view"
+                            android:text="@string/task_view"
                             android:textColor="@color/my_darker_grey" />
 
                     </LinearLayout>
@@ -392,12 +426,12 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Keep completed tasks for" />
+                            android:text="@string/keep_completed_tasks_for" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="2 weeks"
+                            android:text="@string/_2_weeks"
                             android:textColor="@color/my_darker_grey" />
 
                     </LinearLayout>
@@ -407,7 +441,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="Notifications"
+                    android:text="@string/notifications"
                     android:textColor="@color/my_darker_grey" />
 
                 <LinearLayout
@@ -435,12 +469,12 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Sound" />
+                            android:text="@string/sound" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Default (Ring)"
+                            android:text="@string/default_ring"
                             android:textColor="@color/my_darker_grey" />
 
                     </LinearLayout>
@@ -472,12 +506,12 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Vibration" />
+                            android:text="@string/vibration" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Disabled"
+                            android:text="@string/disabled"
                             android:textColor="@color/my_darker_grey" />
 
                     </LinearLayout>

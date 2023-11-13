@@ -3,6 +3,7 @@ package com.rgbstudios.todomobile.viewmodel
 import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
+import android.net.Uri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -10,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.Data
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.gson.Gson
 import com.rgbstudios.todomobile.TodoMobileApplication
 import com.rgbstudios.todomobile.data.entity.CategoryEntity
@@ -98,9 +100,14 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     private val _closeSlider = MutableLiveData<Boolean>()
     val closeSlider: LiveData<Boolean> = _closeSlider
 
+    // LiveData to hold the isEmailAuthSet status
+    private val _isEmailAuthSet = MutableLiveData<Boolean>()
+    val isEmailAuthSet: LiveData<Boolean> = _isEmailAuthSet
+
     init {
         _isFirstLaunch.value = checkIfFirstLaunch()
-        _isBiometricEnabled.value = checkCheckBiometricAuthStatus()
+        _isBiometricEnabled.value = checkBiometricAuthStatus()
+        _isEmailAuthSet.value = checkEmailAuthStatus()
         checkConnectedAccounts()
         setIsSelectionModeOn(false)
         updateHighlightedListName("")
@@ -176,16 +183,19 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         context: Context,
         resources: Resources,
         sender: String,
+        extractedDetails: Pair<String, Uri?>?,
         callback: (Boolean) -> Unit
     ) {
         try {
             viewModelScope.launch {
                 // Get the avatar data
-                val userAvatarData = repository.getAvatar(userId, sender, context, resources)
-
+                val userAvatarData = repository.getAvatar(
+                    userId, sender, context, resources,
+                    extractedDetails?.second
+                )
 
                 val result =
-                    repository.setUpNewUserInDatabase(userId, email, userAvatarData, sender)
+                    repository.setUpNewUserInDatabase(userId, email, userAvatarData, sender, extractedDetails?.first)
                 val newUser = result.first
                 val categories = result.second
                 firebase.setUserId(newUser.userId)
@@ -202,6 +212,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
 
             updateAuthenticationData(email, pass)
             fetchProviders()
+            updateAuthState()
             callback(true)
         } catch (e: Exception) {
             firebase.recordCaughtException(e)
@@ -733,7 +744,6 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         }
     }
 
-
     /**
      *-----------------------------------------------------------------------------------------------
      */
@@ -741,14 +751,25 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         return sharedPreferences.getBoolean("isFirstLaunch", true)
     }
 
-    private fun checkCheckBiometricAuthStatus(): Boolean {
+    private fun checkBiometricAuthStatus(): Boolean {
         return sharedPreferences.getBoolean("isBiometricEnabled", false)
+    }
+
+    private fun checkEmailAuthStatus(): Boolean {
+        return sharedPreferences.getBoolean("isEmailAuthSet", true)
     }
 
     private fun checkConnectedAccounts() {
         _isGoogleConnected.value = sharedPreferences.getBoolean("isGoogleConnected", false)
         _isFacebookConnected.value = sharedPreferences.getBoolean("isFacebookConnected", false)
         _isTwitterConnected.value = sharedPreferences.getBoolean("isTwitterConnected", false)
+    }
+
+    private fun updateAuthState() {
+        val user = firebase.auth.currentUser
+        user?.let {
+            updateAuthProviderState(user.providerData.any { it.providerId == EmailAuthProvider.PROVIDER_ID })
+        }
     }
 
     // Function to update the isFirstLaunch status
@@ -764,6 +785,13 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
 
         // Store the updated isBiometricEnabled status in SharedPreferences
         sharedPreferences.putBoolean("isBiometricEnabled", isBiometricEnabled)
+    }
+
+    fun updateAuthProviderState(emailAuthSet: Boolean) {
+        _isEmailAuthSet.value = emailAuthSet
+
+        // Store the updated isBiometricEnabled status in SharedPreferences
+        sharedPreferences.putBoolean("isEmailAuthSet", emailAuthSet)
     }
 
     private fun updateAuthenticationData(email: String, pass: String) {
@@ -857,6 +885,9 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         toggleSlider(false)
         fillSelection(emptyList())
         _selectedTaskCategories.value = emptyList()
+        updateIsBiometricEnabled(false)
+        updateAuthProviderState(true)
+        updateAuthenticationData("", "")
     }
 
     /**

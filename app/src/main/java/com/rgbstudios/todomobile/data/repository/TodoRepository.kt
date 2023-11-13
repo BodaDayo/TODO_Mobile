@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
@@ -80,14 +81,18 @@ class TodoRepository(
         userId: String,
         email: String,
         userAvatarData: String?,
-        sender: String
+        sender: String,
+        nameFromAuth: String?
     ): Pair<UserEntity, List<CategoryEntity>> {
         return withContext(Dispatchers.IO) {
             try {
-
                 // Determine name and occupation based on sender
-                val (name, occupation) = when (sender) {
-                    "SignInFragment" -> {
+                val (name, occupation) = when {
+                    nameFromAuth != null -> {
+                        Pair(nameFromAuth, null)
+                    }
+
+                    sender == "SignInFragment" -> {
                         val userDetails = importUserDetails(userId)
                         Pair(userDetails?.getOrNull(0), userDetails?.getOrNull(1))
                     }
@@ -322,9 +327,24 @@ class TodoRepository(
         userId: String,
         sender: String,
         context: Context,
-        resources: Resources
+        resources: Resources,
+        uriFromAuth: Uri?
     ): String? {
-        val avatarBitmap: Bitmap = if (sender == SIGNUP) {
+        val avatarBitmap: Bitmap = if (uriFromAuth != null) {
+            try {
+                // Convert the URI to a Bitmap using Glide
+                withContext(Dispatchers.IO) {
+                    Glide.with(context)
+                        .asBitmap()
+                        .load(uriFromAuth)
+                        .submit()
+                        .get()
+                }
+            } catch (e: Exception) {
+                firebase.recordCaughtException(e)
+                return null
+            }
+        } else if (sender == SIGNUP) {
             // Get the drawable resource ID of a random avatar
             val avatarResource = avatars.defaultAvatar
 

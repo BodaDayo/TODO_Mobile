@@ -1,6 +1,7 @@
 package com.rgbstudios.todomobile.ui.fragments
 
 import android.app.Activity
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -16,6 +17,9 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.recaptcha.RecaptchaAction.Companion.SIGNUP
+import com.google.firebase.auth.AuthCredential
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
@@ -69,6 +73,11 @@ class SignInFragment : Fragment() {
 
     private fun registerEvents() {
 
+        val sharedPreferences = SharedPreferencesManager(requireContext())
+
+        val storedEmail = sharedPreferences.getString("email", "")
+        val storedPass = sharedPreferences.getString("pass", "")
+
         binding.apply {
             signUpTv.setOnClickListener {
                 findNavController().navigate(R.id.action_signInFragment_to_signUpFragment)
@@ -86,28 +95,7 @@ class SignInFragment : Fragment() {
                     loginButton.text = ""
                     firebase.signIn(email, pass) { signInSuccessful, errorMessage ->
                         if (signInSuccessful) {
-                            // Get the user ID from Firebase Auth
-                            val userId = auth.currentUser?.uid ?: ""
-
-                            // Send new user details to repository
-                            sharedViewModel.setUpNewUser(
-                                userId,
-                                email,
-                                pass,
-                                requireContext(),
-                                resources,
-                                TAG
-                            ) { isSuccessful ->
-                                if (isSuccessful) {
-                                    navigateToHomeFragment()
-                                    toastManager.showShortToast(
-                                        requireContext(),
-                                        "Set up complete!, Let's get things done! \uD83D\uDE80"
-                                    )
-                                } else {
-                                    Log.d("SignUpFragment", "UserEntity initiation failed")
-                                }
-                            }
+                            progressWithSignIn(email, pass)
                         } else {
                             toastManager.showShortToast(
                                 requireContext(),
@@ -131,13 +119,17 @@ class SignInFragment : Fragment() {
             }
 
             fingerprintButton.setOnClickListener {
-                showBiometricListener()
+                showBiometricListener(storedEmail, storedPass)
                 createPromptInfo()
                 biometricPrompt.authenticate(promptInfo)
             }
 
             // Check if biometric authentication is enabled
-            val isBiometricEnabled = sharedViewModel.isBiometricEnabled.value ?: false
+            val isBiometricEnabled = if (storedPass.isNotBlank()) {
+                sharedViewModel.isBiometricEnabled.value == true
+            } else {
+                false
+            }
 
             if (isBiometricEnabled) {
                 fingerprintLayout.visibility = View.VISIBLE
@@ -145,10 +137,61 @@ class SignInFragment : Fragment() {
                 fingerprintLayout.visibility = View.GONE
             }
         }
-
     }
 
-    private fun showBiometricListener() {
+    private fun progressWithSignIn(email: String, pass: String) {
+        // Get the user ID from Firebase Auth
+        val userId = auth.currentUser?.uid ?: ""
+
+        // Send new user details to repository
+        sharedViewModel.setUpNewUser(
+            userId,
+            email,
+            pass,
+            requireContext(),
+            resources,
+            TAG,
+            null
+        ) { isSuccessful ->
+            if (isSuccessful) {
+                navigateToHomeFragment()
+                toastManager.showShortToast(
+                    requireContext(),
+                    "Set up complete!, Let's get things done! \uD83D\uDE80"
+                )
+            } else {
+                firebase.addLog("UserEntity initiation failed at Sign In")
+            }
+        }
+    }
+
+    private fun progressWithFirstTimeSignIn(email: String, extractedDetails: Pair<String, Uri?>?) {
+        // Get the user ID from Firebase Auth
+        val userId = auth.currentUser?.uid ?: ""
+
+        // Send new user to repository
+        sharedViewModel.setUpNewUser(
+            userId,
+            email,
+            "",
+            requireContext(),
+            resources,
+            SIGNUP,
+            extractedDetails
+        ) { isSuccessful ->
+            if (isSuccessful) {
+                navigateToHomeFragment()
+                toastManager.showShortToast(
+                    requireContext(),
+                    "Set up complete!, Let's get things done! \uD83D\uDE80"
+                )
+            } else {
+                firebase.addLog("UserEntity initiation failed at Sign In")
+            }
+        }
+    }
+
+    private fun showBiometricListener(email: String, pass: String) {
         executor = ContextCompat.getMainExecutor(requireContext())
         biometricPrompt =
             BiometricPrompt(this, executor, object : BiometricPrompt.AuthenticationCallback() {
@@ -170,11 +213,6 @@ class SignInFragment : Fragment() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     super.onAuthenticationSucceeded(result)
 
-                    val sharedPreferences = SharedPreferencesManager(requireContext())
-
-                    val email = sharedPreferences.getString("email", "")
-                    val pass = sharedPreferences.getString("pass", "")
-
                     if (email.isNotEmpty() && pass.isNotEmpty()) {
 
                         binding.progressBar.visibility = View.VISIBLE
@@ -191,7 +229,8 @@ class SignInFragment : Fragment() {
                                     pass,
                                     requireContext(),
                                     resources,
-                                    TAG
+                                    TAG,
+                                    null
                                 ) { isSuccessful ->
                                     if (isSuccessful) {
                                         findNavController().navigate(R.id.action_signInFragment_to_homeFragment)
@@ -216,7 +255,6 @@ class SignInFragment : Fragment() {
                             "Authentication failed. Please sign in using other methods."
                         )
                     }
-
                 }
             })
     }
@@ -241,48 +279,46 @@ class SignInFragment : Fragment() {
     private val launcher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
-                val signInTask = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                val googleSignInTask = GoogleSignIn.getSignedInAccountFromIntent(result.data)
 
-                if (signInTask.isSuccessful) {
-                    // Get the GoogleSignInAccount
-                    val account = signInTask.result
+                if (googleSignInTask.isSuccessful) {
+                    val account = googleSignInTask.result
+
+                    binding.accProgressBar.visibility = View.VISIBLE
+                    binding.socialLoginButtonsLayout.visibility = View.GONE
+
+                    val email = account.email ?: ""
+                    val emptyPassword = ""
+                    val displayName = account?.displayName ?: ""
+                    val photoUrl = account?.photoUrl
+                    val detailsFromGoogle = Pair(displayName, photoUrl)
 
                     if (account != null) {
-                        // Check if the Google account is linked to a Firebase user account
                         val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                        val user = firebase.auth.currentUser
 
-                        if (user != null) {
-                            if (user.providerData.any { it.providerId == GoogleAuthProvider.PROVIDER_ID }) {
-                                // The Google account is already linked to a Firebase user.
-                                // Sign in with Firebase
-                                user.linkWithCredential(credential)
-                                    .addOnCompleteListener { linkTask ->
-                                        if (linkTask.isSuccessful) {
-                                            // Successfully linked
-                                            // Navigate to your desired screen after successful sign-in
-                                            navigateToHomeFragment()
-                                        } else {
-                                            // Handle the error
-                                            val exception = linkTask.exception
-                                            toastManager.showShortToast(
-                                                requireContext(),
-                                                "Failed to link Google account."
-                                            )
-                                        }
+                        firebase.auth.signInWithCredential(credential)
+                            .addOnCompleteListener { signInTask ->
+                                if (signInTask.isSuccessful) {
+                                    val isNewUser = signInTask.result?.additionalUserInfo?.isNewUser ?: false
+
+                                    if (isNewUser) {
+                                        // It's the first time the user is using these credentials
+                                        progressWithFirstTimeSignIn(email, detailsFromGoogle)
+                                    } else {
+                                        // Returning user
+                                        progressWithSignIn(email, emptyPassword)
                                     }
-                            } else {
-                                // The Google account is not linked to a Firebase user.
-                                // You can handle this case accordingly.
-                                // For example, show an error message or take some other action.
-                                toastManager.showShortToast(
-                                    requireContext(),
-                                    "Google account is not linked to any user."
-                                )
-                            }
-                        }
-                    }
 
+                                    binding.accProgressBar.visibility = View.GONE
+                                    binding.socialLoginButtonsLayout.visibility = View.VISIBLE
+
+                                    sharedViewModel.updateWebClientId(webClientId)
+                                } else {
+                                    googleSignInClient.signOut()
+                                    toastManager.showShortToast(requireContext(), "Sign-In with Google failed.")
+                                }
+                            }
+                    }
                 } else {
                     // Google Sign-In failed
                     toastManager.showShortToast(requireContext(), "Google Sign-In failed.")
@@ -296,6 +332,7 @@ class SignInFragment : Fragment() {
 
     companion object {
         private const val TAG = "SignInFragment"
+        private const val SIGNUP = "SignUpFragment"
     }
 
 }

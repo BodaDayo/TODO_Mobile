@@ -66,6 +66,16 @@
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
 
+                    <ImageView
+                        android:id="@+id/avatarHomeNB"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="@drawable/circular_primary_background"
+                        android:backgroundTint="@color/myAccent"
+                        android:visibility="gone"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
                 <TextView
@@ -73,7 +83,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:text="Index"
+                    android:text="@string/index"
                     android:textSize="18sp" />
 
                 <ImageView
@@ -129,7 +139,7 @@
                     android:layout_width="0sp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="10 tasks selected" />
+                    tools:text="10 tasks selected" />
 
                 <ImageView
                     android:id="@+id/closeSelection"

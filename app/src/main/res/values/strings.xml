@@ -100,6 +100,20 @@
     <string name="current_password">Current password</string>
     <string name="new_password">New password</string>
     <string name="update_password">Update password</string>
+    <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
+    <string name="index">Index</string>
+    <string name="time_format">Time format</string>
+    <string name="_12_hour">12-hour</string>
+    <string name="default_view_on_start">Default view on start</string>
+    <string name="task_view">Task view</string>
+    <string name="keep_completed_tasks_for">Keep completed tasks for</string>
+    <string name="_2_weeks">2 weeks</string>
+    <string name="notifications">Notifications</string>
+    <string name="sound">Sound</string>
+    <string name="default_ring">Default (Ring)</string>
+    <string name="vibration">Vibration</string>
+    <string name="disabled">Disabled</string>
 
     <plurals name="tasks_left">
         <item quantity="one">%d Task left</item>

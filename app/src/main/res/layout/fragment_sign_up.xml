@@ -202,80 +202,100 @@
 
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/socialLoginButtonsLayout"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16sp"
-            android:layout_marginVertical="24sp"
-            android:orientation="horizontal"
-            android:paddingHorizontal="16sp">
+            android:layout_marginVertical="24sp">
 
-            <Space
+            <LinearLayout
+                android:id="@+id/socialLoginButtonsLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <!-- Google Login Button -->
+                <ImageView
+                    android:id="@+id/googleLoginButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/circular_surface_background"
+                    android:clickable="true"
+                    android:contentDescription="@string/google_login"
+                    android:elevation="@dimen/cardview_default_elevation"
+                    android:focusable="true"
+                    android:padding="16dp"
+                    android:scaleType="center"
+                    android:src="@drawable/google" />
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <!-- Facebook Login Button -->
+                <ImageView
+                    android:id="@+id/facebookLoginButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/circular_surface_background"
+                    android:clickable="true"
+                    android:contentDescription="@string/facebook_login"
+                    android:elevation="@dimen/cardview_default_elevation"
+                    android:focusable="true"
+                    android:padding="16dp"
+                    android:scaleType="center"
+                    android:src="@drawable/facebook" />
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <!-- GitHub Login Button -->
+                <ImageView
+                    android:id="@+id/twitterLoginButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/circular_surface_background"
+                    android:clickable="true"
+                    android:elevation="@dimen/cardview_default_elevation"
+                    android:focusable="true"
+                    android:padding="16dp"
+                    android:scaleType="center"
+                    android:src="@drawable/twitter" />
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/accProgressBar"
+                style="?android:attr/progressBarStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:padding="4sp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-            <!-- Google Login Button -->
-            <ImageView
-                android:id="@+id/googleLoginButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:background="@drawable/circular_surface_background"
-                android:clickable="true"
-                android:contentDescription="@string/google_login"
-                android:elevation="@dimen/cardview_default_elevation"
-                android:focusable="true"
-                android:padding="16dp"
-                android:scaleType="center"
-                android:src="@drawable/google" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <!-- Facebook Login Button -->
-            <ImageView
-                android:id="@+id/facebookLoginButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:background="@drawable/circular_surface_background"
-                android:clickable="true"
-                android:contentDescription="@string/facebook_login"
-                android:elevation="@dimen/cardview_default_elevation"
-                android:focusable="true"
-                android:padding="16dp"
-                android:scaleType="center"
-                android:src="@drawable/facebook" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-            <!-- GitHub Login Button -->
-            <ImageView
-                android:id="@+id/twitterLoginButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="4dp"
-                android:background="@drawable/circular_surface_background"
-                android:clickable="true"
-                android:elevation="@dimen/cardview_default_elevation"
-                android:focusable="true"
-                android:padding="16dp"
-                android:scaleType="center"
-                android:src="@drawable/twitter" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <LinearLayout
             android:id="@+id/tvLayout"
