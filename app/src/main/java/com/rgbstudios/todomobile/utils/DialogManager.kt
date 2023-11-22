@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.PorterDuff
 import android.net.Uri
 import android.os.Build
@@ -966,8 +967,6 @@ class DialogManager {
 
                         val deviceModel = Build.MODEL
                         val androidVersion = Build.VERSION.RELEASE
-                        val packageInfo = packageManager.getPackageInfo(packageName, 0)
-                        val appVersion = packageInfo.versionName
 
                         // Get the current date and time
                         val currentTime = Calendar.getInstance()
@@ -983,7 +982,6 @@ class DialogManager {
                         feedbackMessage.append("User Comment: $userComment\n")
                         feedbackMessage.append("Device Model: $deviceModel\n")
                         feedbackMessage.append("Android Version: $androidVersion\n")
-                        feedbackMessage.append("App Version: $appVersion\n\n")
                         feedbackMessage.append("Feedback sent by: $userEmail on: $formattedTime")
 
                         // Create an Intent to send feedback
