@@ -15,7 +15,7 @@ Whether you're a student, professional, or just someone looking to keep track of
 ## Installation
 You can download the app from the Google Play Store or install it manually by following these steps:
 
-1. [Download the APK](https://github.com/cooncudee/TODO_Mobile/raw/master/app/release/TodoMobile1.3.2.apk) from the repository's releases.
+1. [Download the APK](https://github.com/cooncudee/TODO_Mobile/raw/master/app/release/TodoMobile1.3.3.apk) from the repository's releases.
 1. Enable installation from unknown sources on your Android device.
 1. Install the app by opening the APK file.
 
