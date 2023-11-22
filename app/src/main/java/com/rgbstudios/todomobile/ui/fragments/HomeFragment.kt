@@ -249,8 +249,8 @@ class HomeFragment : Fragment(),
             val headerView = navigationDrawerView.getHeaderView(0)
 
             val avatarNavDrw = headerView.findViewById<ImageView>(R.id.avatarNavDrw)
-            val avatarProgressBarNavDrw = headerView.findViewById<ProgressBar>(R.id.avatarProgressBarNav)
-            val overlayViewNavDrw = headerView.findViewById<View>(R.id.overlayViewNav)
+            val avatarProgressBarND = headerView.findViewById<ProgressBar>(R.id.avatarProgressBarNav)
+            val overlayViewND = headerView.findViewById<View>(R.id.overlayViewNav)
             val nameNavDrw = headerView.findViewById<TextView>(R.id.userNameTxt)
             val emailNavDrw = headerView.findViewById<TextView>(R.id.emailTxt)
             val occupationNavDrw = headerView.findViewById<TextView>(R.id.occupationTxt)
@@ -260,8 +260,8 @@ class HomeFragment : Fragment(),
             val progressBarNavDrw = headerView.findViewById<View>(R.id.progressBar)
             val progressBackNavDrw = headerView.findViewById<View>(R.id.progressBackground)
 
-            avatarProgressBarNavDrw.visibility = View.VISIBLE
-            overlayViewNavDrw.visibility = View.VISIBLE
+            avatarProgressBarND.visibility = View.VISIBLE
+            overlayViewND.visibility = View.VISIBLE
 
             // Set up OnClickListener for the navigation drawer header
             headerView.setOnClickListener {
@@ -430,8 +430,8 @@ class HomeFragment : Fragment(),
                                     overlayView.visibility = View.GONE
                                     avatarProgressBar.visibility = View.GONE
 
-                                    avatarProgressBarNavDrw.visibility = View.GONE
-                                    overlayViewNavDrw.visibility = View.GONE
+                                    avatarProgressBarND.visibility = View.GONE
+                                    overlayViewND.visibility = View.GONE
                                     return false
                                 }
                             })
