@@ -108,31 +108,35 @@ class FirebaseAccess {
     }
 
 
-    fun changePasswordAndEmail(
-        newEmail: String,
-        newPassword: String,
-        callback: (Boolean, String?) -> Unit
-    ) {
+    fun changeEmail(newEmail: String, callback: (Boolean, String?) -> Unit) {
         val user = auth.currentUser
 
-        // Step 1: Update Email
         user?.updateEmail(newEmail)
-            ?.addOnCompleteListener { emailUpdateTask ->
-                if (emailUpdateTask.isSuccessful) {
-                    // Step 2: Change Password
-                    user.updatePassword(newPassword)
-                        .addOnCompleteListener { passwordUpdateTask ->
-                            if (passwordUpdateTask.isSuccessful) {
-                                callback(true, null)
-                            } else {
-                                callback(false, "Failed to update password.")
-                            }
-                        }
+            ?.addOnCompleteListener {
+                if (it.isSuccessful) {
+                    callback(true, null)
                 } else {
-                    callback(false, "Failed to update email.")
+                    val errorMessage = it.exception?.message?.substringAfter(": ")
+                    callback(false, errorMessage ?: "Failed to update email.")
                 }
             }
     }
+
+
+    fun changePassword(newPassword: String, callback: (Boolean, String?) -> Unit) {
+        val user = auth.currentUser
+
+        user?.updatePassword(newPassword)
+            ?.addOnCompleteListener {
+                if (it.isSuccessful) {
+                    callback(true, null)
+                } else {
+                    val errorMessage = it.exception?.message?.substringAfter(": ")
+                    callback(false, errorMessage ?: "Failed to update password.")
+                }
+            }
+    }
+
 
     fun deleteAccountAndData(callback: (Boolean, String?) -> Unit) {
         val user = auth.currentUser

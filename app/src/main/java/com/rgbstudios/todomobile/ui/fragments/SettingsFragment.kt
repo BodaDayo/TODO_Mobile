@@ -94,8 +94,7 @@ class SettingsFragment : Fragment() {
             }
 
             changeEmailLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), "Coming soon")
-                //Todo show dialog
+                openDetailsPane("changeEmail")
             }
 
             fingerprintSwitch.setOnCheckedChangeListener { _, isChecked ->

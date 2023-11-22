@@ -4,6 +4,7 @@ import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.PorterDuff
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.MenuItem
@@ -11,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.PopupMenu
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.addCallback
@@ -24,6 +26,10 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.google.android.material.navigation.NavigationView.OnNavigationItemSelectedListener
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
@@ -243,6 +249,8 @@ class HomeFragment : Fragment(),
             val headerView = navigationDrawerView.getHeaderView(0)
 
             val avatarNavDrw = headerView.findViewById<ImageView>(R.id.avatarNavDrw)
+            val avatarProgressBarNavDrw = headerView.findViewById<ProgressBar>(R.id.avatarProgressBarNav)
+            val overlayViewNavDrw = headerView.findViewById<View>(R.id.overlayViewNav)
             val nameNavDrw = headerView.findViewById<TextView>(R.id.userNameTxt)
             val emailNavDrw = headerView.findViewById<TextView>(R.id.emailTxt)
             val occupationNavDrw = headerView.findViewById<TextView>(R.id.occupationTxt)
@@ -251,6 +259,9 @@ class HomeFragment : Fragment(),
             val completedTasks = headerView.findViewById<TextView>(R.id.completedTasksNumber)
             val progressBarNavDrw = headerView.findViewById<View>(R.id.progressBar)
             val progressBackNavDrw = headerView.findViewById<View>(R.id.progressBackground)
+
+            avatarProgressBarNavDrw.visibility = View.VISIBLE
+            overlayViewNavDrw.visibility = View.VISIBLE
 
             // Set up OnClickListener for the navigation drawer header
             headerView.setOnClickListener {
@@ -393,11 +404,37 @@ class HomeFragment : Fragment(),
 
                     // Set the nav drawer and home avatar imageViews
                     if (user.avatarFilePath != null) {
-                        val avatarImageViews =
-                            arrayOf(avatarHome, avatarNavDrw)
+                        val avatarImageViews = arrayOf(avatarHome, avatarNavDrw)
 
-                        val imageLoad =
-                            Glide.with(fragmentContext).load(File(user.avatarFilePath))
+                        val imageLoad = Glide.with(fragmentContext)
+                            .load(File(user.avatarFilePath))
+                            .listener(object : RequestListener<Drawable> {
+                                override fun onLoadFailed(
+                                    e: GlideException?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    // Handle image loading failure
+                                    return false
+                                }
+
+                                override fun onResourceReady(
+                                    resource: Drawable?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    dataSource: DataSource?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    // Image has been successfully loaded, hide progress bar and overlay
+                                    overlayView.visibility = View.GONE
+                                    avatarProgressBar.visibility = View.GONE
+
+                                    avatarProgressBarNavDrw.visibility = View.GONE
+                                    overlayViewNavDrw.visibility = View.GONE
+                                    return false
+                                }
+                            })
 
                         for (imageView in avatarImageViews) {
                             imageLoad.into(imageView)
@@ -415,12 +452,9 @@ class HomeFragment : Fragment(),
                     // Set the nav drawer occupation
                     if (!user.occupation.isNullOrEmpty())
                         occupationNavDrw.text = user.occupation
-
-                    // stop loading animation
-                    overlayView.visibility = View.GONE
-                    avatarProgressBar.visibility = View.GONE
                 }
             }
+
 
             // Observe all current user's tasks
             sharedViewModel.allTasksList.observe(viewLifecycleOwner) { allTasksList ->
@@ -468,27 +502,17 @@ class HomeFragment : Fragment(),
                     if (totalTasks > 0) uncompletedNumber.toFloat() / totalTasks else 0f
 
                 // Set the width of the progress bar
-                val progressBarWidth = (headerView.width * completionLevel).toInt()
+                val progressBarWidth = (progressBackNavDrw.width * completionLevel).toInt()
                 progressBarNavDrw.layoutParams.width = progressBarWidth
                 progressBarNavDrw.requestLayout()
 
                 // Check if progressBarWidth is 0 and completedNumber is greater than 0
                 if (progressBarWidth == 0 && completedNumber > 0) {
                     // Set the background color of progressBackNavDrw to green
-                    progressBackNavDrw.setBackgroundColor(
-                        ContextCompat.getColor(
-                            fragmentContext,
-                            R.color.excellent
-                        )
-                    )
+                    progressBackNavDrw.setBackgroundResource(R.drawable.rounded_background_progress_green)
                 } else {
                     // Set the background color of progressBackNavDrw to default color
-                    progressBackNavDrw.setBackgroundColor(
-                        ContextCompat.getColor(
-                            fragmentContext,
-                            android.R.color.darker_gray
-                        )
-                    )
+                    progressBackNavDrw.setBackgroundResource(R.drawable.rounded_background_progress)
                 }
 
                 // stop loading animation
@@ -742,7 +766,7 @@ class HomeFragment : Fragment(),
             }
 
             R.id.supportUs -> {
-                // findNavController().navigate(R.id.action_homeFragment_to_aboutUsFragment)
+                dialogManager.showSupportUsDialog(this)
             }
 
             R.id.feedback -> {
@@ -825,11 +849,13 @@ class HomeFragment : Fragment(),
                 }
 
                 R.id.menu_batch -> {
+                    findNavController().navigate(R.id.action_homeFragment_to_batchCreateTasksFragment)
                     true
                 }
 
                 R.id.menu_view -> {
                     true
+                    // TODO calender view
                 }
 
                 else -> false
@@ -924,7 +950,6 @@ class HomeFragment : Fragment(),
         private const val UNCOMPLETED = "uncompleted"
         private const val COMPLETED = "completed"
         private const val BATCHADD = "BatchAdd"
-        private const val BATCHREMOVE = "BatchRemove"
     }
 
 }

@@ -77,6 +77,9 @@
         <action
             android:id="@+id/action_homeFragment_to_settingsFragment"
             app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_batchCreateTasksFragment"
+            app:destination="@id/batchCreateTasksFragment2" />
     </fragment>
     <fragment
         android:id="@+id/editTaskFragment"
@@ -120,4 +123,10 @@
         android:name="com.rgbstudios.todomobile.ui.fragments.SettingsFragment"
         android:label="fragment_settings"
         tools:layout="@layout/fragment_settings" />
+    <fragment
+        android:id="@+id/batchCreateTasksFragment2"
+        android:name="com.rgbstudios.todomobile.ui.fragments.BatchCreateTasksFragment"
+        android:label="fragment_batch_create_tasks"
+        tools:layout="@layout/fragment_batch_create_tasks" />
+
 </navigation>

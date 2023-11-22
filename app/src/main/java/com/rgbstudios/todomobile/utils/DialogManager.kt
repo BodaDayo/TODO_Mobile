@@ -6,11 +6,14 @@ import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.graphics.PorterDuff
+import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
@@ -29,6 +32,7 @@ import com.rgbstudios.todomobile.databinding.DialogNewCategoryBinding
 import com.rgbstudios.todomobile.databinding.DialogRemoveConfirmationBinding
 import com.rgbstudios.todomobile.databinding.DialogRenameTaskBinding
 import com.rgbstudios.todomobile.databinding.DialogSortingBinding
+import com.rgbstudios.todomobile.databinding.DialogSupportUsBinding
 import com.rgbstudios.todomobile.model.TaskList
 import com.rgbstudios.todomobile.ui.adapters.CategoryAdapter
 import com.rgbstudios.todomobile.ui.adapters.CategoryColorAdapter
@@ -55,349 +59,345 @@ class DialogManager {
         selectedTaskCategories: List<CategoryEntity>?,
         callback: (Boolean) -> Unit
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val layoutInflater = fragment.layoutInflater
 
-        if (context != null) {
-            // Create the categories dialog with ViewBinding
-            val dialogBinding = DialogCategorySelectionBinding.inflate(layoutInflater)
-            val dialog = Dialog(context)
-            dialog.setContentView(dialogBinding.root)
+        // Create the categories dialog with ViewBinding
+        val dialogBinding = DialogCategorySelectionBinding.inflate(layoutInflater)
+        val dialog = Dialog(context)
+        dialog.setContentView(dialogBinding.root)
 
-            dialogBinding.apply {
-                val adapter =
-                    CategoryAdapter(
-                        iconManager,
-                        colorManager,
-                        dialog,
-                        dialogBinding,
-                        object : CategoryAdapter.CategoryClickListener {
-                            override fun onCategoryClick(category: CategoryEntity, dialog: Dialog) {
-                                // Dismiss the dialog
-                                dialog.dismiss()
+        dialogBinding.apply {
+            val adapter =
+                CategoryAdapter(
+                    iconManager,
+                    colorManager,
+                    dialog,
+                    dialogBinding,
+                    object : CategoryAdapter.CategoryClickListener {
+                        override fun onCategoryClick(category: CategoryEntity, dialog: Dialog) {
+                            // Dismiss the dialog
+                            dialog.dismiss()
 
-                                // Handle the category click event with the CategoryEntity parameter
-                                if (category.categoryId != CREATE) {
+                            // Handle the category click event with the CategoryEntity parameter
+                            if (category.categoryId != CREATE) {
 
-                                    when (tag) {
-                                        HOME -> {
-                                            viewModel.filterTasks(
-                                                category.categoryId,
-                                                CATEGORY
-                                            ) {
-                                                if (it) callback(true)
-                                            }
-                                        }
-
-                                        BATCHADD -> {
-                                            val taskList = viewModel.highlightedTaskList.value
-                                            val categoryId = category.categoryId
-
-                                            // Add category tags to all selected tasks
-                                            val updatedTaskList = taskList?.map { taskEntity ->
-                                                val updatedCategoryIds =
-                                                    taskEntity.categoryIds + categoryId
-                                                taskEntity.copy(categoryIds = updatedCategoryIds)
-                                            }
-
-                                            // Save updated tasks to database
-                                            viewModel.saveMultipleTask(
-                                                updatedTaskList ?: emptyList()
-                                            ) { success ->
-                                                if (success) {
-                                                    callback(true)
-                                                    val successString = taskList?.let {
-                                                        fragment.resources.getQuantityString(
-                                                            R.plurals.multiple_tasks_to_category_success,
-                                                            it.size,
-                                                            it.size,
-                                                            category.categoryName
-                                                        )
-                                                    }
-                                                    toastManager.showShortToast(
-                                                        context,
-                                                        successString!!
-                                                    )
-                                                } else {
-                                                    toastManager.showShortToast(
-                                                        context,
-                                                        "Failed to add tasks to category"
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                        else -> {
-                                            viewModel.addTaskToCategory(category) { isSuccessful ->
-                                                if (isSuccessful) {
-                                                    // Handle success
-                                                    toastManager.showShortToast(
-                                                        context,
-                                                        "${category.categoryName} tag added to task"
-                                                    )
-                                                } else {
-                                                    // Handle failure
-                                                    toastManager.showShortToast(
-                                                        context,
-                                                        "Failed to add ${category.categoryName} tag to task"
-                                                    )
-                                                }
-                                            }
+                                when (tag) {
+                                    HOME -> {
+                                        viewModel.filterTasks(
+                                            category.categoryId,
+                                            CATEGORY
+                                        ) {
+                                            if (it) callback(true)
                                         }
                                     }
-                                } else {
-                                    // show new category dialog
-                                    showCreateCategoryDialog(
-                                        fragment,
-                                        viewModel,
-                                    )
-                                }
-                            }
 
-                            override fun onCategoryLongClick(
-                                category: CategoryEntity,
-                                dialog: Dialog,
-                                dialogBinding: DialogCategorySelectionBinding
-                            ) {
-                                if (tag == BATCHADD || category.categoryId == CREATE) {
-                                    return
-                                }
-                                dialogBinding.apply {
-                                    editIcon.visibility = View.VISIBLE
-                                    deleteIcon.visibility = View.VISIBLE
+                                    BATCHADD -> {
+                                        val taskList = viewModel.highlightedTaskList.value
+                                        val categoryId = category.categoryId
 
-                                    editIcon.setOnClickListener {
-                                        // show new category dialog
-                                        showEditCategoryDialog(
-                                            category,
-                                            fragment,
-                                            viewModel,
-                                        )
-                                    }
+                                        // Add category tags to all selected tasks
+                                        val updatedTaskList = taskList?.map { taskEntity ->
+                                            val updatedCategoryIds =
+                                                taskEntity.categoryIds + categoryId
+                                            taskEntity.copy(categoryIds = updatedCategoryIds)
+                                        }
 
-                                    deleteIcon.setOnClickListener {
-                                        // Dismiss the dialog
-                                        dialog.dismiss()
-
-                                        // Call the ViewModel's deleteTask method
-                                        viewModel.deleteCategory(category.categoryId) { isSuccessful ->
-                                            if (isSuccessful) {
-
-                                                val snackBar = fragment.view?.let {
-                                                    Snackbar.make(
-                                                        it,
-                                                        "Category deleted Successfully!",
-                                                        Snackbar.LENGTH_LONG
+                                        // Save updated tasks to database
+                                        viewModel.saveMultipleTask(
+                                            updatedTaskList ?: emptyList()
+                                        ) { success ->
+                                            if (success) {
+                                                callback(true)
+                                                val successString = taskList?.let {
+                                                    fragment.resources.getQuantityString(
+                                                        R.plurals.multiple_tasks_to_category_success,
+                                                        it.size,
+                                                        it.size,
+                                                        category.categoryName
                                                     )
                                                 }
-                                                snackBar?.setAction("Undo") {
-                                                    // Restore the deleted task
-                                                    category.let {
-                                                        viewModel.saveCategory(
-                                                            it.categoryName,
-                                                            it.categoryIconIdentifier,
-                                                            it.categoryColorIdentifier
-                                                        ) { isSuccessful ->
-                                                            if (isSuccessful) {
-                                                                // Handle success
-                                                                toastManager.showShortToast(
-                                                                    context,
-                                                                    "Category Restored!"
-                                                                )
-                                                            } else {
-                                                                // Handle failure
-                                                                toastManager.showShortToast(
-                                                                    context,
-                                                                    "Failed to restore Category"
-                                                                )
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                // Show the snackBar
-                                                snackBar?.show()
-
+                                                toastManager.showShortToast(
+                                                    context,
+                                                    successString!!
+                                                )
                                             } else {
                                                 toastManager.showShortToast(
-                                                    context, "Failed to delete category"
+                                                    context,
+                                                    "Failed to add tasks to category"
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    else -> {
+                                        viewModel.addTaskToCategory(category) { isSuccessful ->
+                                            if (isSuccessful) {
+                                                // Handle success
+                                                toastManager.showShortToast(
+                                                    context,
+                                                    "${category.categoryName} tag added to task"
+                                                )
+                                            } else {
+                                                // Handle failure
+                                                toastManager.showShortToast(
+                                                    context,
+                                                    "Failed to add ${category.categoryName} tag to task"
                                                 )
                                             }
                                         }
                                     }
                                 }
+                            } else {
+                                // show new category dialog
+                                showCreateCategoryDialog(
+                                    fragment,
+                                    viewModel,
+                                )
                             }
                         }
-                    )
-                categoryRecyclerView.layoutManager = GridLayoutManager(context, 3) // 3 columns
-                categoryRecyclerView.adapter = adapter
 
-                // Set dialog title if adding multiple tasks to category
-                if (tag == BATCHADD) {
-                    val taskList = viewModel.highlightedTaskList.value
-                    // Update showCategoryTitle tasks text with string plurals template
-                    if (taskList != null) {
-                        showCategoryTitle.text = fragment.resources.getQuantityString(
-                            R.plurals.multiple_tasks_to_category,
-                            taskList.size,
-                            taskList.size
-                        )
-                    }
+                        override fun onCategoryLongClick(
+                            category: CategoryEntity,
+                            dialog: Dialog,
+                            dialogBinding: DialogCategorySelectionBinding
+                        ) {
+                            if (tag == BATCHADD || category.categoryId == CREATE) {
+                                return
+                            }
+                            dialogBinding.apply {
+                                editIcon.visibility = View.VISIBLE
+                                deleteIcon.visibility = View.VISIBLE
 
-                    val categories = viewModel.categories.value
-                    if (categories != null) {
-                        adapter.updateCategoryList(categories)
-                    }
+                                editIcon.setOnClickListener {
+                                    // show new category dialog
+                                    showEditCategoryDialog(
+                                        category,
+                                        fragment,
+                                        viewModel,
+                                    )
+                                }
 
-                } else {
+                                deleteIcon.setOnClickListener {
+                                    // Dismiss the dialog
+                                    dialog.dismiss()
 
-                    viewModel.categories.observe(fragment.viewLifecycleOwner) { list ->
-                        // Add a "create new" category to the categories list
-                        val createNewCategory = categoryManager.newCategory
+                                    // Call the ViewModel's deleteTask method
+                                    viewModel.deleteCategory(category.categoryId) { isSuccessful ->
+                                        if (isSuccessful) {
 
-                        val updatedCategories = if (tag == HOME) {
-                            list.toMutableList()
-                        } else {
-                            val taskCategoryIds =
-                                selectedTaskCategories!!.map { it.categoryId }.toSet()
-                            list.filterNot { it.categoryId in taskCategoryIds }.toMutableList()
+                                            val snackBar = fragment.view?.let {
+                                                Snackbar.make(
+                                                    it,
+                                                    "Category deleted Successfully!",
+                                                    Snackbar.LENGTH_LONG
+                                                )
+                                            }
+                                            snackBar?.setAction("Undo") {
+                                                // Restore the deleted task
+                                                category.let {
+                                                    viewModel.saveCategory(
+                                                        it.categoryName,
+                                                        it.categoryIconIdentifier,
+                                                        it.categoryColorIdentifier
+                                                    ) { isSuccessful ->
+                                                        if (isSuccessful) {
+                                                            // Handle success
+                                                            toastManager.showShortToast(
+                                                                context,
+                                                                "Category Restored!"
+                                                            )
+                                                        } else {
+                                                            // Handle failure
+                                                            toastManager.showShortToast(
+                                                                context,
+                                                                "Failed to restore Category"
+                                                            )
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            // Show the snackBar
+                                            snackBar?.show()
+
+                                        } else {
+                                            toastManager.showShortToast(
+                                                context, "Failed to delete category"
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
-
-                        updatedCategories.add(createNewCategory)
-                        adapter.updateCategoryList(updatedCategories)
                     }
+                )
+            categoryRecyclerView.layoutManager = GridLayoutManager(context, 3) // 3 columns
+            categoryRecyclerView.adapter = adapter
+
+            // Set dialog title if adding multiple tasks to category
+            if (tag == BATCHADD) {
+                val taskList = viewModel.highlightedTaskList.value
+                // Update showCategoryTitle tasks text with string plurals template
+                if (taskList != null) {
+                    showCategoryTitle.text = fragment.resources.getQuantityString(
+                        R.plurals.multiple_tasks_to_category,
+                        taskList.size,
+                        taskList.size
+                    )
+                }
+
+                val categories = viewModel.categories.value
+                if (categories != null) {
+                    adapter.updateCategoryList(categories)
+                }
+
+            } else {
+
+                viewModel.categories.observe(fragment.viewLifecycleOwner) { list ->
+                    // Add a "create new" category to the categories list
+                    val createNewCategory = categoryManager.newCategory
+
+                    val updatedCategories = if (tag == HOME) {
+                        list.toMutableList()
+                    } else {
+                        val taskCategoryIds =
+                            selectedTaskCategories!!.map { it.categoryId }.toSet()
+                        list.filterNot { it.categoryId in taskCategoryIds }.toMutableList()
+                    }
+
+                    updatedCategories.add(createNewCategory)
+                    adapter.updateCategoryList(updatedCategories)
                 }
             }
-            dialog.show()
         }
+        dialog.show()
     }
 
     fun showCreateCategoryDialog(
         fragment: Fragment,
         viewModel: TodoViewModel,
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val layoutInflater = fragment.layoutInflater
 
-        if (context != null) {
-            val dialogBinding = DialogNewCategoryBinding.inflate(layoutInflater)
+        val dialogBinding = DialogNewCategoryBinding.inflate(layoutInflater)
 
-            // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
-            val dialog = MaterialAlertDialogBuilder(context)
-                .setView(dialogBinding.root)
-                .create()
+        // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
 
-            // Variable to store the selected icon
-            var selectedCategoryIcon: String? = null
+        // Variable to store the selected icon
+        var selectedCategoryIcon: String? = null
 
-            // Variable to store the selected color
-            var selectedCategoryColor: String? = null
+        // Variable to store the selected color
+        var selectedCategoryColor: String? = null
 
-            // Get the icons and colors
-            val iconList = iconManager.getAllIcons()
-            val defaultIcon = iconManager.getDefaultIcon()
-            val colorList = colorManager.getAllColors()
-            val defaultColor = colorManager.getDefaultColor()
+        // Get the icons and colors
+        val iconList = iconManager.getAllIcons()
+        val defaultIcon = iconManager.getDefaultIcon()
+        val colorList = colorManager.getAllColors()
+        val defaultColor = colorManager.getDefaultColor()
 
-            dialogBinding.apply {
+        dialogBinding.apply {
 
-                val iconAdapter =
-                    CategoryIconAdapter(
-                        iconList,
-                        iconManager,
-                        object : CategoryIconAdapter.IconClickListener {
-                            override fun onIconClick(iconIdentifier: String) {
-                                selectedCategoryIcon = iconIdentifier
+            val iconAdapter =
+                CategoryIconAdapter(
+                    iconList,
+                    iconManager,
+                    object : CategoryIconAdapter.IconClickListener {
+                        override fun onIconClick(iconIdentifier: String) {
+                            selectedCategoryIcon = iconIdentifier
 
-                                val iconResource =
-                                    iconManager.getIconDrawableResource(iconIdentifier)
+                            val iconResource =
+                                iconManager.getIconDrawableResource(iconIdentifier)
 
-                                iconRecyclerView.visibility = View.GONE
-                                categoryIconTV.visibility = View.GONE
+                            iconRecyclerView.visibility = View.GONE
+                            categoryIconTV.visibility = View.GONE
 
-                                // Show the selected Icon
-                                categoryIcon.setImageResource(iconResource)
-                                categoryIcon.visibility = View.VISIBLE
-                            }
-
+                            // Show the selected Icon
+                            categoryIcon.setImageResource(iconResource)
+                            categoryIcon.visibility = View.VISIBLE
                         }
-                    )
-                iconRecyclerView.layoutManager =
-                    LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-                // Set the adapter for the iconRecyclerView
-                iconRecyclerView.adapter = iconAdapter
+                    }
+                )
+            iconRecyclerView.layoutManager =
+                LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-                val colorAdapter =
-                    CategoryColorAdapter(
-                        colorList,
-                        colorManager,
-                        object : CategoryColorAdapter.ColorClickListener {
-                            override fun onColorClick(colorIdentifier: String) {
-                                // Handle the color click event and update the selected color
-                                selectedCategoryColor = colorIdentifier
-                            }
+            // Set the adapter for the iconRecyclerView
+            iconRecyclerView.adapter = iconAdapter
+
+            val colorAdapter =
+                CategoryColorAdapter(
+                    colorList,
+                    colorManager,
+                    object : CategoryColorAdapter.ColorClickListener {
+                        override fun onColorClick(colorIdentifier: String) {
+                            // Handle the color click event and update the selected color
+                            selectedCategoryColor = colorIdentifier
                         }
-                    )
-                colorRecyclerView.layoutManager =
-                    LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-
-                // Set the adapter for the colorRecyclerView
-                colorRecyclerView.adapter = colorAdapter
-
-                categoryIconBackground.setOnClickListener {
-                    iconRecyclerView.visibility = View.VISIBLE
-                }
-
-                btnCancel.setOnClickListener {
-                    // Dismiss the dialog
-                    dialog.dismiss()
-                }
-
-                btnSave.setOnClickListener {
-                    val categoryName = categoryNameEt.text.toString()
-
-                    // Check if the title is empty before proceeding
-                    if (categoryName.isBlank()) {
-                        toastManager.showShortToast(
-                            context,
-                            "Category name cannot be empty!"
-                        )
-                        return@setOnClickListener
                     }
+                )
+            colorRecyclerView.layoutManager =
+                LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-                    val exemptionList = categoryManager.specialCategoryNames
+            // Set the adapter for the colorRecyclerView
+            colorRecyclerView.adapter = colorAdapter
 
-                    if (exemptionList.contains(categoryName)) {
-                        toastManager.showShortToast(
-                            context,
-                            "This category name is not allowed!"
-                        )
-                        return@setOnClickListener
-                    }
-
-                    val categoryIconIdentifier = selectedCategoryIcon ?: defaultIcon
-
-                    val categoryColorIdentifier = selectedCategoryColor ?: defaultColor
-
-                    // Call the viewModel method to save the new category
-                    onSaveCategory(
-                        categoryName,
-                        categoryIconIdentifier,
-                        categoryColorIdentifier,
-                        context,
-                        viewModel
-                    )
-
-                    // Clear the EditText field
-                    categoryNameEt.text = null
-
-                    // Dismiss the dialog
-                    dialog.dismiss()
-
-                }
+            categoryIconBackground.setOnClickListener {
+                iconRecyclerView.visibility = View.VISIBLE
             }
-            dialog.show()
+
+            btnCancel.setOnClickListener {
+                // Dismiss the dialog
+                dialog.dismiss()
+            }
+
+            btnSave.setOnClickListener {
+                val categoryName = categoryNameEt.text.toString()
+
+                // Check if the title is empty before proceeding
+                if (categoryName.isBlank()) {
+                    toastManager.showShortToast(
+                        context,
+                        "Category name cannot be empty!"
+                    )
+                    return@setOnClickListener
+                }
+
+                val exemptionList = categoryManager.specialCategoryNames
+
+                if (exemptionList.contains(categoryName)) {
+                    toastManager.showShortToast(
+                        context,
+                        "This category name is not allowed!"
+                    )
+                    return@setOnClickListener
+                }
+
+                val categoryIconIdentifier = selectedCategoryIcon ?: defaultIcon
+
+                val categoryColorIdentifier = selectedCategoryColor ?: defaultColor
+
+                // Call the viewModel method to save the new category
+                onSaveCategory(
+                    categoryName,
+                    categoryIconIdentifier,
+                    categoryColorIdentifier,
+                    context,
+                    viewModel
+                )
+
+                // Clear the EditText field
+                categoryNameEt.text = null
+
+                // Dismiss the dialog
+                dialog.dismiss()
+
+            }
         }
+        dialog.show()
     }
 
     fun showEditCategoryDialog(
@@ -405,136 +405,133 @@ class DialogManager {
         fragment: Fragment,
         viewModel: TodoViewModel,
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val layoutInflater = fragment.layoutInflater
 
-        if (context != null) {
+        val dialogBinding = DialogNewCategoryBinding.inflate(layoutInflater)
 
-            val dialogBinding = DialogNewCategoryBinding.inflate(layoutInflater)
+        // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
 
-            // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
-            val dialog = MaterialAlertDialogBuilder(context)
-                .setView(dialogBinding.root)
-                .create()
+        // Variable to store the selected icon
+        var selectedCategoryIcon: String? = null
 
-            // Variable to store the selected icon
-            var selectedCategoryIcon: String? = null
+        // Variable to store the selected color
+        var selectedCategoryColor: String? = null
 
-            // Variable to store the selected color
-            var selectedCategoryColor: String? = null
+        // Get the icons and colors
+        val iconList = iconManager.getAllIcons()
+        val defaultIcon = iconManager.getDefaultIcon()
+        val colorList = colorManager.getAllColors()
+        val defaultColor = colorManager.getDefaultColor()
 
-            // Get the icons and colors
-            val iconList = iconManager.getAllIcons()
-            val defaultIcon = iconManager.getDefaultIcon()
-            val colorList = colorManager.getAllColors()
-            val defaultColor = colorManager.getDefaultColor()
+        dialogBinding.apply {
 
-            dialogBinding.apply {
+            val iconAdapter =
+                CategoryIconAdapter(
+                    iconList,
+                    iconManager,
+                    object : CategoryIconAdapter.IconClickListener {
+                        override fun onIconClick(iconIdentifier: String) {
+                            selectedCategoryIcon = iconIdentifier
 
-                val iconAdapter =
-                    CategoryIconAdapter(
-                        iconList,
-                        iconManager,
-                        object : CategoryIconAdapter.IconClickListener {
-                            override fun onIconClick(iconIdentifier: String) {
-                                selectedCategoryIcon = iconIdentifier
+                            val iconResource =
+                                iconManager.getIconDrawableResource(iconIdentifier)
 
-                                val iconResource =
-                                    iconManager.getIconDrawableResource(iconIdentifier)
+                            iconRecyclerView.visibility = View.GONE
+                            categoryIconTV.visibility = View.GONE
 
-                                iconRecyclerView.visibility = View.GONE
-                                categoryIconTV.visibility = View.GONE
-
-                                // Show the selected Icon
-                                categoryIcon.setImageResource(iconResource)
-                                categoryIcon.visibility = View.VISIBLE
-                            }
-
+                            // Show the selected Icon
+                            categoryIcon.setImageResource(iconResource)
+                            categoryIcon.visibility = View.VISIBLE
                         }
-                    )
-                iconRecyclerView.layoutManager =
-                    LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-                // Set the adapter for the iconRecyclerView
-                iconRecyclerView.adapter = iconAdapter
-
-                val colorAdapter =
-                    CategoryColorAdapter(
-                        colorList,
-                        colorManager,
-                        object : CategoryColorAdapter.ColorClickListener {
-                            override fun onColorClick(colorIdentifier: String) {
-                                // Handle the color click event and update the selected color
-                                selectedCategoryColor = colorIdentifier
-                            }
-                        }
-                    )
-                colorRecyclerView.layoutManager =
-                    LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-
-                // Set the adapter for the colorRecyclerView
-                colorRecyclerView.adapter = colorAdapter
-
-                // Set up the layout
-                newCategoryTitleTV.text = context.getString(R.string.edit_category)
-                categoryNameEt.text =
-                    Editable.Factory.getInstance().newEditable(category!!.categoryName)
-
-                val iconResource =
-                    iconManager.getIconDrawableResource(category.categoryIconIdentifier)
-
-                categoryIconTV.visibility = View.GONE
-
-                // Show the selected Icon
-                categoryIcon.setImageResource(iconResource)
-                categoryIcon.visibility = View.VISIBLE
-                iconRecyclerView.visibility = View.VISIBLE
-
-                categoryIconBackground.setOnClickListener {
-                    iconRecyclerView.visibility = View.VISIBLE
-                }
-
-                btnCancel.setOnClickListener {
-                    // Dismiss the dialog
-                    dialog.dismiss()
-                    viewModel.startDatabaseListeners()
-                }
-
-                btnSave.setOnClickListener {
-                    val categoryName = categoryNameEt.text.toString()
-
-                    // Check if the title is empty before proceeding
-                    if (categoryName.isBlank()) {
-                        toastManager.showShortToast(
-                            context,
-                            "Category name cannot be empty!"
-                        )
-                        return@setOnClickListener
                     }
+                )
+            iconRecyclerView.layoutManager =
+                LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-                    val categoryIconIdentifier = selectedCategoryIcon ?: defaultIcon
+            // Set the adapter for the iconRecyclerView
+            iconRecyclerView.adapter = iconAdapter
 
-                    val categoryColorIdentifier = selectedCategoryColor ?: defaultColor
+            val colorAdapter =
+                CategoryColorAdapter(
+                    colorList,
+                    colorManager,
+                    object : CategoryColorAdapter.ColorClickListener {
+                        override fun onColorClick(colorIdentifier: String) {
+                            // Handle the color click event and update the selected color
+                            selectedCategoryColor = colorIdentifier
+                        }
+                    }
+                )
+            colorRecyclerView.layoutManager =
+                LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-                    // Call the viewModel method to update category
-                    onUpdateCategory(
-                        categoryName,
-                        categoryIconIdentifier,
-                        categoryColorIdentifier,
-                        context,
-                        viewModel
-                    )
+            // Set the adapter for the colorRecyclerView
+            colorRecyclerView.adapter = colorAdapter
 
-                    // Clear the EditText field
-                    categoryNameEt.text = null
+            // Set up the layout
+            newCategoryTitleTV.text = context.getString(R.string.edit_category)
+            categoryNameEt.text =
+                Editable.Factory.getInstance().newEditable(category!!.categoryName)
 
-                    // Dismiss the dialog
-                    dialog.dismiss()
-                    viewModel.startDatabaseListeners()
-                }
+            val iconResource =
+                iconManager.getIconDrawableResource(category.categoryIconIdentifier)
+
+            categoryIconTV.visibility = View.GONE
+
+            // Show the selected Icon
+            categoryIcon.setImageResource(iconResource)
+            categoryIcon.visibility = View.VISIBLE
+            iconRecyclerView.visibility = View.VISIBLE
+
+            categoryIconBackground.setOnClickListener {
+                iconRecyclerView.visibility = View.VISIBLE
             }
-            dialog.show()
+
+            btnCancel.setOnClickListener {
+                // Dismiss the dialog
+                dialog.dismiss()
+                viewModel.startDatabaseListeners()
+            }
+
+            btnSave.setOnClickListener {
+                val categoryName = categoryNameEt.text.toString()
+
+                // Check if the title is empty before proceeding
+                if (categoryName.isBlank()) {
+                    toastManager.showShortToast(
+                        context,
+                        "Category name cannot be empty!"
+                    )
+                    return@setOnClickListener
+                }
+
+                val categoryIconIdentifier = selectedCategoryIcon ?: defaultIcon
+
+                val categoryColorIdentifier = selectedCategoryColor ?: defaultColor
+
+                // Call the viewModel method to update category
+                onUpdateCategory(
+                    categoryName,
+                    categoryIconIdentifier,
+                    categoryColorIdentifier,
+                    context,
+                    viewModel
+                )
+
+                // Clear the EditText field
+                categoryNameEt.text = null
+
+                // Dismiss the dialog
+                dialog.dismiss()
+                viewModel.startDatabaseListeners()
+            }
         }
+        dialog.show()
     }
 
     fun showTaskDeleteConfirmationDialog(
@@ -542,91 +539,89 @@ class DialogManager {
         viewModel: TodoViewModel,
         callback: (Boolean) -> Unit
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val layoutInflater = fragment.layoutInflater
 
-        if (context != null) {
-            val dialogBinding = DialogRemoveConfirmationBinding.inflate(layoutInflater)
-            val dialog = MaterialAlertDialogBuilder(context)
-                .setView(dialogBinding.root)
-                .create()
+        val dialogBinding = DialogRemoveConfirmationBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
 
-            dialogBinding.removeBody.text = fragment.getString(R.string.delete_task)
+        dialogBinding.removeBody.text = fragment.getString(R.string.delete_task)
 
-            val errorColor = ContextCompat.getColor(
-                context,
-                R.color.poor
-            )
-            dialogBinding.btnConfirm.setTextColor(errorColor)
-            dialogBinding.btnConfirm.text = fragment.getString(R.string.delete)
+        val errorColor = ContextCompat.getColor(
+            context,
+            R.color.poor
+        )
+        dialogBinding.btnConfirm.setTextColor(errorColor)
+        dialogBinding.btnConfirm.text = fragment.getString(R.string.delete)
 
-            dialogBinding.btnConfirm.setOnClickListener {
+        dialogBinding.btnConfirm.setOnClickListener {
 
-                // Store a reference to the deleted task before deleting it
-                val deletedTask = viewModel.selectedTaskData.value
+            // Store a reference to the deleted task before deleting it
+            val deletedTask = viewModel.selectedTaskData.value
 
-                val taskId = deletedTask?.taskId
+            val taskId = deletedTask?.taskId
 
-                // Call the ViewModel's deleteTask method
-                if (taskId != null) {
-                    viewModel.deleteTask(taskId) { isSuccessful ->
-                        if (isSuccessful) {
+            // Call the ViewModel's deleteTask method
+            if (taskId != null) {
+                viewModel.deleteTask(taskId) { isSuccessful ->
+                    if (isSuccessful) {
 
-                            // Dismiss the dialog
-                            dialog.dismiss()
+                        // Dismiss the dialog
+                        dialog.dismiss()
 
-                            val snackBar = fragment.view?.let {
-                                Snackbar.make(
-                                    it,
-                                    "Task deleted successfully!",
-                                    Snackbar.LENGTH_LONG
-                                )
-                            }
-                            snackBar?.setAction("Undo") {
-                                // Restore the deleted task
-                                deletedTask.let {
-                                    viewModel.saveTask(
-                                        it.title,
-                                        it.description,
-                                        it.starred,
-                                        it.dueDateTime
-                                    ) { isSuccessful ->
-                                        if (isSuccessful) {
-                                            // Handle success
-                                            toastManager.showShortToast(
-                                                context,
-                                                "Task Restored!"
-                                            )
-                                        } else {
-                                            // Handle failure
-                                            toastManager.showShortToast(
-                                                context,
-                                                "Failed to restore task"
-                                            )
-                                        }
+                        val snackBar = fragment.view?.let {
+                            Snackbar.make(
+                                it,
+                                "Task deleted successfully!",
+                                Snackbar.LENGTH_LONG
+                            )
+                        }
+                        snackBar?.setAction("Undo") {
+                            // Restore the deleted task
+                            deletedTask.let {
+                                viewModel.saveTask(
+                                    it.title,
+                                    it.description,
+                                    it.starred,
+                                    it.dueDateTime
+                                ) { isSuccessful ->
+                                    if (isSuccessful) {
+                                        // Handle success
+                                        toastManager.showShortToast(
+                                            context,
+                                            "Task Restored!"
+                                        )
+                                    } else {
+                                        // Handle failure
+                                        toastManager.showShortToast(
+                                            context,
+                                            "Failed to restore task"
+                                        )
                                     }
                                 }
                             }
-                            // Show the snackBar
-                            snackBar?.show()
-
-                            callback(true)
-                        } else {
-                            toastManager.showShortToast(
-                                context,
-                                "Failed to delete task"
-                            )
                         }
+                        // Show the snackBar
+                        snackBar?.show()
+
+                        callback(true)
+                    } else {
+                        toastManager.showShortToast(
+                            context,
+                            "Failed to delete task"
+                        )
                     }
                 }
             }
-            dialogBinding.btnCancel.setOnClickListener {
-                // Dismiss the dialog
-                dialog.dismiss()
-            }
-
-            dialog.show()
         }
+        dialogBinding.btnCancel.setOnClickListener {
+            // Dismiss the dialog
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     fun showBatchDeleteConfirmationDialog(
@@ -768,34 +763,31 @@ class DialogManager {
         fragment: Fragment,
         callback: (Boolean) -> Unit
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val layoutInflater = fragment.layoutInflater
 
-        if (context != null) {
+        val dialogBinding = DialogDiscardTaskBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
 
-            val dialogBinding = DialogDiscardTaskBinding.inflate(layoutInflater)
-            val dialog = MaterialAlertDialogBuilder(context)
-                .setView(dialogBinding.root)
-                .create()
+        dialogBinding.btnDiscardConfirm.setOnClickListener {
 
-            dialogBinding.btnDiscardConfirm.setOnClickListener {
+            // Dismiss the dialog
+            dialog.dismiss()
 
-                // Dismiss the dialog
-                dialog.dismiss()
+            callback(true)
 
-                callback(true)
-
-            }
-
-            dialogBinding.btnDiscardCancel.setOnClickListener {
-                // Dismiss the dialog
-                dialog.dismiss()
-
-                callback(false)
-            }
-
-            dialog.show()
         }
+
+        dialogBinding.btnDiscardCancel.setOnClickListener {
+            // Dismiss the dialog
+            dialog.dismiss()
+
+            callback(false)
+        }
+
+        dialog.show()
     }
 
     fun showLogoutConfirmationDialog(
@@ -803,245 +795,323 @@ class DialogManager {
         viewModel: TodoViewModel,
         callback: (Boolean) -> Unit
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val layoutInflater = fragment.layoutInflater
 
-        if (context != null) {
-            val dialogBinding = DialogRemoveConfirmationBinding.inflate(layoutInflater)
-            val dialog = MaterialAlertDialogBuilder(context)
-                .setView(dialogBinding.root)
-                .create()
+        val dialogBinding = DialogRemoveConfirmationBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
 
-            dialogBinding.btnConfirm.setOnClickListener {
-                // Call the ViewModel's logout method to sign out the user
-                viewModel.logOut { logOutSuccessful, errorMessage ->
+        dialogBinding.btnConfirm.setOnClickListener {
+            // Call the ViewModel's logout method to sign out the user
+            viewModel.logOut { logOutSuccessful, errorMessage ->
 
-                    if (logOutSuccessful) {
-                        // Dismiss the dialog
-                        dialog.dismiss()
+                if (logOutSuccessful) {
+                    // Dismiss the dialog
+                    dialog.dismiss()
 
-                        callback(true)
+                    callback(true)
 
-                    } else {
-                        // Dismiss the dialog
-                        dialog.dismiss()
+                } else {
+                    // Dismiss the dialog
+                    dialog.dismiss()
 
-                        errorMessage?.let { message ->
-                            val output = message.substringAfter(": ")
-                            toastManager.showLongToast(context, output)
-                        }
+                    errorMessage?.let { message ->
+                        val output = message.substringAfter(": ")
+                        toastManager.showLongToast(context, output)
                     }
                 }
             }
-
-            dialogBinding.btnCancel.setOnClickListener {
-                // Dismiss the dialog
-                dialog.dismiss()
-            }
-
-            dialog.show()
         }
+
+        dialogBinding.btnCancel.setOnClickListener {
+            // Dismiss the dialog
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     fun showForgotPasswordDialog(
         fragment: Fragment,
         auth: FirebaseAuth
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val layoutInflater = fragment.layoutInflater
 
-        if (context != null) {
+        val dialogBinding = DialogForgotPasswordBinding.inflate(layoutInflater)
 
-            val dialogBinding = DialogForgotPasswordBinding.inflate(layoutInflater)
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
 
-            val dialog = MaterialAlertDialogBuilder(context)
-                .setView(dialogBinding.root)
-                .create()
+        dialogBinding.resetPasswordButton.setOnClickListener {
+            val email = dialogBinding.emailEditText.text.toString().trim()
 
-            dialogBinding.resetPasswordButton.setOnClickListener {
-                val email = dialogBinding.emailEditText.text.toString().trim()
-
-                if (email.isNotEmpty()) {
-                    auth.sendPasswordResetEmail(email)
-                        .addOnCompleteListener {
-                            if (it.isSuccessful) {
-                                toastManager.showLongToast(
-                                    context,
-                                    "Password reset link sent to your email"
-                                )
-                            } else {
-                                toastManager.showShortToast(
-                                    context,
-                                    "Failed to send password reset email"
-                                )
-                            }
-                            // Dismiss the dialog
-                            dialog.dismiss()
+            if (email.isNotEmpty()) {
+                auth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener {
+                        if (it.isSuccessful) {
+                            toastManager.showLongToast(
+                                context,
+                                "Password reset link sent to your email"
+                            )
+                        } else {
+                            toastManager.showShortToast(
+                                context,
+                                "Failed to send password reset email"
+                            )
                         }
-                } else {
-                    toastManager.showShortToast(
-                        context,
-                        "Please enter your email"
-                    )
-                }
+                        // Dismiss the dialog
+                        dialog.dismiss()
+                    }
+            } else {
+                toastManager.showShortToast(
+                    context,
+                    "Please enter your email"
+                )
             }
-
-            dialog.show()
         }
+
+        dialog.show()
     }
 
     fun showFeedbackDialog(
         fragment: Fragment,
         userEmail: String,
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val layoutInflater = fragment.layoutInflater
 
-        if (context != null) {
-            val dialogBinding = DialogFeedbackBinding.inflate(layoutInflater)
+        val dialogBinding = DialogFeedbackBinding.inflate(layoutInflater)
 
-            // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
-            val dialog = MaterialAlertDialogBuilder(context)
-                .setView(dialogBinding.root)
-                .create()
+        // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
 
-            // Variable to store the selected emoji details
-            var selectedEmojiTriple: Triple<String, Int, Int>? = null
+        // Variable to store the selected emoji details
+        var selectedEmojiTriple: Triple<String, Int, Int>? = null
 
 
-            // Get the emojis
-            val emojiList = iconManager.getEmojiList()
+        // Get the emojis
+        val emojiList = iconManager.getEmojiList()
 
-            dialogBinding.apply {
+        dialogBinding.apply {
 
-                feedbackImageView.visibility = View.VISIBLE
-                emojiSelectedBack.visibility = View.INVISIBLE
-                emojiSelectedView.visibility = View.INVISIBLE
-                feedbackThanks.visibility = View.INVISIBLE
+            feedbackImageView.visibility = View.VISIBLE
+            emojiSelectedBack.visibility = View.INVISIBLE
+            emojiSelectedView.visibility = View.INVISIBLE
+            feedbackThanks.visibility = View.INVISIBLE
 
-                val emojiAdapter =
-                    EmojiAdapter(
-                        emojiList,
-                        object : EmojiAdapter.EmojiClickListener {
-                            override fun onEmojiClick(emojiTriple: Triple<String, Int, Int>) {
-                                selectedEmojiTriple = emojiTriple
-                            }
-
+            val emojiAdapter =
+                EmojiAdapter(
+                    emojiList,
+                    object : EmojiAdapter.EmojiClickListener {
+                        override fun onEmojiClick(emojiTriple: Triple<String, Int, Int>) {
+                            selectedEmojiTriple = emojiTriple
                         }
+
+                    }
+                )
+            emojiRecyclerView.setHasFixedSize(true)
+            emojiRecyclerView.layoutManager =
+                LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
+
+            // Set the adapter for the emojiRecyclerView
+            emojiRecyclerView.adapter = emojiAdapter
+
+            submitButton.setOnClickListener {
+                try {// Check if an emoji has been selected before proceeding
+                    if (selectedEmojiTriple == null) {
+                        toastManager.showLongToast(
+                            context,
+                            "Please rate your user experience using one of the emojis"
+                        )
+                        return@setOnClickListener
+                    }
+                    val emojiIdentifier = selectedEmojiTriple!!.first
+                    val emojiIconResource = selectedEmojiTriple!!.second
+                    val emojiColor = selectedEmojiTriple!!.third
+
+                    val userRating =
+                        emojiIdentifier.replaceFirstChar { it.uppercase() }.replace('_', ' ')
+
+                    val userComment =
+                        editCommentEt.text.toString().ifEmpty { "No additional comments" }
+
+                    emojiSelectedView.setImageResource(emojiIconResource)
+
+                    emojiSelectedBack.setColorFilter(
+                        ContextCompat.getColor(context, emojiColor),
+                        PorterDuff.Mode.SRC_IN
                     )
-                emojiRecyclerView.setHasFixedSize(true)
-                emojiRecyclerView.layoutManager =
-                    LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
-                // Set the adapter for the emojiRecyclerView
-                emojiRecyclerView.adapter = emojiAdapter
+                    feedbackImageView.visibility = View.INVISIBLE
+                    emojiSelectedBack.visibility = View.VISIBLE
+                    emojiSelectedView.visibility = View.VISIBLE
+                    feedbackThanks.visibility = View.VISIBLE
 
-                submitButton.setOnClickListener {
-                    try {// Check if an emoji has been selected before proceeding
-                        if (selectedEmojiTriple == null) {
-                            toastManager.showLongToast(
-                                context,
-                                "Please rate your user experience using one of the emojis"
+                    // Remove any previously posted callbacks to avoid multiple executions
+                    delayedFeedbackHandler?.removeCallbacksAndMessages(null)
+
+                    // Create a new Handler for delayed navigation
+                    delayedFeedbackHandler = Handler(Looper.myLooper()!!)
+
+                    delayedFeedbackHandler?.postDelayed({
+
+                        val packageManager = context.packageManager
+                        val packageName = context.packageName
+
+                        val deviceModel = Build.MODEL
+                        val androidVersion = Build.VERSION.RELEASE
+                        val packageInfo = packageManager.getPackageInfo(packageName, 0)
+                        val appVersion = packageInfo.versionName
+
+                        // Get the current date and time
+                        val currentTime = Calendar.getInstance()
+                        val dateFormat = SimpleDateFormat(
+                            "EEE, MMM dd, yyyy 'At' hh:mm a",
+                            Locale.getDefault()
+                        )
+                        val formattedTime = dateFormat.format(currentTime.time)
+
+                        // Create a StringBuilder to build the feedback message
+                        val feedbackMessage = StringBuilder()
+                        feedbackMessage.append("User Rating: $userRating\n")
+                        feedbackMessage.append("User Comment: $userComment\n")
+                        feedbackMessage.append("Device Model: $deviceModel\n")
+                        feedbackMessage.append("Android Version: $androidVersion\n")
+                        feedbackMessage.append("App Version: $appVersion\n\n")
+                        feedbackMessage.append("Feedback sent by: $userEmail on: $formattedTime")
+
+                        // Create an Intent to send feedback
+                        val emailIntent = Intent(Intent.ACTION_SEND)
+                        emailIntent.type = "text/plain"
+                        emailIntent.putExtra(
+                            Intent.EXTRA_EMAIL,
+                            arrayOf("rgb.mobile.studios@gmail.com")
+                        )
+                        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "User Feedback")
+                        emailIntent.putExtra(Intent.EXTRA_TEXT, feedbackMessage.toString())
+
+                        // Start the email client or any other app that can handle this intent
+                        context.startActivity(
+                            Intent.createChooser(
+                                emailIntent,
+                                "Send Feedback"
                             )
-                            return@setOnClickListener
-                        }
-                        val emojiIdentifier = selectedEmojiTriple!!.first
-                        val emojiIconResource = selectedEmojiTriple!!.second
-                        val emojiColor = selectedEmojiTriple!!.third
-
-                        val userRating =
-                            emojiIdentifier.replaceFirstChar { it.uppercase() }.replace('_', ' ')
-
-                        val userComment =
-                            editCommentEt.text.toString().ifEmpty { "No additional comments" }
-
-                        emojiSelectedView.setImageResource(emojiIconResource)
-
-                        emojiSelectedBack.setColorFilter(
-                            ContextCompat.getColor(context, emojiColor),
-                            PorterDuff.Mode.SRC_IN
                         )
 
-                        feedbackImageView.visibility = View.INVISIBLE
-                        emojiSelectedBack.visibility = View.VISIBLE
-                        emojiSelectedView.visibility = View.VISIBLE
-                        feedbackThanks.visibility = View.VISIBLE
-
-                        // Remove any previously posted callbacks to avoid multiple executions
-                        delayedFeedbackHandler?.removeCallbacksAndMessages(null)
-
-                        // Create a new Handler for delayed navigation
-                        delayedFeedbackHandler = Handler(Looper.myLooper()!!)
-
-                        delayedFeedbackHandler?.postDelayed({
-
-                            val packageManager = context.packageManager
-                            val packageName = context.packageName
-
-                            val deviceModel = Build.MODEL
-                            val androidVersion = Build.VERSION.RELEASE
-                            val packageInfo = packageManager.getPackageInfo(packageName, 0)
-                            val appVersion = packageInfo.versionName
-
-                            // Get the current date and time
-                            val currentTime = Calendar.getInstance()
-                            val dateFormat = SimpleDateFormat(
-                                "EEE, MMM dd, yyyy 'At' hh:mm a",
-                                Locale.getDefault()
-                            )
-                            val formattedTime = dateFormat.format(currentTime.time)
-
-                            // Create a StringBuilder to build the feedback message
-                            val feedbackMessage = StringBuilder()
-                            feedbackMessage.append("User Rating: $userRating\n")
-                            feedbackMessage.append("User Comment: $userComment\n")
-                            feedbackMessage.append("Device Model: $deviceModel\n")
-                            feedbackMessage.append("Android Version: $androidVersion\n")
-                            feedbackMessage.append("App Version: $appVersion\n\n")
-                            feedbackMessage.append("Feedback sent by: $userEmail on: $formattedTime")
-
-                            // Create an Intent to send feedback
-                            val emailIntent = Intent(Intent.ACTION_SEND)
-                            emailIntent.type = "text/plain"
-                            emailIntent.putExtra(
-                                Intent.EXTRA_EMAIL,
-                                arrayOf("rgb.mobile.studios@gmail.com")
-                            )
-                            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "User Feedback")
-                            emailIntent.putExtra(Intent.EXTRA_TEXT, feedbackMessage.toString())
-
-                            // Start the email client or any other app that can handle this intent
-                            context.startActivity(
-                                Intent.createChooser(
-                                    emailIntent,
-                                    "Send Feedback"
-                                )
-                            )
-
-                            // Clear the EditText field
-                            editCommentEt.text = null
-
-                            // Dismiss the dialog
-                            dialog.dismiss()
-                        }, 1500)
-                    } catch (e: Exception) {
-                        firebase.recordCaughtException(e)
+                        // Clear the EditText field
+                        editCommentEt.text = null
 
                         // Dismiss the dialog
                         dialog.dismiss()
+                    }, 1500)
+                } catch (e: Exception) {
+                    firebase.recordCaughtException(e)
 
-                        toastManager.showLongToast(
-                            context,
-                            "Feedback Sending failed, something went wrong!"
-                        )
-                    }
+                    // Dismiss the dialog
+                    dialog.dismiss()
 
+                    toastManager.showLongToast(
+                        context,
+                        "Feedback Sending failed, something went wrong!"
+                    )
                 }
+
             }
-            dialog.show()
         }
+        dialog.show()
 
     }
+
+    fun showSupportUsDialog(
+        fragment: Fragment,
+    ) {
+        val context = fragment.context ?: return
+        val layoutInflater = fragment.layoutInflater
+
+        val dialogBinding = DialogSupportUsBinding.inflate(layoutInflater)
+
+        // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.apply {
+            val bankList = listOf(
+                "Zenith Bank",
+                "Guaranty Trust Bank (GTBank)",
+                "Access Bank",
+                "United Bank for Africa (UBA)",
+                "First Bank of Nigeria",
+                "Union Bank of Nigeria",
+                "Fidelity Bank",
+                "Sterling Bank",
+                "Ecobank Nigeria",
+                "First City Monument Bank (FCMB)"
+            )
+            var donorBank = bankList.firstOrNull() ?: ""
+
+            // Set donorBank as the first item in the list
+            val updatedBankList = mutableListOf(donorBank)
+            updatedBankList.addAll(bankList.filterNot { it == donorBank })
+
+            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, updatedBankList)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            bankSpinner.adapter = adapter
+
+            bankSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+                override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
+                    // Handle the selected item here
+                    donorBank = updatedBankList[position]
+                }
+
+                override fun onNothingSelected(parentView: AdapterView<*>?) {
+                    // Do nothing here
+                }
+            }
+
+            donateButton.setOnClickListener {
+                try {
+                    val amount = amountEt.text.toString().takeIf { it.isNotBlank() } ?: KILO
+
+                    // Build the USSD code based on the selected bank and amount
+                    val ussdCode = buildUSSDCode(donorBank, amount)
+
+                    // Do something with the generated USSD code (e.g., set it to a variable)
+                    val generatedUSSDCode: String = ussdCode.toString()
+
+                    // Dismiss the dialog
+                    dialog.dismiss()
+
+                    // Open the dialer with the USSD code as input
+                    val encodedUSSDCode = Uri.encode(generatedUSSDCode)
+                    val dialerIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$encodedUSSDCode"))
+                    context.startActivity(dialerIntent)
+
+
+                    // Show a success message or perform other actions
+                    toastManager.showLongToast(context, "Thank you for your generous donation!")
+                } catch (e: Exception) {
+                    firebase.recordCaughtException(e)
+
+                    // Dismiss the dialog
+                    dialog.dismiss()
+
+                    toastManager.showLongToast(
+                        context,
+                        "Donation attempt failed, try again!"
+                    )
+                }
+            }
+        }
+        dialog.show()
+    }
+
 
     fun showSortingDialog(
         fragment: Fragment,
@@ -1052,7 +1122,7 @@ class DialogManager {
         val layoutInflater = fragment.layoutInflater
         val dialogBinding = DialogSortingBinding.inflate(layoutInflater)
 
-        val sortingCondition = viewModel.sortingCondition.value ?: Pair(DATE, true)
+        val sortingCondition = viewModel.getSortingCondition()
         var (condition, order) = sortingCondition
 
         val dialog = MaterialAlertDialogBuilder(context)
@@ -1062,15 +1132,17 @@ class DialogManager {
         dialogBinding.apply {
             radioTitle.isChecked = condition == TITLE
             radioDate.isChecked = condition == DATE
+            radioAscending.isChecked = order
+            radioDescending.isChecked = !order
 
             radioAscending.text = if (radioDate.isChecked) {
-                context.getString(R.string.oldest_first)
+                context.getString(R.string.earliest_due_date_first)
             } else {
                 context.getString(R.string.a_z)
             }
 
             radioDescending.text = if (radioDate.isChecked) {
-                context.getString(R.string.newest_first)
+                context.getString(R.string.latest_due_date_first)
             } else {
                 context.getString(R.string.z_a)
             }
@@ -1086,7 +1158,9 @@ class DialogManager {
 
             btnConfirm.setOnClickListener {
                 if (allTaskList != null) {
-                    viewModel.sortAllTasksList(allTaskList, Pair(condition, order))
+                    viewModel.updateSortingCondition(condition, order)
+
+                    viewModel.sortAllTasksList(allTaskList)
                 }
                 dialog.dismiss()
             }
@@ -1104,7 +1178,7 @@ class DialogManager {
         dueDateTime: Calendar?,
         callback: (Calendar?) -> Unit
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val calendar = Calendar.getInstance()
 
         // Set the initial date value to dueDateTime if it's not null
@@ -1112,31 +1186,29 @@ class DialogManager {
             calendar.timeInMillis = dueDateTime.timeInMillis
         }
 
-        if (context != null) {
-            val datePickerDialog = DatePickerDialog(
-                context,
-                { _, year, month, dayOfMonth ->
-                    try {
-                        // Handle selected date
-                        calendar.set(year, month, dayOfMonth)
+        val datePickerDialog = DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                try {
+                    // Handle selected date
+                    calendar.set(year, month, dayOfMonth)
 
-                        // Return selectedDate
-                        callback(calendar)
-                    } catch (e: Exception) {
-                        callback(null)
-                        toastManager.showShortToast(context, "Pick a valid Date")
-                    }
-                },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            )
+                    // Return selectedDate
+                    callback(calendar)
+                } catch (e: Exception) {
+                    callback(null)
+                    toastManager.showShortToast(context, "Pick a valid Date")
+                }
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
 
-            // Set the minimum date to the current date
-            datePickerDialog.datePicker.minDate = System.currentTimeMillis()
+        // Set the minimum date to the current date
+        datePickerDialog.datePicker.minDate = System.currentTimeMillis()
 
-            datePickerDialog.show()
-        }
+        datePickerDialog.show()
     }
 
     fun showTimePickerDialog(
@@ -1145,7 +1217,7 @@ class DialogManager {
         selectedDate: Calendar,
         callback: (Calendar?) -> Unit
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val calendar = Calendar.getInstance()
 
         // Add two hours to the current time
@@ -1156,38 +1228,36 @@ class DialogManager {
             calendar.timeInMillis = dueDateTime.timeInMillis
         }
 
-        if (context != null) {
-            val timePickerDialog = TimePickerDialog(
-                context,
-                { _, hourOfDay, minute ->
-                    try {
-                        // Handle selected time
-                        selectedDate.set(Calendar.HOUR_OF_DAY, hourOfDay)
-                        selectedDate.set(Calendar.MINUTE, minute)
+        val timePickerDialog = TimePickerDialog(
+            context,
+            { _, hourOfDay, minute ->
+                try {
+                    // Handle selected time
+                    selectedDate.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                    selectedDate.set(Calendar.MINUTE, minute)
 
-                        // Check if the selected time is not in the past (only if selected date is today)
-                        val currentDate = Calendar.getInstance()
-                        if (selectedDate.get(Calendar.YEAR) == currentDate.get(Calendar.YEAR) &&
-                            selectedDate.get(Calendar.DAY_OF_YEAR) == currentDate.get(Calendar.DAY_OF_YEAR) &&
-                            selectedDate.before(currentDate)
-                        ) {
-                            toastManager.showShortToast(context, "Please select a future time")
-                            return@TimePickerDialog
-                        }
-
-                        callback(selectedDate)
-                    } catch (e: Exception) {
-                        callback(null)
-                        toastManager.showShortToast(context, "Pick a valid Time")
+                    // Check if the selected time is not in the past (only if selected date is today)
+                    val currentDate = Calendar.getInstance()
+                    if (selectedDate.get(Calendar.YEAR) == currentDate.get(Calendar.YEAR) &&
+                        selectedDate.get(Calendar.DAY_OF_YEAR) == currentDate.get(Calendar.DAY_OF_YEAR) &&
+                        selectedDate.before(currentDate)
+                    ) {
+                        toastManager.showShortToast(context, "Please select a future time")
+                        return@TimePickerDialog
                     }
-                },
-                calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE),
-                false
-            )
 
-            timePickerDialog.show()
-        }
+                    callback(selectedDate)
+                } catch (e: Exception) {
+                    callback(null)
+                    toastManager.showShortToast(context, "Pick a valid Time")
+                }
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            false
+        )
+
+        timePickerDialog.show()
     }
 
     fun showTaskRenameDialog(
@@ -1195,61 +1265,58 @@ class DialogManager {
         viewModel: TodoViewModel,
         callback: (Boolean) -> Unit
     ) {
-        val context = fragment.context
+        val context = fragment.context ?: return
         val layoutInflater = fragment.layoutInflater
-        val task = viewModel.highlightedTaskList.value?.first()
+        val task = viewModel.highlightedTaskList.value?.first() ?: return
 
-        if (context != null && task != null) {
+        val dialogBinding = DialogRenameTaskBinding.inflate(layoutInflater)
 
-            val dialogBinding = DialogRenameTaskBinding.inflate(layoutInflater)
+        // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
+        val dialog = MaterialAlertDialogBuilder(context)
+            .setView(dialogBinding.root)
+            .create()
 
-            // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
-            val dialog = MaterialAlertDialogBuilder(context)
-                .setView(dialogBinding.root)
-                .create()
+        dialogBinding.apply {
+            // Update the UI with the selected task data
+            renameTitleEt.text =
+                Editable.Factory.getInstance().newEditable(task.title)
 
-            dialogBinding.apply {
-                // Update the UI with the selected task data
-                renameTitleEt.text =
-                    Editable.Factory.getInstance().newEditable(task.title)
+            renameDescriptionEt.text =
+                Editable.Factory.getInstance().newEditable(task.description)
 
-                renameDescriptionEt.text =
-                    Editable.Factory.getInstance().newEditable(task.description)
+            openDescriptionBtn.setOnClickListener {
+                renameDescriptionLayout.visibility = View.VISIBLE
+                renameDescriptionEt.requestFocus()
+            }
 
-                openDescriptionBtn.setOnClickListener {
-                    renameDescriptionLayout.visibility = View.VISIBLE
-                    renameDescriptionEt.requestFocus()
+            saveRename.setOnClickListener {
+                val newTitle = renameTitleEt.text.toString()
+                val newDescription = renameDescriptionEt.text.toString()
+
+                // Check if the title is empty before proceeding
+                if (newTitle.isBlank()) {
+                    toastManager.showShortToast(context, "Title cannot be empty!")
+                    return@setOnClickListener
                 }
-
-                saveRename.setOnClickListener {
-                    val newTitle = renameTitleEt.text.toString()
-                    val newDescription = renameDescriptionEt.text.toString()
-
-                    // Check if the title is empty before proceeding
-                    if (newTitle.isBlank()) {
-                        toastManager.showShortToast(context, "Title cannot be empty!")
-                        return@setOnClickListener
-                    }
-                    setTaskData(
-                        task.taskId,
-                        newTitle,
-                        newDescription,
-                        task.taskCompleted,
-                        task.starred,
-                        task.dueDateTime,
-                        task.categoryIds,
-                        context,
-                        viewModel
-                    ) {
-                        if (it) {
-                            dialog.dismiss()
-                            callback(true)
-                        }
+                setTaskData(
+                    task.taskId,
+                    newTitle,
+                    newDescription,
+                    task.taskCompleted,
+                    task.starred,
+                    task.dueDateTime,
+                    task.categoryIds,
+                    context,
+                    viewModel
+                ) {
+                    if (it) {
+                        dialog.dismiss()
+                        callback(true)
                     }
                 }
             }
-            dialog.show()
         }
+        dialog.show()
     }
 
     /**
@@ -1313,7 +1380,6 @@ class DialogManager {
                 )
             }
         }
-
     }
 
     private fun updateRadioSortOrder(
@@ -1325,8 +1391,8 @@ class DialogManager {
         val radioTextMap = mapOf(
             TITLE to Pair(context.getString(R.string.a_z), context.getString(R.string.z_a)),
             DATE to Pair(
-                context.getString(R.string.oldest_first),
-                context.getString(R.string.newest_first)
+                context.getString(R.string.earliest_due_date_first),
+                context.getString(R.string.latest_due_date_first)
             ),
         )
 
@@ -1373,6 +1439,30 @@ class DialogManager {
         }
     }
 
+    private fun buildUSSDCode(selectedBank: String, amount: String): StringBuilder {
+        val myAccountNumber = "2068633318"
+        val ussdCode = StringBuilder()
+
+        // Append the USSD code prefix for the selected bank
+        when (selectedBank) {
+            "Zenith Bank" -> ussdCode.append("*966*$amount*$myAccountNumber")
+            "Guaranty Trust Bank (GTBank)" -> ussdCode.append("*737*2*$amount*$myAccountNumber")
+            "Access Bank" -> ussdCode.append("*901*$amount*$myAccountNumber")
+            "United Bank for Africa (UBA)" -> ussdCode.append("*919*3*$myAccountNumber*$amount")
+            "First Bank of Nigeria" -> ussdCode.append("*894*$amount*$myAccountNumber")
+            "Union Bank of Nigeria" -> ussdCode.append("*826*2*$amount*$myAccountNumber")
+            "Fidelity Bank" -> ussdCode.append("*770*$amount*$myAccountNumber")
+            "Sterling Bank" -> ussdCode.append("*822*$amount*$myAccountNumber")
+            "Ecobank Nigeria" -> ussdCode.append("*326*$amount*$myAccountNumber")
+            "First City Monument Bank (FCMB)" -> ussdCode.append("*329*$amount*$myAccountNumber")
+            else -> {
+                // Do nothing
+            }
+        }
+        ussdCode.append("#")
+        return ussdCode
+    }
+
     /**
      *-----------------------------------------------------------------------------------------------
      */
@@ -1390,5 +1480,6 @@ class DialogManager {
         private const val SEARCH = "Search Results"
         private const val BATCHADD = "BatchAdd"
         private const val BATCHREMOVE = "BatchRemove"
+        private const val KILO = "1000"
     }
 }

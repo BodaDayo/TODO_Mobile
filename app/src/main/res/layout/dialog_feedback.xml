@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Give Feedback"
+        android:text="@string/give_feedback"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -53,7 +53,7 @@
             android:gravity="center"
             android:visibility="invisible"
             app:layout_constraintTop_toBottomOf="@id/emojiSelectedBack"
-            android:text="Thanks for the feedback!"
+            android:text="@string/thanks_for_the_feedback"
             app:layout_constraintBottom_toBottomOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
@@ -69,7 +69,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Rate your experience" />
+            android:text="@string/rate_your_experience" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/emojiRecyclerView"
@@ -81,7 +81,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Additional comments" />
+            android:text="@string/additional_comments" />
 
         <EditText
             android:id="@+id/editCommentEt"
@@ -89,9 +89,11 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:gravity="start"
-            android:hint="Type comments here"
+            android:inputType="textMultiLine"
+            android:hint="@string/type_comments_here"
             android:maxLines="3"
-            android:minLines="2" />
+            android:minLines="2"
+            android:autofillHints="feedback" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/submitButton"
@@ -99,7 +101,7 @@
             android:layout_height="wrap_content"
             android:layout_marginVertical="4dp"
             android:padding="16dp"
-            android:text="Submit feedback"
+            android:text="@string/submit_feedback"
             android:textSize="16sp"
             app:cornerRadius="8dp" />
     </LinearLayout>

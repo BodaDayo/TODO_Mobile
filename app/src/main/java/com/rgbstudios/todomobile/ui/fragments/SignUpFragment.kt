@@ -72,6 +72,12 @@ class SignUpFragment : Fragment() {
                 val pass = passEt.text.toString().trim()
                 val confirmPass = confirmPassEt.text.toString().trim()
 
+                if (!isValidEmail(email)) {
+                    // Show an error message for invalid email format
+                    toastManager.showShortToast(requireContext(), "Invalid email format.")
+                    return@setOnClickListener
+                }
+
                 if (email.isNotEmpty() && pass.isNotEmpty() && confirmPass.isNotEmpty()) {
                     if (pass == confirmPass) {
 
@@ -229,6 +235,11 @@ class SignUpFragment : Fragment() {
 
     private fun navigateToHomeFragment() {
         findNavController().navigate(R.id.action_signUpFragment_to_homeFragment)
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+        return email.matches(emailPattern.toRegex())
     }
 
     companion object {

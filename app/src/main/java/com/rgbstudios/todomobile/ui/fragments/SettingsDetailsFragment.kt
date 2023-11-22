@@ -84,17 +84,73 @@ class SettingsDetailsFragment() : Fragment() {
 
                 "changePass" -> {
                     changePassLayout.visibility = View.VISIBLE
+                    val auth = firebase.auth
+
+                    changePassForgotPasswordTV.setOnClickListener {
+                        dialogManager.showForgotPasswordDialog(thisFragment, auth)
+                    }
 
                     saveChangePass.setOnClickListener {
-                        toastManager.showShortToast(requireContext(), "Coming soon")
-                        sharedViewModel.toggleSlider(true)
+
+                        val currentPass = changePassCurrentEditText.text.toString().trim()
+                        val newPass = changePassNewEditText.text.toString().trim()
+                        val confirmPass = changePassConfirmEditText.text.toString().trim()
+
+                        if (currentPass.isNotEmpty() && newPass.isNotEmpty() && confirmPass.isNotEmpty()) {
+                            if (newPass == confirmPass) {
+                                progressBar.visibility = View.VISIBLE
+
+                                // Check if the current password is correct
+                                val user = auth.currentUser
+                                val credential =
+                                    EmailAuthProvider.getCredential(user?.email!!, currentPass)
+
+                                user.reauthenticate(credential)
+                                    .addOnCompleteListener { reAuthTask ->
+                                        if (reAuthTask.isSuccessful) {
+                                            // User has been reAuthenticated, proceed to change the password
+                                            firebase.changePassword(newPass) { success, message ->
+                                                if (success) {
+                                                    toastManager.showShortToast(
+                                                        requireContext(),
+                                                        "Password changed successfully!"
+                                                    )
+                                                    sharedViewModel.toggleSlider(true)
+                                                } else {
+                                                    toastManager.showShortToast(
+                                                        requireContext(),
+                                                        message
+                                                    )
+                                                }
+                                            }
+                                        } else {
+                                            // ReAuthentication failed, show an error message
+                                            toastManager.showShortToast(
+                                                requireContext(),
+                                                "Current password is incorrect."
+                                            )
+                                        }
+                                        progressBar.visibility = View.GONE
+                                    }
+                            } else {
+                                toastManager.showShortToast(
+                                    requireContext(),
+                                    "Passwords do not match. Please try again."
+                                )
+                            }
+                        } else {
+                            toastManager.showShortToast(
+                                requireContext(),
+                                "Empty fields are not allowed!!"
+                            )
+                        }
                     }
                 }
 
                 "connectedAcc" -> {
                     connectedAccLayout.visibility = View.VISIBLE
 
-                    sharedViewModel.isGoogleConnected.observe(viewLifecycleOwner){
+                    sharedViewModel.isGoogleConnected.observe(viewLifecycleOwner) {
 
                         val isGoogleConnected = it ?: false
 
@@ -143,6 +199,62 @@ class SettingsDetailsFragment() : Fragment() {
 
                 }
 
+                "changeEmail" -> {
+                    changeEmailLayout.visibility = View.VISIBLE
+
+                    val user = sharedViewModel.currentUser.value
+
+                    if (user != null) {
+                        currentUserEmail.text = user.email
+                    }
+
+                    saveChangeEmail.setOnClickListener {
+                        progressBar.visibility = View.VISIBLE
+
+                        val newEmail = changeEmailNewEditText.text.toString()
+                        val currentPass = changeEmailCurrentPassEditText.text.toString().trim()
+
+                        // Validate the new email format
+                        if (!isValidEmail(newEmail)) {
+                            // Show an error message for invalid email format
+                            toastManager.showShortToast(requireContext(), "Invalid email format.")
+                            progressBar.visibility = View.GONE
+                            return@setOnClickListener
+                        }
+
+                        val currentUser = firebase.auth.currentUser
+                        val credential = EmailAuthProvider.getCredential(currentUser?.email!!, currentPass)
+
+                        currentUser.reauthenticate(credential)
+                            .addOnCompleteListener { reAuthTask ->
+                                if (reAuthTask.isSuccessful) {
+                                    // User has been reAuthenticated, proceed to change the email
+                                    firebase.changeEmail(newEmail) { success, message ->
+                                        if (success) {
+                                            toastManager.showShortToast(
+                                                requireContext(),
+                                                "Email changed successfully!"
+                                            )
+                                            sharedViewModel.toggleSlider(true)
+                                        } else {
+                                            toastManager.showShortToast(
+                                                requireContext(),
+                                                message
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    // ReAuthentication failed, show an error message
+                                    toastManager.showShortToast(
+                                        requireContext(),
+                                        "Current password is incorrect."
+                                    )
+                                }
+                                progressBar.visibility = View.GONE
+                            }
+                    }
+                }
+
                 "deleteAcc" -> {
                     // Todo some warning
                 }
@@ -174,6 +286,12 @@ class SettingsDetailsFragment() : Fragment() {
             val pass = completeSetUpPasswordEditText.text.toString().trim()
             val confirmPass = completeSetUpPasswordConfirmEditText.text.toString().trim()
 
+            if (!isValidEmail(email)) {
+                // Show an error message for invalid email format
+                toastManager.showShortToast(requireContext(), "Invalid email format.")
+                return
+            }
+
             if (email.isNotEmpty() && pass.isNotEmpty() && confirmPass.isNotEmpty()) {
                 if (pass == confirmPass) {
 
@@ -203,7 +321,11 @@ class SettingsDetailsFragment() : Fragment() {
                                     // Linking credentials fails
                                     toastManager.showShortToast(
                                         requireContext(),
-                                        "Failed to to set up email and password, ${task.exception?.message?.substringAfter(": ")}"
+                                        "Failed to to set up email and password, ${
+                                            task.exception?.message?.substringAfter(
+                                                ": "
+                                            )
+                                        }"
                                     )
                                 }
                             }
@@ -248,14 +370,17 @@ class SettingsDetailsFragment() : Fragment() {
                                         requireContext(),
                                         "Google successfully disconnected"
                                     )
-                                    sharedViewModel.upDateConnectedAccount(1,false)
+                                    sharedViewModel.upDateConnectedAccount(1, false)
                                 }
                             }
                     } else {
                         // Handle the error
                         val exception = task.exception
                         firebase.addLog(exception.toString())
-                        toastManager.showShortToast(requireContext(), "Account disconnection failed! Try Again.")
+                        toastManager.showShortToast(
+                            requireContext(),
+                            "Account disconnection failed! Try Again."
+                        )
                     }
                 }
         }
@@ -266,46 +391,53 @@ class SettingsDetailsFragment() : Fragment() {
         launcher.launch(sigInIntent)
     }
 
-    private val launcher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val signInTask = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+    private val launcher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val signInTask = GoogleSignIn.getSignedInAccountFromIntent(result.data)
 
-            if (signInTask.isSuccessful) {
-                // Get the GoogleSignInAccount
-                val account = signInTask.result
-                if (account != null) {
-                    // Link the Google credential to the current Firebase user
-                    val credential = GoogleAuthProvider.getCredential(account.idToken, null)
-                    val currentUser = firebase.auth.currentUser
-                    currentUser?.linkWithCredential(credential)
-                        ?.addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                // Linked successfully
-                                toastManager.showShortToast(requireContext(), "Google account linked successfully.")
-                                sharedViewModel.upDateConnectedAccount(1,true)
-                                sharedViewModel.updateWebClientId(webClientId)
-                            } else {
-                                val exception = task.exception
-                                if (exception is FirebaseAuthUserCollisionException) {
-                                    // The Google account is already linked to another user.
+                if (signInTask.isSuccessful) {
+                    // Get the GoogleSignInAccount
+                    val account = signInTask.result
+                    if (account != null) {
+                        // Link the Google credential to the current Firebase user
+                        val credential = GoogleAuthProvider.getCredential(account.idToken, null)
+                        val currentUser = firebase.auth.currentUser
+                        currentUser?.linkWithCredential(credential)
+                            ?.addOnCompleteListener { task ->
+                                if (task.isSuccessful) {
+                                    // Linked successfully
                                     toastManager.showShortToast(
                                         requireContext(),
-                                        "Google account is already linked to another user."
+                                        "Google account linked successfully."
                                     )
+                                    sharedViewModel.upDateConnectedAccount(1, true)
+                                    sharedViewModel.updateWebClientId(webClientId)
                                 } else {
-                                    // Some other error occurred during the link.
-                                    toastManager.showShortToast(requireContext(), "Failed to link Google account.")
+                                    val exception = task.exception
+                                    if (exception is FirebaseAuthUserCollisionException) {
+                                        // The Google account is already linked to another user.
+                                        toastManager.showShortToast(
+                                            requireContext(),
+                                            "Google account is already linked to another user."
+                                        )
+                                    } else {
+                                        // Some other error occurred during the link.
+                                        toastManager.showShortToast(
+                                            requireContext(),
+                                            "Failed to link Google account."
+                                        )
+                                    }
+                                    googleSignInClient.signOut()
                                 }
-                                googleSignInClient.signOut()
                             }
-                        }
+                    }
+                } else {
+                    // Google Sign-In failed
+                    toastManager.showShortToast(requireContext(), "Google Sign-In failed.")
                 }
-            } else {
-                // Google Sign-In failed
-                toastManager.showShortToast(requireContext(), "Google Sign-In failed.")
             }
         }
-    }
 
     private fun thereIsNetworkConnectivity(): Boolean {
 
@@ -319,6 +451,11 @@ class SettingsDetailsFragment() : Fragment() {
 
         // Check if the network capabilities have internet access
         return networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        val emailPattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+        return email.matches(emailPattern.toRegex())
     }
 
     companion object {

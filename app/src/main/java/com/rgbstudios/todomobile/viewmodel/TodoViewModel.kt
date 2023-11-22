@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -89,10 +90,6 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     val categories: LiveData<List<CategoryEntity>> = _categories
 
     // LiveData to hold the condition to sort the tasks
-    private val _sortingCondition = MutableLiveData<Pair<String, Boolean>>()
-    val sortingCondition: LiveData<Pair<String, Boolean>> = _sortingCondition
-
-    // LiveData to hold the condition to sort the tasks
     private val _settingsItemSelected = MutableLiveData<String>()
     val settingsItemSelected: LiveData<String> = _settingsItemSelected
 
@@ -105,10 +102,10 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     val isEmailAuthSet: LiveData<Boolean> = _isEmailAuthSet
 
     init {
-        _isFirstLaunch.value = checkIfFirstLaunch()
-        _isBiometricEnabled.value = checkBiometricAuthStatus()
-        _isEmailAuthSet.value = checkEmailAuthStatus()
-        checkConnectedAccounts()
+        _isFirstLaunch.value = getIsFirstLaunch()
+        _isBiometricEnabled.value = getBiometricAuthStatus()
+        _isEmailAuthSet.value = getEmailAuthStatus()
+        getConnectedAccounts()
         setIsSelectionModeOn(false)
         updateHighlightedListName("")
         setSettingsItem("")
@@ -147,7 +144,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 val sortedDatabaseList = sortDatabaseList(taskEntities)
 
                 // Default tasks sorting by date
-                sortAllTasksList(sortedDatabaseList, Pair(DATE, true))
+                sortAllTasksList(sortedDatabaseList)
 
                 val newData = convertTasksToJson(taskEntities)
 
@@ -195,7 +192,13 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 )
 
                 val result =
-                    repository.setUpNewUserInDatabase(userId, email, userAvatarData, sender, extractedDetails?.first)
+                    repository.setUpNewUserInDatabase(
+                        userId,
+                        email,
+                        userAvatarData,
+                        sender,
+                        extractedDetails?.first
+                    )
                 val newUser = result.first
                 val categories = result.second
                 firebase.setUserId(newUser.userId)
@@ -262,7 +265,9 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         return listOf(uncompletedTasksList, completedTasksList)
     }
 
-    fun sortAllTasksList(taskLists: List<TaskList>, sortingCondition: Pair<String, Boolean>) {
+    fun sortAllTasksList(taskLists: List<TaskList>) {
+        val sortingCondition = getSortingCondition()
+
         val uncompletedTasksList = taskLists.first().list
         val completedTasksList = taskLists.last().list
 
@@ -270,7 +275,6 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
             sortTaskListsByCondition(uncompletedTasksList, completedTasksList, sortingCondition)
 
         _allTasksList.postValue(sortedTaskList)
-        _sortingCondition.postValue(sortingCondition)
     }
 
     private fun sortTaskListsByCondition(
@@ -295,14 +299,15 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         order: Boolean
     ): List<TaskEntity> {
         return when (sortBy) {
+
             DATE -> {
                 taskEntities.partition { it.dueDateTime != null }
                     .let { (datedList, unDatedList) ->
                         if (order) {
-                            datedList.sortedWith(compareBy { it.dueDateTime }) + unDatedList.sortedBy { it.title }
+                            datedList.sortedWith(compareBy { it.dueDateTime }) + unDatedList.sortedBy { it.title.lowercase() }
                         } else {
                             val output =
-                                unDatedList.sortedByDescending { it.title } + datedList.sortedWith(
+                                unDatedList.sortedByDescending { it.title.lowercase() } + datedList.sortedWith(
                                     compareBy { it.dueDateTime })
                             output.reversed()
                         }
@@ -312,10 +317,10 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
             TITLE -> {
                 if (order) {
                     // Sort by title chronologically
-                    taskEntities.sortedBy { it.title }
+                    taskEntities.sortedBy { it.title.lowercase() }
                 } else {
                     // Sort by title in reverse chronological order
-                    taskEntities.sortedByDescending { it.title }
+                    taskEntities.sortedByDescending { it.title.lowercase() }
                 }
             }
 
@@ -325,7 +330,6 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
             }
         }
     }
-
 
     /**
      *-----------------------------------------------------------------------------------------------
@@ -747,29 +751,28 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     /**
      *-----------------------------------------------------------------------------------------------
      */
-    private fun checkIfFirstLaunch(): Boolean {
+    private fun getIsFirstLaunch(): Boolean {
         return sharedPreferences.getBoolean("isFirstLaunch", true)
     }
 
-    private fun checkBiometricAuthStatus(): Boolean {
+    private fun getBiometricAuthStatus(): Boolean {
         return sharedPreferences.getBoolean("isBiometricEnabled", false)
     }
 
-    private fun checkEmailAuthStatus(): Boolean {
+    private fun getEmailAuthStatus(): Boolean {
         return sharedPreferences.getBoolean("isEmailAuthSet", true)
     }
 
-    private fun checkConnectedAccounts() {
+    private fun getConnectedAccounts() {
         _isGoogleConnected.value = sharedPreferences.getBoolean("isGoogleConnected", false)
         _isFacebookConnected.value = sharedPreferences.getBoolean("isFacebookConnected", false)
         _isTwitterConnected.value = sharedPreferences.getBoolean("isTwitterConnected", false)
     }
 
-    private fun updateAuthState() {
-        val user = firebase.auth.currentUser
-        user?.let {
-            updateAuthProviderState(user.providerData.any { it.providerId == EmailAuthProvider.PROVIDER_ID })
-        }
+    fun getSortingCondition(): Pair<String, Boolean> {
+        val sortBy = sharedPreferences.getString("sortBy", DATE)
+        val order = sharedPreferences.getBoolean("order", true)
+        return Pair(sortBy, order)
     }
 
     // Function to update the isFirstLaunch status
@@ -815,7 +818,19 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 sharedPreferences.putBoolean("isTwitterConnected", isConnected)
             }
         }
-        checkConnectedAccounts()
+        getConnectedAccounts()
+    }
+
+    private fun updateAuthState() {
+        val user = firebase.auth.currentUser
+        user?.let {
+            updateAuthProviderState(user.providerData.any { it.providerId == EmailAuthProvider.PROVIDER_ID })
+        }
+    }
+
+    fun updateSortingCondition(sortBy: String, order: Boolean) {
+        sharedPreferences.putString("sortBy", sortBy)
+        sharedPreferences.putBoolean("order", order)
     }
 
     fun updateWebClientId(webClientId: String) {
@@ -835,7 +850,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                     providersList.contains("twitter")
                 )
             }
-            checkConnectedAccounts()
+            getConnectedAccounts()
         }
     }
 
@@ -920,7 +935,6 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
         private const val UNCOMPLETED = "uncompleted"
         private const val NEWDATAJSON = "newDataJson"
         private const val SIGNUP = "SignUpFragment"
-        private const val SIGNIN = "SignInFragment"
         private const val NULL = "null"
         private const val NAME = "name"
         private const val OCCUPATION = "occupation"

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">TODO Mobile</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
     <string name="splash_text">ToDo Mobile</string>
     <string name="skip">SKIP</string>
     <string name="mark_as_completed">Mark Completed</string>
@@ -46,7 +46,7 @@
     <string name="edit_category">Edit Category</string>
     <string name="create_new_category">Create new category</string>
     <string name="user_giving_feedback">User giving feedback</string>
-    <string name="name">name</string>
+    <string name="name">Name</string>
     <string name="occupation">Occupation</string>
     <string name="collapse_list_icon">collapse list icon</string>
     <string name="close_list_icon">close list icon</string>
@@ -66,8 +66,8 @@
     <string name="mark_completed">Mark Completed</string>
     <string name="settings">Settings</string>
     <string name="account_settings">Account Settings</string>
-    <string name="newest_first">Newest First</string>
-    <string name="oldest_first">Oldest First</string>
+    <string name="latest_due_date_first">Latest Due Date First</string>
+    <string name="earliest_due_date_first">Earliest Due Date First</string>
     <string name="a_z">A-Z</string>
     <string name="z_a">Z-A</string>
     <string name="type_title">Type title</string>
@@ -114,6 +114,33 @@
     <string name="default_ring">Default (Ring)</string>
     <string name="vibration">Vibration</string>
     <string name="disabled">Disabled</string>
+    <string name="batch_task_limit_exceeded_message">You can\'t create more than 10 tasks at once.</string>
+
+    <string name="task_title">New Task</string>
+    <string name="task_title_plain">Task Title</string>
+    <string name="task_description">Task Description</string>
+    <string name="remove_task">Remove Task</string>
+    <string name="due_date">Due Date</string>
+    <string name="give_feedback">Give Feedback</string>
+    <string name="thanks_for_the_feedback">Thanks for the feedback!</string>
+    <string name="additional_comments">Additional comments</string>
+    <string name="type_comments_here">Type comments here</string>
+    <string name="submit_feedback">Submit feedback</string>
+    <string name="rate_your_experience">Rate your experience</string>
+    <string name="support_us">Support Us</string>
+    <string name="support_text_body">You can support the TODO Mobile project by donating a small amount. Thank you for helping us make the service better.</string>
+    <string name="_1_000_00">1,000.00</string>
+    <string name="naira">₦</string>
+    <string name="donate_now">Donate Now</string>
+    <string name="select_your_bank">Select Your Bank</string>
+    <string name="type_in_amount">Type in Amount</string>
+    <string name="current_email">Current email </string>
+    <string name="example_email_com">example@email.com</string>
+    <string name="new_email">New email</string>
+    <string name="update_email">Update email</string>
+    <string name="google_account">Google account</string>
+    <string name="facebook_account">Facebook account</string>
+    <string name="twitter_account">Twitter account</string>
 
     <plurals name="tasks_left">
         <item quantity="one">%d Task left</item>

@@ -63,7 +63,7 @@
         android:id="@+id/star"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="8dp"
+        android:padding="8dp"
         android:contentDescription="@string/star_task"
         android:src="@drawable/star" />
 </LinearLayout>
