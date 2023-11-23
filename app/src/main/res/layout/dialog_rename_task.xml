@@ -9,7 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginVertical="8sp"
-        android:text="Rename Task"
+        android:text="@string/rename_task"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -32,7 +32,8 @@
             android:background="@android:color/transparent"
             android:hint="@string/type_title"
             android:importantForAutofill="no"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:inputType="text" />
     </LinearLayout>
 
     <LinearLayout
@@ -57,7 +58,8 @@
             android:gravity="start"
             android:hint="@string/type_description"
             android:importantForAutofill="no"
-            android:maxLines="3" />
+            android:maxLines="3"
+            android:inputType="text" />
 
     </LinearLayout>
 
@@ -86,7 +88,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16sp"
-            android:text="Save"
+            android:text="@string/save"
             android:textColor="?colorPrimary"
             android:textStyle="bold" />
     </LinearLayout>

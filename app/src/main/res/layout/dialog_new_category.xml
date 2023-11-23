@@ -16,131 +16,146 @@
         android:text="@string/create_new_category"
         android:textSize="16sp" />
 
-    <LinearLayout
-        android:id="@+id/editCategoryLayout"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:padding="8dp">
-
-        <TextView
-            android:id="@+id/categoryNameTV"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Category name:" />
-
-        <EditText
-            android:id="@+id/categoryNameEt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:gravity="start"
-            android:hint="Category name"
-            android:maxLines="3" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/categoryIconLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4sp"
-        android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:padding="8dp">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Category icon:" />
-
+        android:scrollbars="none">
 
         <LinearLayout
-            android:id="@+id/categoryIconBackground"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_marginVertical="8sp"
-            android:background="@drawable/rounded_corners"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/categoryIcon"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="8sp"
-                android:src="@drawable/home_icon"
-                android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/categoryIconTV"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="8sp"
-                android:text="Choose icon from library"
-                android:textSize="12sp"/>
-        </LinearLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/iconRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:visibility="gone"/>
-    </LinearLayout>
+            android:orientation="vertical">
 
-    <LinearLayout
-        android:id="@+id/categoryColorLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4sp"
-        android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:padding="8dp">
+            <LinearLayout
+                android:id="@+id/editCategoryLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:padding="8dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Category color:" />
+                <TextView
+                    android:id="@+id/categoryNameTV"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/category_name" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/colorRecyclerView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:scrollbars="none" />
+                <EditText
+                    android:id="@+id/categoryNameEt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    android:gravity="start"
+                    android:hint="@string/category_name"
+                    android:maxLines="3"
+                    android:autofillHints="category"
+                    android:inputType="text" />
 
-    </LinearLayout>
+            </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingVertical="16sp">
+            <LinearLayout
+                android:id="@+id/categoryIconLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4sp"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:padding="8dp">
 
-        <TextView
-            android:id="@+id/btnCancel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/cancel"
-            android:textColor="?colorOnSurface"
-            android:textSize="16sp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/category_icon" />
 
-        <TextView
-            android:id="@+id/btnSave"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="@string/save"
-            android:textColor="?attr/colorPrimary"
-            android:textSize="16sp"
-            android:textStyle="bold" />
 
-    </LinearLayout>
+                <LinearLayout
+                    android:id="@+id/categoryIconBackground"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginVertical="8sp"
+                    android:background="@drawable/rounded_corners"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/categoryIcon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="8sp"
+                        android:src="@drawable/home_icon"
+                        android:visibility="gone"
+                        android:contentDescription="@string/category_icon" />
+
+                    <TextView
+                        android:id="@+id/categoryIconTV"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:padding="8sp"
+                        android:text="@string/choose_icon_from_library"
+                        android:textSize="12sp" />
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/iconRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/categoryColorLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4sp"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/category_color" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/colorRecyclerView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingVertical="16sp">
+
+                <TextView
+                    android:id="@+id/btnCancel"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/cancel"
+                    android:textColor="?colorOnSurface"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/btnSave"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/save"
+                    android:textColor="?attr/colorPrimary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

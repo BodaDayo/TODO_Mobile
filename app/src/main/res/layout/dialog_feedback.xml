@@ -14,96 +14,108 @@
         android:textSize="18sp"
         android:textStyle="bold" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24sp">
+        android:scrollbars="none">
 
-        <ImageView
-            android:id="@+id/feedbackImageView"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:contentDescription="@string/user_giving_feedback"
-            android:src="@drawable/feedback"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/emojiSelectedBack"
-            android:layout_width="match_parent"
-            android:layout_height="106dp"
-            android:contentDescription="@null"
-            android:src="@drawable/emo_selected"
-            android:visibility="invisible"
-            app:layout_constraintTop_toTopOf="parent" />
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24sp">
 
-        <ImageView
-            android:id="@+id/emojiSelectedView"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginVertical="24sp"
-            android:contentDescription="@null"
-            android:src="@drawable/emo1"
-            android:visibility="invisible"
-            app:layout_constraintTop_toTopOf="parent" />
+                <ImageView
+                    android:id="@+id/feedbackImageView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/user_giving_feedback"
+                    android:src="@drawable/feedback"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
-            android:id="@+id/feedbackThanks"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:visibility="invisible"
-            app:layout_constraintTop_toBottomOf="@id/emojiSelectedBack"
-            android:text="@string/thanks_for_the_feedback"
-            app:layout_constraintBottom_toBottomOf="parent" />
+                <ImageView
+                    android:id="@+id/emojiSelectedBack"
+                    android:layout_width="match_parent"
+                    android:layout_height="106dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/emo_selected"
+                    android:visibility="invisible"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageView
+                    android:id="@+id/emojiSelectedView"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginVertical="24sp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/emo1"
+                    android:visibility="invisible"
+                    app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4sp"
-        android:gravity="center_vertical"
-        android:orientation="vertical"
-        android:padding="8dp">
+                <TextView
+                    android:id="@+id/feedbackThanks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/thanks_for_the_feedback"
+                    android:visibility="invisible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/emojiSelectedBack" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/rate_your_experience" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/emojiRecyclerView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
-            android:scrollbars="none" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4sp"
+                android:gravity="center_vertical"
+                android:orientation="vertical"
+                android:padding="8dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/additional_comments" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/rate_your_experience" />
 
-        <EditText
-            android:id="@+id/editCommentEt"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:gravity="start"
-            android:inputType="textMultiLine"
-            android:hint="@string/type_comments_here"
-            android:maxLines="3"
-            android:minLines="2"
-            android:autofillHints="feedback" />
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/emojiRecyclerView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="8dp"
+                    android:scrollbars="none" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/submitButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginVertical="4dp"
-            android:padding="16dp"
-            android:text="@string/submit_feedback"
-            android:textSize="16sp"
-            app:cornerRadius="8dp" />
-    </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/additional_comments" />
+
+                <EditText
+                    android:id="@+id/editCommentEt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:autofillHints="feedback"
+                    android:background="@android:color/transparent"
+                    android:gravity="start"
+                    android:hint="@string/type_comments_here"
+                    android:inputType="textMultiLine"
+                    android:maxLines="3"
+                    android:minLines="2" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/submitButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginVertical="4dp"
+                    android:padding="16dp"
+                    android:text="@string/submit_feedback"
+                    android:textSize="16sp"
+                    app:cornerRadius="8dp" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

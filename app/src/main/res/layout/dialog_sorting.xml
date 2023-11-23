@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:text="Sort by"
+        android:text="@string/sort_by"
         android:textSize="18sp"
         android:textStyle="bold" />
 
@@ -24,13 +24,13 @@
             android:id="@+id/radioDate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Date" />
+            android:text="@string/date" />
 
         <RadioButton
             android:id="@+id/radioTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Title" />
+            android:text="@string/title" />
 
 
     </RadioGroup>
@@ -53,13 +53,13 @@
             android:id="@+id/radioAscending"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ascending" />
+            android:text="@string/ascending" />
 
         <RadioButton
             android:id="@+id/radioDescending"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Descending" />
+            android:text="@string/descending" />
 
     </RadioGroup>
 
@@ -78,7 +78,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Cancel"
+            android:text="@string/cancel"
             android:textColor="?attr/colorPrimary" />
 
         <View
@@ -94,7 +94,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Ok"
+            android:text="@string/ok"
             android:textColor="?attr/colorPrimary" />
 
     </LinearLayout>

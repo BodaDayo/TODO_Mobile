@@ -22,7 +22,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="Choose Category"
+            android:text="@string/choose_category"
             android:textSize="18sp" />
 
         <ImageView
@@ -32,7 +32,8 @@
             android:layout_marginHorizontal="4sp"
             android:src="@drawable/edit"
             android:visibility="gone"
-            app:tint="@color/myPrimary" />
+            app:tint="@color/myPrimary"
+            android:contentDescription="@string/edit_category" />
 
         <ImageView
             android:id="@+id/deleteIcon"
@@ -41,7 +42,8 @@
             android:layout_marginHorizontal="8sp"
             android:src="@drawable/trash3"
             android:visibility="gone"
-            app:tint="@color/myPrimary" />
+            app:tint="@color/myPrimary"
+            android:contentDescription="@string/delete_category" />
     </LinearLayout>
 
     <View

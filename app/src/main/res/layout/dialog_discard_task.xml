@@ -11,13 +11,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginVertical="8sp"
-        android:text="Discard current draft?"
+        android:text="@string/discard_current_draft"
         android:textStyle="bold" />
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Are you sure you want to discard without saving" />
+        android:text="@string/are_you_sure_you_want_to_discard_without_saving" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -32,7 +32,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="Discard"
+            android:text="@string/discard"
             android:textColor="?colorPrimary"
             android:textStyle="bold"
             app:cornerRadius="8dp" />
@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16sp"
-            android:text="Cancel"
+            android:text="@string/cancel"
             android:textStyle="bold"
             android:textColor="?colorPrimary" />
 

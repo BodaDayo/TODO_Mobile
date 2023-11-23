@@ -767,6 +767,8 @@ class HomeFragment : Fragment(),
 
             R.id.supportUs -> {
                 dialogManager.showSupportUsDialog(this)
+
+                navDrawerLayout.closeDrawer(GravityCompat.START)
             }
 
             R.id.feedback -> {

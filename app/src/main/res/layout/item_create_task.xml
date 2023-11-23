@@ -38,7 +38,9 @@
         android:background="@android:color/transparent"
         android:gravity="start"
         android:hint="@string/task_title_plain"
-        android:maxLines="1" />
+        android:maxLines="1"
+        android:autofillHints="title"
+        android:inputType="text" />
 
 
     <EditText
@@ -48,7 +50,9 @@
         android:background="@android:color/transparent"
         android:gravity="start"
         android:hint="@string/task_description"
-        android:maxLines="2" />
+        android:maxLines="2"
+        android:autofillHints="description"
+        android:inputType="textMultiLine" />
 
     <TextView
         android:id="@+id/batchTaskDateTimeTVB"

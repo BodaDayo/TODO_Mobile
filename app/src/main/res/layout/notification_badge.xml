@@ -5,4 +5,5 @@
     android:layout_width="8dp"
     android:layout_height="8dp"
     android:background="@drawable/circular_primary_background"
-    android:backgroundTint="@color/myAccent"/>
+    android:backgroundTint="@color/myAccent"
+    android:contentDescription="@string/new_notification" />

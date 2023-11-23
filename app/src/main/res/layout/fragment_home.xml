@@ -74,7 +74,8 @@
                         android:backgroundTint="@color/myAccent"
                         android:visibility="gone"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:contentDescription="@string/new_notification_in_profile_page" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -93,7 +94,8 @@
                     android:layout_marginHorizontal="16sp"
                     android:src="@drawable/more_vert"
                     app:menu="@menu/home_overflow_menu"
-                    app:tint="?attr/colorOnSurface" />
+                    app:tint="?attr/colorOnSurface"
+                    android:contentDescription="@string/more_options" />
 
             </LinearLayout>
 
@@ -132,7 +134,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16sp"
-                    android:src="@drawable/list_check_all" />
+                    android:src="@drawable/list_check_all"
+                    android:contentDescription="@string/select_all" />
 
                 <TextView
                     android:id="@+id/itemCounter"
@@ -146,7 +149,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16sp"
-                    android:src="@drawable/close" />
+                    android:src="@drawable/close"
+                    android:contentDescription="@string/exit_selection_mode" />
 
             </LinearLayout>
 
@@ -205,7 +209,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:src="@drawable/empty_layout" />
+                    android:src="@drawable/empty_layout"
+                    android:contentDescription="@string/no_current_tasks" />
 
                 <TextView
                     android:id="@+id/emptyTaskTitle"
@@ -251,7 +256,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16sp"
                     android:layout_weight="1"
-                    android:src="@drawable/share" />
+                    android:src="@drawable/share"
+                    android:contentDescription="@string/share_tasks" />
 
                 <ImageView
                     android:id="@+id/addToCategory"
@@ -259,7 +265,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16sp"
                     android:layout_weight="1"
-                    android:src="@drawable/tag" />
+                    android:src="@drawable/tag"
+                    android:contentDescription="@string/add_tasks_to_a_category" />
 
                 <ImageView
                     android:id="@+id/editDateTime"
@@ -267,7 +274,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16sp"
                     android:layout_weight="1"
-                    android:src="@drawable/clock" />
+                    android:src="@drawable/clock"
+                    android:contentDescription="@string/edit_due_date_and_time" />
 
                 <ImageView
                     android:id="@+id/renameSelected"
@@ -275,7 +283,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16sp"
                     android:layout_weight="1"
-                    android:src="@drawable/edit" />
+                    android:src="@drawable/edit"
+                    android:contentDescription="@string/rename_selected_tasks" />
 
                 <ImageView
                     android:id="@+id/deleteSelected"
@@ -283,7 +292,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16sp"
                     android:layout_weight="1"
-                    android:src="@drawable/trash3" />
+                    android:src="@drawable/trash3"
+                    android:contentDescription="@string/delete_task" />
 
             </LinearLayout>
 
@@ -303,7 +313,8 @@
                     android:layout_width="36sp"
                     android:layout_height="36sp"
                     android:layout_margin="24sp"
-                    android:src="@drawable/user_icon" />
+                    android:src="@drawable/user_icon"
+                    android:contentDescription="@null" />
 
                 <Space
                     android:layout_width="0dp"
@@ -317,7 +328,8 @@
                     android:layout_height="24sp"
                     android:layout_marginHorizontal="16sp"
                     android:src="@drawable/more_vert"
-                    app:tint="?attr/colorOnSurface" />
+                    app:tint="?attr/colorOnSurface"
+                    android:contentDescription="@null" />
 
             </LinearLayout>
 

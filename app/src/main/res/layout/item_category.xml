@@ -45,5 +45,5 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:paddingVertical="4sp"
-        android:text="Category" />
+        android:text="@string/category" />
 </LinearLayout>

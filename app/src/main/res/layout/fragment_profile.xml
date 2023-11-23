@@ -50,7 +50,8 @@
                 android:layout_width="24sp"
                 android:layout_height="24sp"
                 android:src="@drawable/rotate"
-                app:tint="@color/white" />
+                app:tint="@color/white"
+                android:contentDescription="@string/rotate_image" />
 
             <Space
                 android:layout_width="wrap_content"
@@ -110,7 +111,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="8sp"
                     android:gravity="center"
-                    android:text="Pick from default"
+                    android:text="@string/pick_from_default"
                     app:layout_constraintTop_toBottomOf="@id/separator" />
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -130,7 +131,8 @@
                     android:layout_margin="16sp"
                     android:src="@drawable/camera"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:contentDescription="@string/change_avatar" />
 
                 <ImageView
                     android:id="@+id/imageSamplePopBack"
@@ -140,7 +142,8 @@
                     android:src="@drawable/back"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:tint="?attr/colorOnSurface" />
+                    app:tint="?attr/colorOnSurface"
+                    android:contentDescription="@string/back_button" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/expandedImageLayout"
@@ -158,13 +161,15 @@
                         android:src="@drawable/close"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:tint="?attr/colorSurface" />
+                        app:tint="?attr/colorSurface"
+                        android:contentDescription="@string/close_button" />
 
                     <ImageView
                         android:id="@+id/expandedImageView"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:src="@drawable/asset_1" />
+                        android:src="@drawable/asset_1"
+                        android:contentDescription="@string/avatar_expanded" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
@@ -205,7 +210,8 @@
                 android:layout_width="24sp"
                 android:layout_height="24sp"
                 android:src="@drawable/back"
-                app:tint="?attr/colorOnSurface" />
+                app:tint="?attr/colorOnSurface"
+                android:contentDescription="@string/back_button" />
 
             <Space
                 android:layout_width="0dp"
@@ -244,7 +250,7 @@
                         android:id="@+id/profileImageView"
                         android:layout_width="128dp"
                         android:layout_height="128dp"
-                        android:contentDescription="Profile Picture"
+                        android:contentDescription="@string/profile_picture"
                         android:scaleType="centerCrop"
                         android:src="@drawable/user_icon"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -285,7 +291,8 @@
                         android:src="@drawable/camera"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        app:tint="?attr/colorOnPrimary" />
+                        app:tint="?attr/colorOnPrimary"
+                        android:contentDescription="@string/change_avatar" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -310,7 +317,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="16sp"
                         android:layout_marginTop="16dp"
-                        android:text="Name"
+                        android:text="@string/name"
                         app:layout_constraintTop_toTopOf="parent" />
 
                     <EditText
@@ -324,7 +331,8 @@
                         android:inputType="textPersonName"
                         android:maxLines="1"
                         android:textSize="18sp"
-                        app:boxBackgroundMode="none" />
+                        app:boxBackgroundMode="none"
+                        android:autofillHints="name" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -352,7 +360,8 @@
                         android:inputType="textPersonName"
                         android:maxLines="1"
                         android:textSize="18sp"
-                        app:boxBackgroundMode="none" />
+                        app:boxBackgroundMode="none"
+                        android:autofillHints="occupation" />
                 </LinearLayout>
 
             </LinearLayout>

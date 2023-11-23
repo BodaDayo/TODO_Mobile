@@ -274,7 +274,8 @@
                     android:focusable="true"
                     android:padding="16dp"
                     android:scaleType="center"
-                    android:src="@drawable/twitter" />
+                    android:src="@drawable/twitter"
+                    android:contentDescription="@string/twitter_login_button" />
 
                 <Space
                     android:layout_width="wrap_content"

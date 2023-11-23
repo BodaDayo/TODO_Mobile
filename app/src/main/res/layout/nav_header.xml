@@ -58,7 +58,8 @@
             android:backgroundTint="@color/myAccent"
             android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            android:contentDescription="@string/new_notification_in_profile_page" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
