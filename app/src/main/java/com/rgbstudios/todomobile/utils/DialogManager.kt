@@ -5,16 +5,12 @@ import android.app.Dialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.PorterDuff
-import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.text.Editable
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
@@ -33,7 +29,6 @@ import com.rgbstudios.todomobile.databinding.DialogNewCategoryBinding
 import com.rgbstudios.todomobile.databinding.DialogRemoveConfirmationBinding
 import com.rgbstudios.todomobile.databinding.DialogRenameTaskBinding
 import com.rgbstudios.todomobile.databinding.DialogSortingBinding
-import com.rgbstudios.todomobile.databinding.DialogSupportUsBinding
 import com.rgbstudios.todomobile.model.TaskList
 import com.rgbstudios.todomobile.ui.adapters.CategoryAdapter
 import com.rgbstudios.todomobile.ui.adapters.CategoryColorAdapter
@@ -848,9 +843,12 @@ class DialogManager {
             .create()
 
         dialogBinding.resetPasswordButton.setOnClickListener {
+
             val email = dialogBinding.emailEditText.text.toString().trim()
 
             if (email.isNotEmpty()) {
+                dialogBinding.progressBar.visibility =View.VISIBLE
+
                 auth.sendPasswordResetEmail(email)
                     .addOnCompleteListener {
                         if (it.isSuccessful) {
@@ -962,9 +960,6 @@ class DialogManager {
 
                     delayedFeedbackHandler?.postDelayed({
 
-                        val packageManager = context.packageManager
-                        val packageName = context.packageName
-
                         val deviceModel = Build.MODEL
                         val androidVersion = Build.VERSION.RELEASE
 
@@ -984,13 +979,13 @@ class DialogManager {
                         feedbackMessage.append("Android Version: $androidVersion\n")
                         feedbackMessage.append("Feedback sent by: $userEmail on: $formattedTime")
 
+                        val supportMail = context.getString(R.string.support_email)
+
                         // Create an Intent to send feedback
                         val emailIntent = Intent(Intent.ACTION_SEND)
                         emailIntent.type = "text/plain"
                         emailIntent.putExtra(
-                            Intent.EXTRA_EMAIL,
-                            arrayOf("rgb.mobile.studios@gmail.com")
-                        )
+                            Intent.EXTRA_EMAIL, supportMail)
                         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "User Feedback")
                         emailIntent.putExtra(Intent.EXTRA_TEXT, feedbackMessage.toString())
 
@@ -1025,91 +1020,6 @@ class DialogManager {
         dialog.show()
 
     }
-
-    fun showSupportUsDialog(
-        fragment: Fragment,
-    ) {
-        val context = fragment.context ?: return
-        val layoutInflater = fragment.layoutInflater
-
-        val dialogBinding = DialogSupportUsBinding.inflate(layoutInflater)
-
-        // Create a dialog using MaterialAlertDialogBuilder and set the custom ViewBinding layout
-        val dialog = MaterialAlertDialogBuilder(context)
-            .setView(dialogBinding.root)
-            .create()
-
-        dialogBinding.apply {
-            val bankList = listOf(
-                "Zenith Bank",
-                "Guaranty Trust Bank (GTBank)",
-                "Access Bank",
-                "United Bank for Africa (UBA)",
-                "First Bank of Nigeria",
-                "Union Bank of Nigeria",
-                "Fidelity Bank",
-                "Sterling Bank",
-                "Ecobank Nigeria",
-                "First City Monument Bank (FCMB)"
-            )
-            var donorBank = bankList.firstOrNull() ?: ""
-
-            // Set donorBank as the first item in the list
-            val updatedBankList = mutableListOf(donorBank)
-            updatedBankList.addAll(bankList.filterNot { it == donorBank })
-
-            val adapter = ArrayAdapter(context, android.R.layout.simple_spinner_item, updatedBankList)
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            bankSpinner.adapter = adapter
-
-            bankSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
-                    // Handle the selected item here
-                    donorBank = updatedBankList[position]
-                }
-
-                override fun onNothingSelected(parentView: AdapterView<*>?) {
-                    // Do nothing here
-                }
-            }
-
-            donateButton.setOnClickListener {
-                try {
-                    val amount = amountEt.text.toString().takeIf { it.isNotBlank() } ?: KILO
-
-                    // Build the USSD code based on the selected bank and amount
-                    val ussdCode = buildUSSDCode(donorBank, amount)
-
-                    // Do something with the generated USSD code (e.g., set it to a variable)
-                    val generatedUSSDCode: String = ussdCode.toString()
-
-                    // Dismiss the dialog
-                    dialog.dismiss()
-
-                    // Open the dialer with the USSD code as input
-                    val encodedUSSDCode = Uri.encode(generatedUSSDCode)
-                    val dialerIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:$encodedUSSDCode"))
-                    context.startActivity(dialerIntent)
-
-
-                    // Show a success message or perform other actions
-                    toastManager.showLongToast(context, "Thank you for your generous donation!")
-                } catch (e: Exception) {
-                    firebase.recordCaughtException(e)
-
-                    // Dismiss the dialog
-                    dialog.dismiss()
-
-                    toastManager.showLongToast(
-                        context,
-                        "Donation attempt failed, try again!"
-                    )
-                }
-            }
-        }
-        dialog.show()
-    }
-
 
     fun showSortingDialog(
         fragment: Fragment,
@@ -1437,30 +1347,6 @@ class DialogManager {
         }
     }
 
-    private fun buildUSSDCode(selectedBank: String, amount: String): StringBuilder {
-        val myAccountNumber = "2068633318"
-        val ussdCode = StringBuilder()
-
-        // Append the USSD code prefix for the selected bank
-        when (selectedBank) {
-            "Zenith Bank" -> ussdCode.append("*966*$amount*$myAccountNumber")
-            "Guaranty Trust Bank (GTBank)" -> ussdCode.append("*737*2*$amount*$myAccountNumber")
-            "Access Bank" -> ussdCode.append("*901*$amount*$myAccountNumber")
-            "United Bank for Africa (UBA)" -> ussdCode.append("*919*3*$myAccountNumber*$amount")
-            "First Bank of Nigeria" -> ussdCode.append("*894*$amount*$myAccountNumber")
-            "Union Bank of Nigeria" -> ussdCode.append("*826*2*$amount*$myAccountNumber")
-            "Fidelity Bank" -> ussdCode.append("*770*$amount*$myAccountNumber")
-            "Sterling Bank" -> ussdCode.append("*822*$amount*$myAccountNumber")
-            "Ecobank Nigeria" -> ussdCode.append("*326*$amount*$myAccountNumber")
-            "First City Monument Bank (FCMB)" -> ussdCode.append("*329*$amount*$myAccountNumber")
-            else -> {
-                // Do nothing
-            }
-        }
-        ussdCode.append("#")
-        return ussdCode
-    }
-
     /**
      *-----------------------------------------------------------------------------------------------
      */
@@ -1468,16 +1354,9 @@ class DialogManager {
     companion object {
         private const val HOME = "HomeFragment"
         private const val CREATE = "create_new"
-        private const val EDIT = "edit"
         private const val CATEGORY = "category"
         private const val DATE = "date"
         private const val TITLE = "title"
-        private const val COMPLETED = "completed"
-        private const val UNCOMPLETED = "uncompleted"
-        private const val STAR = "Favorites"
-        private const val SEARCH = "Search Results"
         private const val BATCHADD = "BatchAdd"
-        private const val BATCHREMOVE = "BatchRemove"
-        private const val KILO = "1000"
     }
 }

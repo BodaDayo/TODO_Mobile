@@ -94,7 +94,6 @@
                     android:layout_marginHorizontal="16sp"
                     android:src="@drawable/more_vert"
                     app:menu="@menu/home_overflow_menu"
-                    app:tint="?attr/colorOnSurface"
                     android:contentDescription="@string/more_options" />
 
             </LinearLayout>

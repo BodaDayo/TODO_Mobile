@@ -24,7 +24,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -57,7 +56,6 @@ class HomeFragment : Fragment(),
     private lateinit var binding: FragmentHomeBinding
     private lateinit var taskListAdapter: ListAdapter
     private lateinit var bottomSheetFragment: BottomSheetFragment
-    private lateinit var refreshLayout: SwipeRefreshLayout
     private lateinit var navDrawerLayout: DrawerLayout
     private lateinit var fragmentContext: Context
     private lateinit var callback: OnBackPressedCallback
@@ -144,9 +142,6 @@ class HomeFragment : Fragment(),
 
                 }
             )
-
-            // Set up refreshLayout
-            refreshLayout = swipeRefreshLayout
 
             // Set up the nav drawer
             navDrawerLayout = drawerLayout
@@ -585,7 +580,6 @@ class HomeFragment : Fragment(),
                     }
                 }
             }
-
         }
     }
     private fun createShareTasksIntent() {
@@ -680,7 +674,7 @@ class HomeFragment : Fragment(),
     }
 
     private fun stopRefreshing() {
-        refreshLayout.isRefreshing = false
+        binding.swipeRefreshLayout.isRefreshing = false
     }
 
     private fun checkTaskLists(newList: List<TaskList>): Int {
@@ -766,9 +760,8 @@ class HomeFragment : Fragment(),
             }
 
             R.id.supportUs -> {
-                dialogManager.showSupportUsDialog(this)
-
                 navDrawerLayout.closeDrawer(GravityCompat.START)
+                findNavController().navigate(R.id.action_homeFragment_to_supportUsFragment)
             }
 
             R.id.feedback -> {
@@ -856,8 +849,10 @@ class HomeFragment : Fragment(),
                 }
 
                 R.id.menu_view -> {
+
+                    // TODO Calender View
+                    toastManager.showShortToast(requireContext(),"Calender View is coming soon!")
                     true
-                    // TODO calender view
                 }
 
                 else -> false

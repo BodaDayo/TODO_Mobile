@@ -66,11 +66,11 @@ class BatchCreateTasksFragment : Fragment() {
             }
 
             popBack.setOnClickListener {
-                popBackStackManager()
+                popBackStackManager(false)
             }
 
             requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner) {
-                popBackStackManager()
+                popBackStackManager(false)
             }
         }
     }
@@ -93,7 +93,7 @@ class BatchCreateTasksFragment : Fragment() {
                     )
                 }
 
-                popBackStackManager()
+                popBackStackManager(true)
             }
         } else {
             toastManager.showShortToast(requireContext(), "Ensure all tasks have a title")
@@ -109,17 +109,21 @@ class BatchCreateTasksFragment : Fragment() {
         return taskList
     }
 
-    private fun popBackStackManager() {
-        if (batchTaskAdapter.areTasksFilled()) {
-            dialogManager.showDiscardDialog(this) { isSuccessful ->
-                if (isSuccessful) {
-                    // pop back stack
-                    activity?.supportFragmentManager?.popBackStack()
-                }
-            }
-        } else {
-            // If no changes, simply pop the back stack
+    private fun popBackStackManager(onSave: Boolean) {
+        if(onSave) {
             activity?.supportFragmentManager?.popBackStack()
+        } else {
+            if (batchTaskAdapter.areTasksFilled()) {
+                dialogManager.showDiscardDialog(this) { isSuccessful ->
+                    if (isSuccessful) {
+                        // pop back stack
+                        activity?.supportFragmentManager?.popBackStack()
+                    }
+                }
+            } else {
+                // If no changes, simply pop the back stack
+                activity?.supportFragmentManager?.popBackStack()
+            }
         }
     }
 }

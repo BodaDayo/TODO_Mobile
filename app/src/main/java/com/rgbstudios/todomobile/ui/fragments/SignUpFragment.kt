@@ -125,6 +125,7 @@ class SignUpFragment : Fragment() {
             }
         }
     }
+
     private fun signInWithGoogle() {
         val sigInIntent = googleSignInClient.signInIntent
         launcher.launch(sigInIntent)
@@ -164,15 +165,15 @@ class SignUpFragment : Fragment() {
                                         progressWithSignIn(email)
                                     }
 
-                                    binding.accProgressBar.visibility = View.GONE
-                                    binding.socialLoginButtonsLayout.visibility = View.VISIBLE
-
                                     sharedViewModel.updateWebClientId(webClientId)
                                 } else {
                                     googleSignInClient.signOut()
                                     binding.socialLoginButtonsLayout.visibility = View.VISIBLE
                                     toastManager.showShortToast(requireContext(), "Sign-In with Google failed.")
                                 }
+
+                                binding.accProgressBar.visibility = View.GONE
+                                binding.socialLoginButtonsLayout.visibility = View.VISIBLE
                             }
                     }
                 } else {
@@ -207,6 +208,7 @@ class SignUpFragment : Fragment() {
             }
         }
     }
+
     private fun progressWithSignUp(email: String, pass: String, extractedDetails: Pair<String, Uri?>?) {
         // Get the user ID from Firebase Auth
         val userId = auth.currentUser?.uid ?: ""

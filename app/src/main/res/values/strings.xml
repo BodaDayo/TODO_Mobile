@@ -1,6 +1,6 @@
 <resources>
     <string name="app_name">TODO Mobile</string>
-
+    <string name="support_email">rgb.mobile.studios@gmail.com</string>
 
     <string name="splash_text">ToDo Mobile</string>
     <string name="skip">SKIP</string>
@@ -77,10 +77,10 @@
     <string name="or_continue_with">or continue with</string>
     <string name="forgot_password">Forgot Password?</string>
     <string name="register">Register</string>
-    <string name="don_t_have_an_account">Don’t have an account?</string>
+    <string name="don_t_have_an_account">Don’t have an account? </string>
     <string name="email">Email</string>
     <string name="password">Password</string>
-    <string name="already_have_an_account">Already have an account?</string>
+    <string name="already_have_an_account">Already have an account? </string>
     <string name="enter_your_email">Enter your Email</string>
     <string name="confirm_password">Confirm Password</string>
     <string name="google_login">Google Login</string>
@@ -115,6 +115,8 @@
     <string name="vibration">Vibration</string>
     <string name="disabled">Disabled</string>
     <string name="batch_task_limit_exceeded_message">You can\'t create more than 10 tasks at once.</string>
+    <string name="paystack_url">https://paystack.com/pay/TODOMobileDonate</string>
+
 
     <string name="task_title">New Task</string>
     <string name="task_title_plain">Task Title</string>
@@ -128,7 +130,8 @@
     <string name="submit_feedback">Submit feedback</string>
     <string name="rate_your_experience">Rate your experience</string>
     <string name="support_us">Support Us</string>
-    <string name="support_text_body">You can support the TODO Mobile project by donating a small amount. Thank you for helping us make the service better.</string>
+    <string name="support_text_body">You can support the TODO Mobile project by donating a small amount. Thank you for helping us in keeping TODO Mobile ad-free and making the service better.</string>
+    <string name="no_internet_connection_message">Oops! No internet connection. Please check your network settings and try again.</string>
     <string name="_1_000_00">1,000.00</string>
     <string name="naira">₦</string>
     <string name="donate_now">Donate Now</string>
@@ -160,7 +163,7 @@
     <string name="date">Date</string>
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="more_options">more options</string>
     <string name="select_all">select all</string>
     <string name="exit_selection_mode">exit selection mode</string>
@@ -179,6 +182,11 @@
     <string name="twitter_login_button">twitter login button</string>
     <string name="category">Category</string>
     <string name="new_notification">new notification</string>
+    <string name="pay_with_card">Pay with Card</string>
+    <string name="payment_option">payment option</string>
+    <string name="card_number">Card Number</string>
+    <string name="card_expiry">Card Expiry</string>
+    <string name="cvv">CVV</string>
 
     <plurals name="tasks_left">
         <item quantity="one">%d Task left</item>

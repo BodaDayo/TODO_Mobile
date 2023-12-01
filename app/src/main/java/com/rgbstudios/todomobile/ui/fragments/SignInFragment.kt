@@ -17,9 +17,6 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.recaptcha.RecaptchaAction.Companion.SIGNUP
-import com.google.firebase.auth.AuthCredential
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.TodoMobileApplication
@@ -240,7 +237,7 @@ class SignInFragment : Fragment() {
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     } else {
-                                        Log.d("SignUpFragment", "UserEntity initiation failed")
+                                        firebase.addLog("SignUpFragment: UserEntity initiation failed")
                                     }
                                 }
                             } else {
@@ -309,14 +306,14 @@ class SignInFragment : Fragment() {
                                         progressWithSignIn(email, emptyPassword)
                                     }
 
-                                    binding.accProgressBar.visibility = View.GONE
-                                    binding.socialLoginButtonsLayout.visibility = View.VISIBLE
-
                                     sharedViewModel.updateWebClientId(webClientId)
                                 } else {
                                     googleSignInClient.signOut()
                                     toastManager.showShortToast(requireContext(), "Sign-In with Google failed.")
                                 }
+
+                                binding.accProgressBar.visibility = View.GONE
+                                binding.socialLoginButtonsLayout.visibility = View.VISIBLE
                             }
                     }
                 } else {
@@ -334,5 +331,4 @@ class SignInFragment : Fragment() {
         private const val TAG = "SignInFragment"
         private const val SIGNUP = "SignUpFragment"
     }
-
 }

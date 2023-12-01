@@ -31,7 +31,6 @@ import com.rgbstudios.todomobile.worker.UploadUserDetailsWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.tasks.await
@@ -330,6 +329,7 @@ class TodoRepository(
         resources: Resources,
         uriFromAuth: Uri?
     ): String? {
+
         val avatarBitmap: Bitmap = if (uriFromAuth != null) {
             try {
                 // Convert the URI to a Bitmap using Glide
@@ -342,7 +342,10 @@ class TodoRepository(
                 }
             } catch (e: Exception) {
                 firebase.recordCaughtException(e)
-                return null
+
+                val avatarResource = avatars.defaultAvatar
+                // Convert the drawable resource to a bitmap
+                BitmapFactory.decodeResource(resources, avatarResource)
             }
         } else if (sender == SIGNUP) {
             // Get the drawable resource ID of a random avatar
@@ -540,7 +543,6 @@ class TodoRepository(
      */
 
     companion object {
-        private const val TAG = "TodoRepository"
         private const val SIGNUP = "SignUpFragment"
         private const val SIGNIN = "SignInFragment"
     }

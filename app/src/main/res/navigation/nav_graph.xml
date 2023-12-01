@@ -79,7 +79,10 @@
             app:destination="@id/settingsFragment" />
         <action
             android:id="@+id/action_homeFragment_to_batchCreateTasksFragment"
-            app:destination="@id/batchCreateTasksFragment2" />
+            app:destination="@id/batchCreateTasksFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_supportUsFragment"
+            app:destination="@id/supportUsFragment" />
     </fragment>
     <fragment
         android:id="@+id/editTaskFragment"
@@ -124,9 +127,14 @@
         android:label="fragment_settings"
         tools:layout="@layout/fragment_settings" />
     <fragment
-        android:id="@+id/batchCreateTasksFragment2"
+        android:id="@+id/batchCreateTasksFragment"
         android:name="com.rgbstudios.todomobile.ui.fragments.BatchCreateTasksFragment"
         android:label="fragment_batch_create_tasks"
         tools:layout="@layout/fragment_batch_create_tasks" />
+    <fragment
+        android:id="@+id/supportUsFragment"
+        android:name="com.rgbstudios.todomobile.ui.fragments.SupportUsFragment"
+        android:label="fragment_support_us"
+        tools:layout="@layout/fragment_support_us" />
 
 </navigation>

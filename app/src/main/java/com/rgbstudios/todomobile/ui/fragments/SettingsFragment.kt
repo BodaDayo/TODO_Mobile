@@ -16,9 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.slidingpanelayout.widget.SlidingPaneLayout
 import com.rgbstudios.todomobile.R
-import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.databinding.FragmentSettingsBinding
-import com.rgbstudios.todomobile.utils.DialogManager
 import com.rgbstudios.todomobile.utils.SharedPreferencesManager
 import com.rgbstudios.todomobile.utils.ToastManager
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
@@ -29,9 +27,7 @@ class SettingsFragment : Fragment() {
     private val sharedViewModel: TodoViewModel by activityViewModels()
     private lateinit var binding: FragmentSettingsBinding
     private lateinit var fragmentContext: Context
-    private val dialogManager = DialogManager()
     private val toastManager = ToastManager()
-    private val firebase = FirebaseAccess()
     private val thisFragment = this
     private lateinit var executor: Executor
     private lateinit var biometricPrompt: BiometricPrompt
@@ -138,6 +134,16 @@ class SettingsFragment : Fragment() {
                 //Todo show dialog
             }
 
+            changeSoundLayout.setOnClickListener {
+                toastManager.showShortToast(requireContext(), "Coming soon")
+                //Todo show dialog
+            }
+
+            changeVibrationLayout.setOnClickListener {
+                toastManager.showShortToast(requireContext(), "Coming soon")
+                //Todo show dialog
+            }
+
             popBack.setOnClickListener {
                 popBackStackManager()
             }
@@ -228,9 +234,5 @@ class SettingsFragment : Fragment() {
             .setSubtitle("")
             .setNegativeButtonText("Cancel")
             .build()
-    }
-
-    companion object {
-        private const val TAG = "SettingsFragment"
     }
 }
