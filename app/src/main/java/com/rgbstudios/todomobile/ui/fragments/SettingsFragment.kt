@@ -99,20 +99,15 @@ class SettingsFragment : Fragment() {
                     if (storedPass.isNotBlank()) {
                         checkDeviceHasBiometric()
                     } else {
-                        toastManager.showShortToast(requireContext(), "Sign in with email/password to enable Biometric Authentication!")
+                        toastManager.showShortToast(requireContext(), getString(R.string.sign_in_with_email_password_to_enable_biometric_authentication))
                         fingerprintSwitch.isChecked = false
                     }
                 } else {
-                    toastManager.showShortToast(requireContext(), "Biometric authentication disabled.")
+                    toastManager.showShortToast(requireContext(), getString(R.string.biometric_authentication_disabled))
 
                     // Update the isBiometricEnabled in the viewModel
                     sharedViewModel.updateIsBiometricEnabled(false)
                 }
-            }
-
-            deleteAccLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), "Coming soon")
-                // openDetailsPane("deleteAcc")
             }
 
             changeAppThemeLayout.setOnClickListener {
@@ -120,29 +115,40 @@ class SettingsFragment : Fragment() {
             }
 
             timeFormatLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), "Coming soon")
+                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
                 //Todo show dialog
             }
 
             defaultViewLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), "Coming soon")
+                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
                 //Todo show dialog
             }
 
             keepTasksLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), "Coming soon")
+                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
                 //Todo show dialog
             }
 
             changeSoundLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), "Coming soon")
+                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
                 //Todo show dialog
             }
 
             changeVibrationLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), "Coming soon")
+                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
                 //Todo show dialog
             }
+
+            setReminderLayout.setOnClickListener {
+                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon_reminders_current_set_to_default))
+                //Todo show dialog
+            }
+
+            deleteAccLayout.setOnClickListener {
+                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
+                // openDetailsPane("deleteAcc")
+            }
+
 
             popBack.setOnClickListener {
                 popBackStackManager()

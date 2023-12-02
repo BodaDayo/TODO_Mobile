@@ -15,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.google.firebase.database.GenericTypeIndicator
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.rgbstudios.todomobile.R
 import com.rgbstudios.todomobile.data.entity.CategoryEntity
 import com.rgbstudios.todomobile.data.entity.TaskEntity
 import com.rgbstudios.todomobile.data.entity.UserEntity
@@ -24,6 +25,7 @@ import com.rgbstudios.todomobile.data.local.UserDao
 import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.utils.AvatarManager
 import com.rgbstudios.todomobile.utils.CategoryManager
+import com.rgbstudios.todomobile.worker.SetAlarmWorker
 import com.rgbstudios.todomobile.worker.UploadAvatarWorker
 import com.rgbstudios.todomobile.worker.UploadCategoriesWorker
 import com.rgbstudios.todomobile.worker.UploadTasksWorker
@@ -473,6 +475,20 @@ class TodoRepository(
             )
     }
 
+    fun enqueueSetupAlarmWork(data: Data, context: Context) {
+
+        val setUpAlarmWorkRequest = OneTimeWorkRequestBuilder<SetAlarmWorker>()
+            .setInputData(data)
+            .build()
+
+        WorkManager.getInstance(context)
+            .enqueueUniqueWork(
+                context.getString(R.string.setupreminders),
+                ExistingWorkPolicy.REPLACE,
+                setUpAlarmWorkRequest
+            )
+    }
+
     fun enqueueUploadTasksWork(data: Data, context: Context) {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED) // Requires network connection
@@ -485,7 +501,7 @@ class TodoRepository(
 
         WorkManager.getInstance(context)
             .enqueueUniqueWork(
-                "uploadUserTasks",
+                context.getString(R.string.uploadusertasks),
                 ExistingWorkPolicy.REPLACE,
                 uploadWorkRequest
             )

@@ -333,7 +333,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:text="@string/_12_hour"
-                            android:textColor="@color/my_darker_grey" />
+                            android:textColor="@color/my_darker_grey"/>
 
                     </LinearLayout>
                 </LinearLayout>
@@ -491,6 +491,52 @@
 
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/setReminderLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4sp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="16dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/notifications_none"
+                        app:tint="?attr/colorOnSurface" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/set_reminders" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/default_text"
+                            android:textColor="@color/my_darker_grey" />
+
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/setReminderPaneToggle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:contentDescription="@null"
+                        android:padding="8dp"
+                        android:src="@drawable/arrow_right" />
+
+                </LinearLayout>
+
                 <View
                     android:id="@+id/separator"
                     android:layout_width="match_parent"
@@ -526,8 +572,7 @@
                         android:layout_marginStart="16dp"
                         android:contentDescription="@null"
                         android:padding="8dp"
-                        android:src="@drawable/arrow_right"
-                        app:tint="@color/myPrimary" />
+                        android:src="@drawable/arrow_right" />
 
                 </LinearLayout>
 

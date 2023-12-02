@@ -146,6 +146,10 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 // Default tasks sorting by date
                 sortAllTasksList(sortedDatabaseList)
 
+                // Set up Reminder for tasks
+                setUpAlarmInBackground(taskEntities)
+
+                // Upload tasks to online database
                 val newData = convertTasksToJson(taskEntities)
 
                 _currentUser.value?.let { user ->
@@ -705,6 +709,19 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
      * BackgroundTasks ------------------------------------------------------------------------------
      */
 
+    private fun setUpAlarmInBackground(tasks: List<TaskEntity>) {
+        val tasksWithDueDateTime = tasks.filter { it.dueDateTime != null }
+
+        val tasksData = convertTasksToJson(tasksWithDueDateTime)
+
+        val data = Data.Builder()
+            .putString("tasksData", tasksData)
+            .build()
+
+        // Assuming your repository method can handle multiple tasks being enqueued
+        repository.enqueueSetupAlarmWork(data, application.applicationContext)
+    }
+
     private fun uploadTasksInBackground(user: UserEntity, newDataJson: String) {
         val data = Data.Builder()
             .putString(USERID, user.userId)
@@ -908,6 +925,11 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     /**
      *-----------------------------------------------------------------------------------------------
      */
+
+    private fun convertTaskToJson(task: TaskEntity): String {
+        val gson = Gson()
+        return gson.toJson(task)
+    }
 
     private fun convertTasksToJson(tasks: List<TaskEntity>): String {
         val gson = Gson()
