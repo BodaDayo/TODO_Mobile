@@ -123,6 +123,14 @@ class SignUpFragment : Fragment() {
             googleLoginButton.setOnClickListener {
                 signInWithGoogle()
             }
+
+            facebookLoginButton.setOnClickListener {
+                toastManager.showShortToast(requireContext(),getString(R.string.facebook_login_coming_soon))
+            }
+
+            twitterLoginButton.setOnClickListener {
+                toastManager.showShortToast(requireContext(),getString(R.string.twitter_login_coming_soon))
+            }
         }
     }
 

@@ -115,6 +115,14 @@ class SignInFragment : Fragment() {
                 signInWithGoogle()
             }
 
+            facebookLoginButton.setOnClickListener {
+                toastManager.showShortToast(requireContext(),getString(R.string.facebook_login_coming_soon))
+            }
+
+            twitterLoginButton.setOnClickListener {
+                toastManager.showShortToast(requireContext(),getString(R.string.twitter_login_coming_soon))
+            }
+
             fingerprintButton.setOnClickListener {
                 showBiometricListener(storedEmail, storedPass)
                 createPromptInfo()

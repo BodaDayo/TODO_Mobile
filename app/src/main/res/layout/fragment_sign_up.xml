@@ -255,14 +255,14 @@
                     android:focusable="true"
                     android:padding="16dp"
                     android:scaleType="center"
-                    android:src="@drawable/facebook" />
+                    android:src="@drawable/facebook_disabled" />
 
                 <Space
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1" />
 
-                <!-- GitHub Login Button -->
+                <!-- twitter Login Button -->
                 <ImageView
                     android:id="@+id/twitterLoginButton"
                     android:layout_width="wrap_content"
@@ -274,7 +274,7 @@
                     android:focusable="true"
                     android:padding="16dp"
                     android:scaleType="center"
-                    android:src="@drawable/twitter"
+                    android:src="@drawable/twitter_disabled"
                     android:contentDescription="@string/twitter_login_button" />
 
                 <Space

@@ -249,25 +249,27 @@
                 android:elevation="@dimen/cardview_default_elevation"
                 android:padding="16dp"
                 android:scaleType="center"
-                android:src="@drawable/facebook" />
+                android:src="@drawable/facebook_disabled" />
 
             <Space
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1" />
 
-            <!-- GitHub Login Button -->
+            <!-- twitter Login Button -->
             <ImageView
-                android:id="@+id/githubLoginButton"
+                android:id="@+id/twitterLoginButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="4dp"
                 android:background="@drawable/circular_surface_background"
-                android:contentDescription="@string/github_login"
+                android:clickable="true"
                 android:elevation="@dimen/cardview_default_elevation"
+                android:focusable="true"
                 android:padding="16dp"
                 android:scaleType="center"
-                android:src="@drawable/github" />
+                android:src="@drawable/twitter_disabled"
+                android:contentDescription="@string/twitter_login_button" />
 
             <Space
                 android:layout_width="wrap_content"

@@ -11,6 +11,7 @@ Whether you're a student, professional, or just someone looking to keep track of
 - **Authentication Options:** Log in with your password, fingerprint, or other available methods.
 - **Onboarding:** Enjoy a guided tour with informative onboarding screens.
 - **Custom Avatars:** Choose from a list of default avatars to personalize your profile.
+- **Notifications:** You get reminders when tasks are close to due.
 
 ## Installation
 You can download the app from the Google Play Store or install it manually by following these steps:
@@ -33,7 +34,7 @@ License
 This project is licensed under the MIT License - see the [LICENSE](/LICENSE.md) file for details.
 
 ## Acknowledgments
-Shoutout to the open-source community for the incredible resources and support, JetBrains from the free resources, and everyone that's contributed to the building of the app. :+1: :+1:
+Shout out to the open-source community for the incredible resources and support, JetBrains from the free resources, and everyone that's contributed to the building of the app. :+1: :+1:
 
 Contact
 - Email: rgb.mobile.studios@gmail.com

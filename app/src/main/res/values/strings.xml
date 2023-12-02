@@ -196,6 +196,8 @@
     <string name="sign_in_with_email_password_to_enable_biometric_authentication">Sign in with email/password to enable Biometric Authentication!</string>
     <string name="biometric_authentication_disabled">Biometric authentication disabled.</string>
     <string name="default_text">Default</string>
+    <string name="facebook_login_coming_soon">Facebook login coming soon!</string>
+    <string name="twitter_login_coming_soon">Twitter login coming soon!</string>
 
     <plurals name="tasks_left">
         <item quantity="one">%d Task left</item>

@@ -416,13 +416,14 @@
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="16dp"
                             android:contentDescription="@null"
-                            android:src="@drawable/facebook" />
+                            android:src="@drawable/facebook_disabled" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/facebook_account" />
+                            android:text="@string/facebook_account"
+                            android:textColor="@color/my_darker_grey" />
 
                         <ImageView
                             android:id="@+id/facebookTick"
@@ -441,7 +442,7 @@
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="4sp"
                             android:text="@string/connect"
-                            android:textColor="@color/myPrimary" />
+                            android:textColor="@color/my_darker_grey" />
 
 
                     </LinearLayout>
@@ -460,13 +461,14 @@
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="16dp"
                             android:contentDescription="@null"
-                            android:src="@drawable/twitter" />
+                            android:src="@drawable/twitter_disabled" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="@string/twitter_account" />
+                            android:text="@string/twitter_account"
+                            android:textColor="@color/my_darker_grey" />
 
                         <ImageView
                             android:id="@+id/twitterTick"
@@ -479,13 +481,13 @@
                             app:tint="@color/myPrimary" />
 
                         <TextView
-                            android:id="@+id/twitterSwitchSwitch"
+                            android:id="@+id/twitterSwitch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="4sp"
                             android:text="@string/connect"
-                            android:textColor="@color/myPrimary" />
+                            android:textColor="@color/my_darker_grey" />
 
 
                     </LinearLayout>

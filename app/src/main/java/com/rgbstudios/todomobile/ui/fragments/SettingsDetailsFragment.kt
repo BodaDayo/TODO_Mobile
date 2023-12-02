@@ -194,7 +194,11 @@ class SettingsDetailsFragment() : Fragment() {
                     }
 
                     facebookSwitch.setOnClickListener {
-                        //Todo
+                        toastManager.showShortToast(requireContext(),getString(R.string.facebook_login_coming_soon))
+                    }
+
+                    twitterSwitch.setOnClickListener {
+                        toastManager.showShortToast(requireContext(),getString(R.string.twitter_login_coming_soon))
                     }
 
                 }
