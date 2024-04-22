@@ -1,5 +1,7 @@
-# The TodoMobile App
+# The Todo Mobile App
+
 Welcome to the TodoMobile App repository! 
+
 This Android app is designed to help you stay organized and manage your tasks efficiently. 
 Whether you're a student, professional, or just someone looking to keep track of their daily tasks, this app has got you covered.
 
