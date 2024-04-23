@@ -33,7 +33,7 @@ If you encounter any issues, have suggestions, or would like to report a bug, pl
 Feel free to contribute to the development by submitting a [pull request](/pulls).
 
 License
-This project is licensed under the MIT License - see the [LICENSE](/LICENSE.md) file for details.
+This project is licensed under the MIT License - see the [LICENSE](/LICENSE) file for details.
 
 ## Acknowledgments
 Shout out to the open-source community for the incredible resources and support, JetBrains from the free resources, and everyone that's contributed to the building of the app. :+1: :+1:
