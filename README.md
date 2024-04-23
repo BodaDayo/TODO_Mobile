@@ -29,8 +29,8 @@ You can download the app from the Google Play Store or install it manually by fo
 - Personalize your profile with a custom avatar.
 
 ## Feedback and Contributions
-If you encounter any issues, have suggestions, or would like to report a bug, please open an [issue](/issues).
-Feel free to contribute to the development by submitting a [pull request](/pulls).
+If you encounter any issues, have suggestions, or would like to report a bug, please open an [issue](https://github.com/cooncudee/TODO_Mobile/issues).
+Feel free to contribute to the development by submitting a [pull request](https://github.com/cooncudee/TODO_Mobile/pulls).
 
 License
 This project is licensed under the MIT License - see the [LICENSE](/LICENSE) file for details.
