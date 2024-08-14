@@ -301,23 +301,21 @@ class DialogManager {
                 CategoryIconAdapter(
                     iconList,
                     iconManager,
-                    object : CategoryIconAdapter.IconClickListener {
-                        override fun onIconClick(iconIdentifier: String) {
-                            selectedCategoryIcon = iconIdentifier
+                ) { iconIdentifier ->
 
-                            val iconResource =
-                                iconManager.getIconDrawableResource(iconIdentifier)
+                    selectedCategoryIcon = iconIdentifier
 
-                            iconRecyclerView.visibility = View.GONE
-                            categoryIconTV.visibility = View.GONE
+                    val iconResource =
+                        iconManager.getIconDrawableResource(iconIdentifier)
 
-                            // Show the selected Icon
-                            categoryIcon.setImageResource(iconResource)
-                            categoryIcon.visibility = View.VISIBLE
-                        }
+                    iconRecyclerView.visibility = View.GONE
+                    categoryIconTV.visibility = View.GONE
 
-                    }
-                )
+                    // Show the selected Icon
+                    categoryIcon.setImageResource(iconResource)
+                    categoryIcon.visibility = View.VISIBLE
+
+                }
             iconRecyclerView.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
@@ -328,13 +326,9 @@ class DialogManager {
                 CategoryColorAdapter(
                     colorList,
                     colorManager,
-                    object : CategoryColorAdapter.ColorClickListener {
-                        override fun onColorClick(colorIdentifier: String) {
-                            // Handle the color click event and update the selected color
-                            selectedCategoryColor = colorIdentifier
-                        }
-                    }
-                )
+                ) { colorIdentifier ->
+                    selectedCategoryColor = colorIdentifier
+                }
             colorRecyclerView.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
@@ -429,23 +423,20 @@ class DialogManager {
                 CategoryIconAdapter(
                     iconList,
                     iconManager,
-                    object : CategoryIconAdapter.IconClickListener {
-                        override fun onIconClick(iconIdentifier: String) {
-                            selectedCategoryIcon = iconIdentifier
+                ) { iconIdentifier ->
+                    selectedCategoryIcon = iconIdentifier
 
-                            val iconResource =
-                                iconManager.getIconDrawableResource(iconIdentifier)
+                    val iconResource =
+                        iconManager.getIconDrawableResource(iconIdentifier)
 
-                            iconRecyclerView.visibility = View.GONE
-                            categoryIconTV.visibility = View.GONE
+                    iconRecyclerView.visibility = View.GONE
+                    categoryIconTV.visibility = View.GONE
 
-                            // Show the selected Icon
-                            categoryIcon.setImageResource(iconResource)
-                            categoryIcon.visibility = View.VISIBLE
-                        }
+                    // Show the selected Icon
+                    categoryIcon.setImageResource(iconResource)
+                    categoryIcon.visibility = View.VISIBLE
 
-                    }
-                )
+                }
             iconRecyclerView.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
@@ -456,13 +447,9 @@ class DialogManager {
                 CategoryColorAdapter(
                     colorList,
                     colorManager,
-                    object : CategoryColorAdapter.ColorClickListener {
-                        override fun onColorClick(colorIdentifier: String) {
-                            // Handle the color click event and update the selected color
-                            selectedCategoryColor = colorIdentifier
-                        }
-                    }
-                )
+                ) { colorIdentifier ->
+                    selectedCategoryColor = colorIdentifier
+                }
             colorRecyclerView.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
 
@@ -847,7 +834,7 @@ class DialogManager {
             val email = dialogBinding.emailEditText.text.toString().trim()
 
             if (email.isNotEmpty()) {
-                dialogBinding.progressBar.visibility =View.VISIBLE
+                dialogBinding.progressBar.visibility = View.VISIBLE
 
                 auth.sendPasswordResetEmail(email)
                     .addOnCompleteListener {
@@ -905,15 +892,10 @@ class DialogManager {
             feedbackThanks.visibility = View.INVISIBLE
 
             val emojiAdapter =
-                EmojiAdapter(
-                    emojiList,
-                    object : EmojiAdapter.EmojiClickListener {
-                        override fun onEmojiClick(emojiTriple: Triple<String, Int, Int>) {
-                            selectedEmojiTriple = emojiTriple
-                        }
+                EmojiAdapter(emojiList) { emojiTriple ->
+                    selectedEmojiTriple = emojiTriple
+                }
 
-                    }
-                )
             emojiRecyclerView.setHasFixedSize(true)
             emojiRecyclerView.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
@@ -985,7 +967,8 @@ class DialogManager {
                         val emailIntent = Intent(Intent.ACTION_SEND)
                         emailIntent.type = "text/plain"
                         emailIntent.putExtra(
-                            Intent.EXTRA_EMAIL, supportMail)
+                            Intent.EXTRA_EMAIL, supportMail
+                        )
                         emailIntent.putExtra(Intent.EXTRA_SUBJECT, "User Feedback")
                         emailIntent.putExtra(Intent.EXTRA_TEXT, feedbackMessage.toString())
 

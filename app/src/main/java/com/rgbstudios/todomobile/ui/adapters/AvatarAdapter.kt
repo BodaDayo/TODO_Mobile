@@ -1,7 +1,5 @@
 package com.rgbstudios.todomobile.ui.adapters
 
-import android.app.Dialog
-import android.graphics.PorterDuff
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +8,7 @@ import com.rgbstudios.todomobile.databinding.ItemAvatarBinding
 
 class AvatarAdapter(
     private var avatarList: List<Int>,
-    private val avatarClickListener: AvatarClickListener,
+    private val avatarClickListener: (Int) -> Unit,
 ) :
     RecyclerView.Adapter<AvatarAdapter.ViewHolder>() {
 
@@ -35,7 +33,7 @@ class AvatarAdapter(
             defaultAvatarImageView.setImageResource(avatarImageResource)
 
             defaultAvatarLayout.setOnClickListener {
-                avatarClickListener.onAvatarClick(avatarImageResource)
+                avatarClickListener(avatarImageResource)
                 selectItem(position)
             }
 
@@ -56,10 +54,5 @@ class AvatarAdapter(
 
     override fun getItemCount(): Int {
         return avatarList.size
-    }
-
-    interface AvatarClickListener {
-        fun onAvatarClick(avatar: Int)
-
     }
 }

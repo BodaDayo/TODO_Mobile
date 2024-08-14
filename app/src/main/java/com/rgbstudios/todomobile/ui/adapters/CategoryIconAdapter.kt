@@ -9,7 +9,7 @@ import com.rgbstudios.todomobile.utils.IconManager
 class CategoryIconAdapter(
     private val iconList: List<String>,
     private val iconManager: IconManager,
-    private val iconClickListener: IconClickListener
+    private val iconClickListener: (String) -> Unit
 ):
     RecyclerView.Adapter<CategoryIconAdapter.IconViewHolder>() {
 
@@ -31,15 +31,11 @@ class CategoryIconAdapter(
         holder.binding.categoryIcon.setImageResource(iconResource)
         // Set the click  listener for categoryIconLayout
         holder.binding.categoryIconLayout.setOnClickListener {
-            iconClickListener.onIconClick(icon)
+            iconClickListener(icon)
         }
     }
 
     override fun getItemCount(): Int {
         return iconList.size
-    }
-
-    interface IconClickListener {
-        fun onIconClick(iconIdentifier: String)
     }
 }

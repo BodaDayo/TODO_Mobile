@@ -13,7 +13,6 @@ import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.GridLayoutManager
@@ -55,7 +54,7 @@ class ProfileFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentProfileBinding.inflate(inflater, container, false)
         fragmentContext = requireContext()
         changesMade = savedInstanceState?.getBoolean("changesMade") ?: false
@@ -70,18 +69,16 @@ class ProfileFragment : Fragment() {
         binding.apply {
 
             // Set up the adapter
-            avatarAdapter = AvatarAdapter(defaultAvatarList,
-                object : AvatarAdapter.AvatarClickListener {
-                    override fun onAvatarClick(avatar: Int) {
-                        selectedDefaultAvatar = BitmapFactory.decodeResource(resources, avatar)
+            avatarAdapter = AvatarAdapter(defaultAvatarList) { avatar ->
 
-                        defaultChanges = true
+                selectedDefaultAvatar = BitmapFactory.decodeResource(resources, avatar)
 
-                        imageSampleView.setImageBitmap(selectedDefaultAvatar)
-                        expandedImageView.setImageBitmap(selectedDefaultAvatar)
-                    }
-                }
-            )
+                defaultChanges = true
+
+                imageSampleView.setImageBitmap(selectedDefaultAvatar)
+                expandedImageView.setImageBitmap(selectedDefaultAvatar)
+
+            }
 
             // Set up the recyclerview with the adapter
             defaultAvatarRecyclerView.setHasFixedSize(true)

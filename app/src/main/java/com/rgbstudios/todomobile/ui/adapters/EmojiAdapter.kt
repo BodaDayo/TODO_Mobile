@@ -8,7 +8,7 @@ import com.rgbstudios.todomobile.databinding.ItemEmojiBinding
 
 class EmojiAdapter(
     private val emojiList: List<Triple<String, Int, Int>>,
-    private val emojiClickListener: EmojiClickListener
+    private val emojiClickListener: (Triple<String, Int, Int>) -> Unit
 ) :
     RecyclerView.Adapter<EmojiAdapter.EmojiViewHolder>() {
     private var selectedColorPosition = -1
@@ -32,7 +32,7 @@ class EmojiAdapter(
 
         // Set the click  listener for emojiItemLayout
         holder.binding.emojiItemLayout.setOnClickListener {
-            emojiClickListener.onEmojiClick(emojiTriple)
+            emojiClickListener(emojiTriple)
             selectItem(position)
         }
 
@@ -52,10 +52,6 @@ class EmojiAdapter(
 
     override fun getItemCount(): Int {
         return emojiList.size
-    }
-
-    interface EmojiClickListener {
-        fun onEmojiClick(emojiTriple: Triple<String, Int, Int>)
     }
 
 }

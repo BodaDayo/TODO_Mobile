@@ -13,7 +13,7 @@ import com.rgbstudios.todomobile.utils.ColorManager
 class CategoryColorAdapter(
     private val colorList: List<String>,
     private val colorManager: ColorManager,
-    private val colorClickListener: ColorClickListener
+    private val colorClickListener: (String) -> Unit
 ):
     RecyclerView.Adapter<CategoryColorAdapter.ColorViewHolder>() {
 
@@ -41,7 +41,7 @@ class CategoryColorAdapter(
 
         // Set the click  listener for categoryColorView
         holder.binding.categoryColorView.setOnClickListener {
-            colorClickListener.onColorClick(color)
+            colorClickListener(color)
             selectItem(position)
         }
 
@@ -61,9 +61,5 @@ class CategoryColorAdapter(
 
     override fun getItemCount(): Int {
         return colorList.size
-    }
-
-    interface ColorClickListener {
-        fun onColorClick(colorIdentifier: String)
     }
 }
