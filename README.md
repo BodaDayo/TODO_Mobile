@@ -1,5 +1,7 @@
-# The TodoMobile App
+# The Todo Mobile App
+
 Welcome to the TodoMobile App repository! 
+
 This Android app is designed to help you stay organized and manage your tasks efficiently. 
 Whether you're a student, professional, or just someone looking to keep track of their daily tasks, this app has got you covered.
 
@@ -27,11 +29,11 @@ You can download the app from the Google Play Store or install it manually by fo
 - Personalize your profile with a custom avatar.
 
 ## Feedback and Contributions
-If you encounter any issues, have suggestions, or would like to report a bug, please open an [issue](/issues).
-Feel free to contribute to the development by submitting a [pull request](/pulls).
+If you encounter any issues, have suggestions, or would like to report a bug, please open an [issue](https://github.com/cooncudee/TODO_Mobile/issues).
+Feel free to contribute to the development by submitting a [pull request](https://github.com/cooncudee/TODO_Mobile/pulls).
 
 License
-This project is licensed under the MIT License - see the [LICENSE](/LICENSE.md) file for details.
+This project is licensed under the MIT License - see the [LICENSE](/LICENSE) file for details.
 
 ## Acknowledgments
 Shout out to the open-source community for the incredible resources and support, JetBrains from the free resources, and everyone that's contributed to the building of the app. :+1: :+1:
