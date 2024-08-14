@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.net.Uri
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -126,7 +125,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     // Get user from database
     private fun startUserListener() {
         viewModelScope.launch {
-            repository.getUserFromLocalDatabase().collect { user ->
+            repository.getUserFromLocalDB().collect { user ->
                 // Set currentUser value
                 _currentUser.postValue(user)
 
@@ -139,7 +138,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     // Get tasks list from Database
     private fun startTasksListener() {
         viewModelScope.launch {
-            repository.getTasksFromLocalDatabase().collect { taskEntities ->
+            repository.getTasksFromLocalDB().collect { taskEntities ->
                 allTaskEntities = taskEntities
                 val sortedDatabaseList = sortDatabaseList(taskEntities)
 
@@ -161,7 +160,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
 
     private fun startCategoriesListener() {
         viewModelScope.launch {
-            repository.getCategoriesFromDatabase().collect { categoryList ->
+            repository.getCategoriesFromDB().collect { categoryList ->
                 _categories.postValue(categoryList)
 
                 val newData = convertCategoriesToJson(categoryList)
@@ -196,7 +195,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 )
 
                 val result =
-                    repository.setUpNewUserInDatabase(
+                    repository.setUpUserInDB(
                         userId,
                         email,
                         userAvatarData,
@@ -240,7 +239,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                         occupation = occupation,
                         avatarFilePath = currentUser.avatarFilePath,
                     )
-                    repository.updateUserInDatabase(userEntity)
+                    repository.updateUserInDB(userEntity)
                     callback(true)
                 } else {
                     callback(false)
@@ -358,7 +357,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 dueDateTime = dueDateTime
             )
             try {
-                repository.saveTaskToDatabase(taskEntity)
+                repository.saveTaskToDB(taskEntity)
 
                 callback(true)
             } catch (e: Exception) {
@@ -374,7 +373,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     ) {
         viewModelScope.launch {
             try {
-                repository.batchSaveTaskToDatabase(taskEntityList)
+                repository.batchSaveTaskToDB(taskEntityList)
 
                 callback(true)
             } catch (e: Exception) {
@@ -406,7 +405,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 categoryIds = categoryIds
             )
             try {
-                repository.updateTaskInDatabase(taskEntity)
+                repository.updateTaskInDB(taskEntity)
 
                 callback(true)
             } catch (e: Exception) {
@@ -419,7 +418,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     fun deleteTask(taskId: String, callback: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
-                repository.deleteTaskFromDatabase(taskId)
+                repository.deleteTaskFromDB(taskId)
 
                 callback(true)
             } catch (e: Exception) {
@@ -432,7 +431,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     fun batchDeleteTask(taskIdList: List<String>, callback: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
-                repository.deleteMultipleTasksFromDatabase(taskIdList)
+                repository.deleteMultipleTasksFromDB(taskIdList)
 
                 callback(true)
             } catch (e: Exception) {
@@ -485,7 +484,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 categoryColorIdentifier = categoryColorIdentifier
             )
             try {
-                repository.saveCategoryToDatabase(category)
+                repository.saveCategoryToDB(category)
 
                 callback(true)
             } catch (e: Exception) {
@@ -511,7 +510,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                 categoryColorIdentifier = categoryColorIdentifier
             )
             try {
-                repository.updateCategoryInDatabase(category)
+                repository.updateCategoryInDB(category)
 
                 callback(true)
             } catch (e: Exception) {
@@ -524,7 +523,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
     fun deleteCategory(categoryId: String, callback: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
-                repository.deleteCategoryFromDatabase(categoryId)
+                repository.deleteCategoryFromDB(categoryId)
 
                 callback(true)
             } catch (e: Exception) {
@@ -688,7 +687,7 @@ class TodoViewModel(private val application: TodoMobileApplication) : ViewModel(
                             occupation = currentUser.occupation,
                             avatarFilePath = newAvatarFilePath,
                         )
-                        repository.updateUserInDatabase(userEntity)
+                        repository.updateUserInDB(userEntity)
 
                         callback(true)
                     } else {

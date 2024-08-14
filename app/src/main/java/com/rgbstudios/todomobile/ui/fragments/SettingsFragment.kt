@@ -1,11 +1,15 @@
 package com.rgbstudios.todomobile.ui.fragments
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.biometric.BiometricManager.Authenticators.DEVICE_CREDENTIAL
@@ -14,10 +18,14 @@ import androidx.biometric.BiometricPrompt.PromptInfo
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.slidingpanelayout.widget.SlidingPaneLayout
 import com.rgbstudios.todomobile.R
+import com.rgbstudios.todomobile.data.remote.FirebaseAccess
 import com.rgbstudios.todomobile.databinding.FragmentSettingsBinding
-import com.rgbstudios.todomobile.utils.SharedPreferencesManager
+import com.rgbstudios.todomobile.ui.adapters.CategoryColorAdapter
+import com.rgbstudios.todomobile.utils.ColorManager
+import com.rgbstudios.todomobile.utils.DialogManager
 import com.rgbstudios.todomobile.utils.ToastManager
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 import java.util.concurrent.Executor
@@ -27,12 +35,15 @@ class SettingsFragment : Fragment() {
     private val sharedViewModel: TodoViewModel by activityViewModels()
     private lateinit var binding: FragmentSettingsBinding
     private lateinit var fragmentContext: Context
+    private val dialogManager = DialogManager()
     private val toastManager = ToastManager()
+    private val firebase = FirebaseAccess()
     private val thisFragment = this
     private lateinit var executor: Executor
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var promptInfo: PromptInfo
     private var isSlidingPaneLayoutOpen = false
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -45,10 +56,6 @@ class SettingsFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        val sharedPreferences = SharedPreferencesManager(requireContext())
-
-        val storedPass = sharedPreferences.getString("pass", "")
 
         binding.apply {
 
@@ -67,16 +74,6 @@ class SettingsFragment : Fragment() {
 
             fingerprintSwitch.isChecked = isBiometricEnabled
 
-            sharedViewModel.isEmailAuthSet.observe(viewLifecycleOwner) { emailAuthIsSet ->
-                if (emailAuthIsSet) {
-                    completeSetUpLayout.visibility = View.GONE
-                    completeNB.visibility = View.GONE
-                } else {
-                    completeSetUpLayout.visibility = View.VISIBLE
-                    completeNB.visibility = View.VISIBLE
-                }
-            }
-
             completeSetUpLayout.setOnClickListener {
                 openDetailsPane("completeSetUp")
             }
@@ -90,24 +87,25 @@ class SettingsFragment : Fragment() {
             }
 
             changeEmailLayout.setOnClickListener {
-                openDetailsPane("changeEmail")
+                toastManager.showShortToast(requireContext(), "Coming soon")
+                //Todo show dialog
             }
 
             fingerprintSwitch.setOnCheckedChangeListener { _, isChecked ->
                 // Handle the switch state change (isChecked)
                 if (isChecked) {
-                    if (storedPass.isNotBlank()) {
-                        checkDeviceHasBiometric()
-                    } else {
-                        toastManager.showShortToast(requireContext(), getString(R.string.sign_in_with_email_password_to_enable_biometric_authentication))
-                        fingerprintSwitch.isChecked = false
-                    }
+                    checkDeviceHasBiometric()
                 } else {
-                    toastManager.showShortToast(requireContext(), getString(R.string.biometric_authentication_disabled))
+                    toastManager.showShortToast(requireContext(), "Biometric authentication disabled.")
 
                     // Update the isBiometricEnabled in the viewModel
                     sharedViewModel.updateIsBiometricEnabled(false)
                 }
+            }
+
+            deleteAccLayout.setOnClickListener {
+                toastManager.showShortToast(requireContext(), "Coming soon")
+                // openDetailsPane("deleteAcc")
             }
 
             changeAppThemeLayout.setOnClickListener {
@@ -115,40 +113,19 @@ class SettingsFragment : Fragment() {
             }
 
             timeFormatLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
+                toastManager.showShortToast(requireContext(), "Coming soon")
                 //Todo show dialog
             }
 
             defaultViewLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
+                toastManager.showShortToast(requireContext(), "Coming soon")
                 //Todo show dialog
             }
 
             keepTasksLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
+                toastManager.showShortToast(requireContext(), "Coming soon")
                 //Todo show dialog
             }
-
-            changeSoundLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
-                //Todo show dialog
-            }
-
-            changeVibrationLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
-                //Todo show dialog
-            }
-
-            setReminderLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon_reminders_current_set_to_default))
-                //Todo show dialog
-            }
-
-            deleteAccLayout.setOnClickListener {
-                toastManager.showShortToast(requireContext(), getString(R.string.coming_soon))
-                // openDetailsPane("deleteAcc")
-            }
-
 
             popBack.setOnClickListener {
                 popBackStackManager()
@@ -216,7 +193,6 @@ class SettingsFragment : Fragment() {
                 if (errString != "Cancel") {
                     toastManager.showShortToast(requireContext(), "Biometric authentication set up error: $errString")
                 }
-                binding.fingerprintSwitch.isChecked = false
             }
 
             override fun onAuthenticationFailed() {
@@ -240,5 +216,9 @@ class SettingsFragment : Fragment() {
             .setSubtitle("")
             .setNegativeButtonText("Cancel")
             .build()
+    }
+
+    companion object {
+        private const val TAG = "SettingsFragment"
     }
 }

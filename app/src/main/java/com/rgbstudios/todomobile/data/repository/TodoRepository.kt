@@ -62,15 +62,15 @@ class TodoRepository(
      *-----------------------------------------------------------------------------------------------
      */
 
-    fun getUserFromLocalDatabase(): Flow<UserEntity> {
+    fun getUserFromLocalDB(): Flow<UserEntity> {
         return userDao.getUser()
     }
 
-    fun getTasksFromLocalDatabase(): Flow<List<TaskEntity>> {
+    fun getTasksFromLocalDB(): Flow<List<TaskEntity>> {
         return taskDao.getAllTasks()
     }
 
-    fun getCategoriesFromDatabase(): Flow<List<CategoryEntity>> {
+    fun getCategoriesFromDB(): Flow<List<CategoryEntity>> {
         return categoryDao.getCategories()
     }
 
@@ -78,7 +78,7 @@ class TodoRepository(
      *-----------------------------------------------------------------------------------------------
      */
 
-    suspend fun setUpNewUserInDatabase(
+    suspend fun setUpUserInDB(
         userId: String,
         email: String,
         userAvatarData: String?,
@@ -117,7 +117,7 @@ class TodoRepository(
                 if (sender == SIGNIN && (currentUserId == null || newUser.userId != currentUserId)) {
                     userSetupMutex.withLock {
                         // Delete existing user and tasks
-                        deleteUserDetailsFromDatabase()
+                        deleteUserDetailsFromDB()
 
                         // Save new user's details in the local database
                         userDao.insertUser(newUser)
@@ -134,25 +134,27 @@ class TodoRepository(
                         // Import new user's tasks categories
                         val importedCategories = importCategories(newUser.userId)
 
-                        if (importedCategories != null) {
+                        val finalCategories = if (importedCategories != null) {
                             // Add imported categories to local database
                             val deserializedCategories = convertJsonToCategories(importedCategories)
                             categoryDao.insertAllCategories(deserializedCategories)
 
-                            return@withContext Pair(newUser, deserializedCategories)
+                            deserializedCategories
                         } else {
                             // Add Default categories to local database
                             categoryDao.insertAllCategories(defaultCategories)
 
-                            return@withContext Pair(newUser, defaultCategories)
+                            defaultCategories
                         }
+
+                        return@withContext Pair(newUser, finalCategories)
 
                     }
                 } else if (sender == SIGNUP) {
 
                     userSetupMutex.withLock {
                         // Delete existing user and tasks
-                        deleteUserDetailsFromDatabase()
+                        deleteUserDetailsFromDB()
 
                         // Save new user's details in local database
                         userDao.insertUser(newUser)
@@ -260,7 +262,7 @@ class TodoRepository(
         }
     }
 
-    private suspend fun deleteUserDetailsFromDatabase() {
+    private suspend fun deleteUserDetailsFromDB() {
         try {
             userDao.deleteUser()
             taskDao.deleteAllTasks()
@@ -274,7 +276,7 @@ class TodoRepository(
      *-----------------------------------------------------------------------------------------------
      */
 
-    suspend fun saveTaskToDatabase(taskEntity: TaskEntity) {
+    suspend fun saveTaskToDB(taskEntity: TaskEntity) {
         try {
             taskDao.insertTask(taskEntity)
         } catch (e: Exception) {
@@ -282,7 +284,7 @@ class TodoRepository(
         }
     }
 
-    suspend fun batchSaveTaskToDatabase(taskEntityList: List<TaskEntity>) {
+    suspend fun batchSaveTaskToDB(taskEntityList: List<TaskEntity>) {
         try {
             taskDao.insertAllTasks(taskEntityList)
         } catch (e: Exception) {
@@ -290,7 +292,7 @@ class TodoRepository(
         }
     }
 
-    suspend fun updateTaskInDatabase(taskEntity: TaskEntity) {
+    suspend fun updateTaskInDB(taskEntity: TaskEntity) {
         try {
             taskDao.updateTask(taskEntity)
         } catch (e: Exception) {
@@ -298,7 +300,7 @@ class TodoRepository(
         }
     }
 
-    suspend fun deleteTaskFromDatabase(taskId: String) {
+    suspend fun deleteTaskFromDB(taskId: String) {
         try {
             taskDao.deleteTask(taskId)
         } catch (e: Exception) {
@@ -306,7 +308,7 @@ class TodoRepository(
         }
     }
 
-    suspend fun deleteMultipleTasksFromDatabase(taskIdList: List<String>) {
+    suspend fun deleteMultipleTasksFromDB(taskIdList: List<String>) {
         try {
             taskDao.deleteTasksByIds(taskIdList)
         } catch (e: Exception) {
@@ -511,7 +513,7 @@ class TodoRepository(
      *-----------------------------------------------------------------------------------------------
      */
 
-    suspend fun updateUserInDatabase(updatedUser: UserEntity) {
+    suspend fun updateUserInDB(updatedUser: UserEntity) {
         try {
             userDao.updateUser(updatedUser)
             firebase.addLog("userDetails update in room successful")
@@ -528,11 +530,11 @@ class TodoRepository(
      *-----------------------------------------------------------------------------------------------
      */
 
-    suspend fun saveCategoryToDatabase(categoryEntity: CategoryEntity) {
+    suspend fun saveCategoryToDB(categoryEntity: CategoryEntity) {
         categoryDao.insertCategory(categoryEntity)
     }
 
-    suspend fun updateCategoryInDatabase(categoryEntity: CategoryEntity) {
+    suspend fun updateCategoryInDB(categoryEntity: CategoryEntity) {
         try {
             categoryDao.updateCategory(categoryEntity)
         } catch (e: Exception) {
@@ -540,7 +542,7 @@ class TodoRepository(
         }
     }
 
-    suspend fun deleteCategoryFromDatabase(categoryId: String) {
+    suspend fun deleteCategoryFromDB(categoryId: String) {
         try {
             categoryDao.deleteCategory(categoryId)
         } catch (e: Exception) {
