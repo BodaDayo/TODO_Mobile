@@ -32,7 +32,7 @@ class BatchCreateTasksFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentBatchCreateTasksBinding.inflate(inflater, container, false)
         fragmentContext = requireContext()
 
@@ -46,7 +46,6 @@ class BatchCreateTasksFragment : Fragment() {
 
             batchTaskAdapter = BatchTaskAdapter(thisFragment, batchList, dialogManager, batchTasksRecyclerView)
 
-            //batchTasksRecyclerView.setHasFixedSize(true)
             batchTasksRecyclerView.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
             batchTasksRecyclerView.adapter = batchTaskAdapter
 

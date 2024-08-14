@@ -87,21 +87,7 @@ class TodoRepository(
     ): Pair<UserEntity, List<CategoryEntity>> {
         return withContext(Dispatchers.IO) {
             try {
-                // Determine name and occupation based on sender
-                val (name, occupation) = when {
-                    nameFromAuth != null -> {
-                        Pair(nameFromAuth, null)
-                    }
-
-                    sender == "SignInFragment" -> {
-                        val userDetails = importUserDetails(userId)
-                        Pair(userDetails?.getOrNull(0), userDetails?.getOrNull(1))
-                    }
-
-                    else -> Pair(null, null)
-                }
-
-                // Create new user Entity
+                val (name, occupation) = determineNameAndOccupation(sender, nameFromAuth, userId)
                 val newUser = UserEntity(
                     userId = userId,
                     name = name,
@@ -109,75 +95,63 @@ class TodoRepository(
                     occupation = occupation,
                     avatarFilePath = userAvatarData
                 )
-
-                // Create default categories
                 val defaultCategories = defaultCategories.getDefaultCategories()
-
-                // Check if user is re-signing in
-                if (sender == SIGNIN && (currentUserId == null || newUser.userId != currentUserId)) {
-                    userSetupMutex.withLock {
-                        // Delete existing user and tasks
-                        deleteUserDetailsFromDB()
-
-                        // Save new user's details in the local database
-                        userDao.insertUser(newUser)
-
-                        // Import new user's tasks
-                        val importedTasks = importUserTasks(newUser.userId)
-
-
-                        // Add imported tasks to local database
-                        if (importedTasks != null) {
-                            taskDao.insertAllTasks(importedTasks)
-                        }
-
-                        // Import new user's tasks categories
-                        val importedCategories = importCategories(newUser.userId)
-
-                        val finalCategories = if (importedCategories != null) {
-                            // Add imported categories to local database
-                            val deserializedCategories = convertJsonToCategories(importedCategories)
-                            categoryDao.insertAllCategories(deserializedCategories)
-
-                            deserializedCategories
-                        } else {
-                            // Add Default categories to local database
-                            categoryDao.insertAllCategories(defaultCategories)
-
-                            defaultCategories
-                        }
-
-                        return@withContext Pair(newUser, finalCategories)
-
-                    }
-                } else if (sender == SIGNUP) {
-
-                    userSetupMutex.withLock {
-                        // Delete existing user and tasks
-                        deleteUserDetailsFromDB()
-
-                        // Save new user's details in local database
-                        userDao.insertUser(newUser)
-
-                        // Add Default categories to local database
-                        categoryDao.insertAllCategories(defaultCategories)
-
-                        return@withContext Pair(newUser, defaultCategories)
-                    }
-                } else {
-                    userSetupMutex.withLock {
-                        var currentCategories: List<CategoryEntity>? = null
-                        categoryDao.getCategories().collect { currentCategories = it }
-
-                        val categories =
-                            if (currentCategories != null) currentCategories!! else defaultCategories
-                        return@withContext Pair(newUser, categories)
-                    }
+                when (sender) {
+                    SIGNIN -> handleSignIn(newUser, defaultCategories)
+                    SIGNUP -> handleSignUp(newUser, defaultCategories)
+                    else -> handleOtherCases(newUser)
                 }
-
             } catch (e: Exception) {
                 throw e
             }
+        }
+    }
+
+    private suspend fun determineNameAndOccupation(sender: String, nameFromAuth: String?, userId: String): Pair<String?, String?> {
+        return when {
+            nameFromAuth != null -> Pair(nameFromAuth, null)
+            sender == "SignInFragment" -> {
+                val userDetails = importUserDetails(userId)
+                Pair(userDetails?.getOrNull(0), userDetails?.getOrNull(1))
+            }
+            else -> Pair(null, null)
+        }
+    }
+
+    private suspend fun handleSignIn(newUser: UserEntity, defaultCategories: List<CategoryEntity>): Pair<UserEntity, List<CategoryEntity>> {
+        userSetupMutex.withLock {
+            deleteUserDetailsFromDB()
+            userDao.insertUser(newUser)
+            val importedTasks = importUserTasks(newUser.userId)
+            importedTasks?.let { taskDao.insertAllTasks(it) }
+            val importedCategories = importCategories(newUser.userId)
+            val finalCategories = if (importedCategories != null) {
+                val deserializedCategories = convertJsonToCategories(importedCategories)
+                categoryDao.insertAllCategories(deserializedCategories)
+                deserializedCategories
+            } else {
+                categoryDao.insertAllCategories(defaultCategories)
+                defaultCategories
+            }
+            return Pair(newUser, finalCategories)
+        }
+    }
+
+    private suspend fun handleSignUp(newUser: UserEntity, defaultCategories: List<CategoryEntity>): Pair<UserEntity, List<CategoryEntity>> {
+        userSetupMutex.withLock {
+            deleteUserDetailsFromDB()
+            userDao.insertUser(newUser)
+            categoryDao.insertAllCategories(defaultCategories)
+            return Pair(newUser, defaultCategories)
+        }
+    }
+
+    private suspend fun handleOtherCases(newUser: UserEntity): Pair<UserEntity, List<CategoryEntity>> {
+        userSetupMutex.withLock {
+            var currentCategories: List<CategoryEntity>? = null
+            categoryDao.getCategories().collect { currentCategories = it }
+            val categories = currentCategories ?: defaultCategories.getDefaultCategories()
+            return Pair(newUser, categories)
         }
     }
 

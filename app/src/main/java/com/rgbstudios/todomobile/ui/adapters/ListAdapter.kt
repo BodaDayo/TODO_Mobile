@@ -1,5 +1,6 @@
 package com.rgbstudios.todomobile.ui.adapters
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +14,7 @@ import com.rgbstudios.todomobile.databinding.ItemTaskParentBinding
 import com.rgbstudios.todomobile.model.TaskList
 import com.rgbstudios.todomobile.viewmodel.TodoViewModel
 
+@SuppressLint("NotifyDataSetChanged")
 class ListAdapter(private val context: Context, private val viewModel: TodoViewModel) :
     RecyclerView.Adapter<ListAdapter.ListViewHolder>() {
 
@@ -55,42 +57,9 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
     ) {
         holder.binding.apply {
             if (name == COMPLETED) {
-                if (tasks.isNotEmpty()) {
-                    separator.visibility = View.VISIBLE
-                    listName.text = name
-                    listNameLayout.visibility = View.VISIBLE
-                    closeList.visibility = View.GONE
-
-                    // Set the icon based on visibility of the layout
-                    if (childRecyclerView.visibility == View.VISIBLE) {
-                        collapseList.setImageResource(R.drawable.arrow_up)
-                    } else {
-                        collapseList.setImageResource(R.drawable.arrow_down)
-                    }
-                    listName.isEnabled = true
-                } else {
-                    listNameLayout.visibility = View.GONE
-                    separator.visibility = View.GONE
-                }
+                handleCompletedList(holder, name, tasks)
             } else {
-                if (name != UNCOMPLETED) {
-                    listName.text = name
-                    listName.setTextColor(
-                        ContextCompat.getColor(
-                            context,
-                            R.color.myPrimary
-                        )
-                    )
-
-                    listNameLayout.visibility = View.VISIBLE
-                    collapseList.visibility = View.GONE
-
-                    closeList.visibility = View.VISIBLE
-                } else {
-                    listNameLayout.visibility = View.GONE
-                    separator.visibility = View.GONE
-                }
-                listName.isEnabled = false
+                handleUncompletedList(holder, name)
             }
 
             childRecyclerView.setHasFixedSize(true)
@@ -100,6 +69,57 @@ class ListAdapter(private val context: Context, private val viewModel: TodoViewM
         }
     }
 
+    private fun handleCompletedList(
+        holder: ListViewHolder,
+        name: String,
+        tasks: List<TaskEntity>
+    ) {
+        holder.binding.apply {
+            if (tasks.isNotEmpty()) {
+                separator.visibility = View.VISIBLE
+                listName.text = name
+                listNameLayout.visibility = View.VISIBLE
+                closeList.visibility = View.GONE
+
+                // Set the icon based on visibility of the layout
+                if (childRecyclerView.visibility == View.VISIBLE) {
+                    collapseList.setImageResource(R.drawable.arrow_up)
+                } else {
+                    collapseList.setImageResource(R.drawable.arrow_down)
+                }
+                listName.isEnabled = true
+            } else {
+                listNameLayout.visibility = View.GONE
+                separator.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun handleUncompletedList(
+        holder: ListViewHolder,
+        name: String,
+    ) {
+        holder.binding.apply {
+            if (name != UNCOMPLETED) {
+                listName.text = name
+                listName.setTextColor(
+                    ContextCompat.getColor(
+                        context,
+                        R.color.myPrimary
+                    )
+                )
+
+                listNameLayout.visibility = View.VISIBLE
+                collapseList.visibility = View.GONE
+
+                closeList.visibility = View.VISIBLE
+            } else {
+                listNameLayout.visibility = View.GONE
+                separator.visibility = View.GONE
+            }
+            listName.isEnabled = false
+        }
+    }
 
     fun clearTasksSelection(taskListName: String) {
         if (taskListName == COMPLETED) {

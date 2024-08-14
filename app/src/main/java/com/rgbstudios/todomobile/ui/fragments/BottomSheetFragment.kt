@@ -33,7 +33,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding = FragmentBottomSheetBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -43,11 +43,12 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
 
         // Intercept back button press and show discard dialog if title field is not empty
         dialog?.setOnKeyListener { _, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
-                if (!binding.taskTitleEt.text.isNullOrEmpty()) {
-                    showDiscardDialog()
-                    return@setOnKeyListener true
-                }
+            if (keyCode == KeyEvent.KEYCODE_BACK &&
+                event.action == KeyEvent.ACTION_UP &&
+                !binding.taskTitleEt.text.isNullOrEmpty()
+            ) {
+                showDiscardDialog()
+                return@setOnKeyListener true
             }
             return@setOnKeyListener false
         }
@@ -91,6 +92,7 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                     count: Int,
                     after: Int
                 ) {
+                    // Nothing happens before text changes
                 }
 
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
@@ -108,7 +110,9 @@ class BottomSheetFragment : BottomSheetDialogFragment() {
                     )
                 }
 
-                override fun afterTextChanged(s: Editable?) {}
+                override fun afterTextChanged(s: Editable?) {
+                    // Nothing happens after text changes
+                }
             })
 
             saveTask.setOnClickListener {

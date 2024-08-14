@@ -1,5 +1,6 @@
 package com.rgbstudios.todomobile.ui.adapters
 
+import android.annotation.SuppressLint
 import android.app.UiModeManager
 import android.content.Context
 import android.graphics.Paint
@@ -17,6 +18,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+@SuppressLint("NotifyDataSetChanged")
 class TaskAdapter(
     private val context: Context,
     private val name: String,
@@ -46,14 +48,24 @@ class TaskAdapter(
         val task = tasks[position]
         val isSelected = isItemSelected(position)
 
-        var newTaskCompleted = task.taskCompleted
-        var newStarred = task.starred
-        var dueDateTime = task.dueDateTime
+        val dueDateTime = if (task.taskCompleted) null else task.dueDateTime
         val taskCategories = task.categoryIds
 
-        val uiModeManager =
-            holder.itemView.context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
-        val isNightMode = uiModeManager.nightMode == UiModeManager.MODE_NIGHT_YES
+
+        holder.binding.apply {
+
+            setLongClickListeners(holder, position)
+            setClickListeners(holder, position, dueDateTime, taskCategories)
+            updateViews(holder, task)
+            updateBackground(holder, isSelected)
+        }
+    }
+
+
+    // ---------------------------------------------------------------------
+
+    private fun setLongClickListeners(holder: TaskViewHolder, position: Int) {
+        val task = tasks[position]
 
         holder.binding.apply {
 
@@ -84,6 +96,20 @@ class TaskAdapter(
                 }
                 true // Consume the long-click event
             }
+        }
+    }
+
+    private fun setClickListeners(
+        holder: TaskViewHolder,
+        position: Int,
+        dueDateTime: Calendar?,
+        taskCategories: List<String>
+    ) {
+        val task = tasks[position]
+        var newTaskCompleted = task.taskCompleted
+        var newStarred = task.starred
+
+        holder.binding.apply {
 
             taskDetailsLayout.setOnClickListener {
                 if (isInSelectMode && highlightedListName == name) {
@@ -127,11 +153,6 @@ class TaskAdapter(
                 } else if (highlightedListName == "") {
 
                     newTaskCompleted = !newTaskCompleted
-                    if (newTaskCompleted) {
-                        dueDateTime = null
-                    }
-
-                    // TODO markCompleted animation or not
 
                     updateTaskData(
                         task.taskId,
@@ -145,15 +166,28 @@ class TaskAdapter(
                 }
             }
 
+        }
+    }
+
+    private fun updateViews(holder: TaskViewHolder, task: TaskEntity) {
+        val newTaskCompleted = task.taskCompleted
+        val newStarred = task.starred
+        val dueDateTime = if (newTaskCompleted) null else task.dueDateTime
+
+        holder.binding.apply {
+
             taskTitleTextView.text = task.title
             taskDescriptionTextView.text = task.description
+            if (taskDescriptionTextView.text.isEmpty()) {
+                taskDescriptionTextView.visibility = View.GONE
+            }
 
             if (dueDateTime != null) {
-                val formattedDateTime = formatDateTime(dueDateTime!!)
+                val formattedDateTime = formatDateTime(dueDateTime)
 
                 // Check if dueDateTime is in the past
                 val currentTime = Calendar.getInstance()
-                if (dueDateTime!!.before(currentTime)) {
+                if (dueDateTime.before(currentTime)) {
                     // Set the text color to R.color.poor
                     val overdueTime = formattedDateTime + context.getString(R.string.overdue_task)
                     taskDateTime.text = overdueTime
@@ -173,11 +207,8 @@ class TaskAdapter(
                 taskDateTime.visibility = View.GONE
             }
 
-            taskTitleTextView.text = task.title
-            taskDescriptionTextView.text = task.description
-
             // Check if the task is completed, and apply the strikethrough effect and change icon if true
-            if (task.taskCompleted) {
+            if (newTaskCompleted) {
                 taskTitleTextView.paintFlags =
                     taskTitleTextView.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 taskTitleTextView.setTextColor(
@@ -206,27 +237,32 @@ class TaskAdapter(
             val starIcon = if (newStarred) R.drawable.star_filled else R.drawable.star
             star.setImageResource(starIcon)
 
-            if (taskDescriptionTextView.text.isEmpty()) {
-                taskDescriptionTextView.visibility = View.GONE
-            }
+        }
+    }
 
-            // Get the background
-            val drawableResourceId = if (isNightMode) {
-                R.drawable.highlight_rectangle_background_night // Use night mode color resource
-            } else {
-                R.drawable.highlight_rectangle_background // Use regular color resource
-            }
+    private fun updateBackground(holder: TaskViewHolder, isSelected: Boolean) {
 
-            // Get the taskDateTime color
-            val colorResourceId = if (isNightMode) {
-                R.color.myOnSurfaceNight // Use night mode color resource
-            } else {
-                R.color.myOnSurfaceDay // Use regular color resource
-            }
+        val uiModeManager =
+            holder.itemView.context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+        val isNightMode = uiModeManager.nightMode == UiModeManager.MODE_NIGHT_YES
 
-            val textColorSelected = ContextCompat.getColor(holder.itemView.context, colorResourceId)
+        // Get the taskDateTime color
+        val colorResourceId = if (isNightMode) {
+            R.color.myOnSurfaceNight // Use night mode color resource
+        } else {
+            R.color.myOnSurfaceDay // Use regular color resource
+        }
+        val textColorSelected = ContextCompat.getColor(holder.itemView.context, colorResourceId)
 
-            // Update the UI based on selection state
+        // Get the background
+        val drawableResourceId = if (isNightMode) {
+            R.drawable.highlight_rectangle_background_night // Use night mode color resource
+        } else {
+            R.drawable.highlight_rectangle_background // Use regular color resource
+        }
+
+        holder.binding.apply {
+            // Update the layout based on selection state
             if (isSelected) {
                 // Highlight the view
                 taskLayout.setBackgroundResource(drawableResourceId)
@@ -241,8 +277,6 @@ class TaskAdapter(
             }
         }
     }
-
-    // ---------------------------------------------------------------------
 
 
     // Check if an item is selected
@@ -286,7 +320,7 @@ class TaskAdapter(
         notifyDataSetChanged()
     }
 
-    fun fillSelection(list:  List<TaskEntity>) {
+    fun fillSelection(list: List<TaskEntity>) {
         selectedItems.clear()
 
         val allItems = list.indices.toList()
